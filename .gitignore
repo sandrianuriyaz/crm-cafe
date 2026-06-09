@@ -1,44 +1,31 @@
-# dependencies
+# Dependencies
 node_modules/
 **/node_modules/
-/.pnp
-.pnp.js
-.yarn/install-state.gz
 
-# environment & secrets
+# Environment & secrets — JANGAN commit
 .env
 .env.*
 !.env.example
 **/.env
 !**/.env.example
-.env*.local
 
-# next.js
-/.next/
-/out/
-
-# build output
+# Build output
 dist/
 build/
 **/dist/
 **/build/
 
-# logs
+# Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# os / editor
+# OS / editor
 .DS_Store
 .idea/
-*.pem
 
-# coverage
+# Local AI assistant config
+.claude/
+.codex/
+
+# Coverage
 coverage/
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo

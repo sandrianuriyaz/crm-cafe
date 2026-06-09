@@ -1,464 +1,583 @@
 # Product Requirements Document (PRD)
-## Web Apps CRM Cafe — Loyalty Program & Promo Terintegrasi POS
+## P1 - Web Apps CRM Cafe
 
-| | |
+| Informasi | Keterangan |
 |---|---|
-| **Nama Produk** | CRM Cafe (Loyalty & Promo Web App) |
-| **Tipe Produk** | Web Application (Customer-facing + Admin Dashboard) |
-| **Versi Dokumen** | 1.0 (Draft) |
-| **Tanggal** | 7 Juni 2026 |
-| **Penyusun** | Peserta Magang (Software Developer) |
-| **Status** | Draft — menunggu review mentor & tim POS |
-| **Durasi Target** | 40 hari kerja (~8 minggu) — MVP |
-| **Referensi** | Brief P1 — Magang 40 Hari Kerja |
+| Nama Project | P1 - Web Apps CRM Cafe |
+| Nama Produk | CRM Cafe |
+| Tim | Tim 5 - Cafe CRM Crew |
+| Anggota | Muhammad Alif Akhdan Tsani, Sandria Nuriya Az Zahra |
+| Durasi Acuan | 40 hari kerja untuk MVP |
+| Versi Dokumen | 1.2 |
+| Tanggal Revisi | 9 Juni 2026 |
+| Status | Draft untuk review mentor |
+| Fokus Dokumen | PRD, scope MVP, rencana kerja, risiko, dan pertanyaan mentor |
 
-> **Catatan penting:** Spesifikasi integrasi POS pada dokumen ini bersifat **asumsi sementara**. Detail final (skema auth, payload, mekanisme push/pull) **WAJIB** dikonfirmasi dengan mentor tim POS sebelum implementasi Minggu 4. Lihat [Bagian 11 — Open Questions](#11-open-questions--keputusan-yang-perlu-dikonfirmasi).
+Dokumen ini disusun sebagai acuan awal pengembangan Web Apps CRM Cafe. Isi dokumen menggabungkan kebutuhan produk, rencana teknis, pembagian kerja, timeline, dan daftar pertanyaan yang perlu dikonfirmasi sebelum development utama dimulai.
 
 ---
 
 ## Daftar Isi
-1. [Ringkasan Eksekutif](#1-ringkasan-eksekutif)
-2. [Latar Belakang & Masalah](#2-latar-belakang--masalah)
-3. [Tujuan & Metrik Sukses](#3-tujuan--metrik-sukses)
-4. [Persona & Target Pengguna](#4-persona--target-pengguna)
-5. [Ruang Lingkup (Scope)](#5-ruang-lingkup-scope)
+1. [Ringkasan Project](#1-ringkasan-project)
+2. [Latar Belakang](#2-latar-belakang)
+3. [Tujuan MVP](#3-tujuan-mvp)
+4. [Role Pengguna](#4-role-pengguna)
+5. [Scope MVP](#5-scope-mvp)
 6. [Functional Requirements](#6-functional-requirements)
-7. [User Flows](#7-user-flows)
-8. [Integrasi POS](#8-integrasi-pos-inti-proyek)
-9. [Arsitektur & Tech Stack](#9-arsitektur--tech-stack)
-10. [Model Data (ERD)](#10-model-data-erd)
-11. [Open Questions](#11-open-questions--keputusan-yang-perlu-dikonfirmasi)
-12. [Non-Functional Requirements](#12-non-functional-requirements)
-13. [Milestone & Timeline](#13-milestone--timeline-40-hari-kerja)
-14. [Deliverables](#14-deliverables)
-15. [Risiko & Mitigasi](#15-risiko--mitigasi)
-16. [Lampiran](#16-lampiran)
+7. [User Flow Utama](#7-user-flow-utama)
+8. [Integrasi POS](#8-integrasi-pos)
+9. [Rencana Arsitektur dan Repository](#9-rencana-arsitektur-dan-repository)
+10. [Model Data Awal](#10-model-data-awal)
+11. [Pembagian Peran Tim](#11-pembagian-peran-tim)
+12. [Timeline 40 Hari Kerja](#12-timeline-40-hari-kerja)
+13. [Sprint Backlog Minggu Pertama](#13-sprint-backlog-minggu-pertama)
+14. [Non-Functional Requirements](#14-non-functional-requirements)
+15. [Risiko dan Mitigasi](#15-risiko-dan-mitigasi)
+16. [Pertanyaan Mentor](#16-pertanyaan-mentor)
+17. [Deliverables](#17-deliverables)
+18. [Kesimpulan](#18-kesimpulan)
 
 ---
 
-## 1. Ringkasan Eksekutif
+## 1. Ringkasan Project
 
-CRM Cafe adalah web aplikasi *mobile-first* yang memungkinkan pelanggan cafe mengumpulkan poin dari setiap transaksi, menukar poin menjadi reward/voucher, dan menerima informasi promo terbaru. Sistem terhubung **secara real-time** dengan POS internal perusahaan sehingga setiap transaksi di kasir otomatis menambah poin ke akun member tanpa input manual.
+CRM Cafe adalah aplikasi CRM berbasis web untuk cafe yang berfokus pada loyalty program, promo, reward, voucher, dan integrasi dengan POS internal perusahaan.
 
-Produk terdiri dari dua antarmuka:
-- **Customer App** — diakses member via browser (tanpa install aplikasi native).
-- **Admin Dashboard** — untuk admin/owner cafe mengelola member, promo, reward, dan broadcast.
+Customer dapat menggunakan web app untuk:
+- Register atau login sebagai member.
+- Melihat profil, saldo poin, dan QR member.
+- Melihat promo aktif.
+- Melihat katalog reward.
+- Menukar poin menjadi reward atau voucher.
+- Melihat histori transaksi dan histori redeem.
 
-Nilai utama: **retention pelanggan tanpa friksi instalasi**, dengan biaya akuisisi rendah dan loyalty engine yang terintegrasi langsung ke alur transaksi yang sudah ada.
+Admin dapat menggunakan dashboard untuk:
+- Melihat ringkasan data loyalty.
+- Mengelola member.
+- Mengelola promo.
+- Mengelola reward.
+- Mengelola voucher.
+- Mengelola broadcast promo.
 
----
-
-## 2. Latar Belakang & Masalah
-
-Cafe membutuhkan kanal retention pelanggan yang **tidak bergantung pada aplikasi mobile native** karena biaya install dan friksi onboarding yang tinggi. Aplikasi native menghadapi hambatan: pelanggan enggan menginstal app untuk satu cafe, biaya maintenance dua platform (iOS/Android), dan siklus rilis lambat.
-
-**Solusi:** Web CRM ringan yang mobile-friendly, dapat dibuka langsung dari browser (atau QR code di meja/struk), dan terhubung ke POS untuk sinkronisasi poin otomatis. Member cukup membuka link, registrasi cepat dengan OTP, dan langsung mendapat poin dari transaksi.
-
-**Masalah yang dipecahkan:**
-- Tidak ada program loyalty terstruktur → pelanggan tidak punya alasan untuk kembali.
-- Poin manual rawan error dan lambat → butuh sinkronisasi otomatis dari POS.
-- Promo tidak tersampaikan ke pelanggan secara tepat → butuh kanal broadcast.
-
----
-
-## 3. Tujuan & Metrik Sukses
-
-### 3.1 Tujuan MVP
-- Pelanggan dapat registrasi & login dengan minim friksi (email / no HP + OTP).
-- Setiap transaksi di POS otomatis menambah poin ke akun pelanggan.
-- Pelanggan dapat melihat saldo poin, histori transaksi, dan promo aktif.
-- Pelanggan dapat menukar poin menjadi reward/voucher.
-- Admin dapat mengelola member, promo, tier, dan reward dari dashboard.
-
-### 3.2 Kriteria Sukses MVP (Acceptance Criteria tingkat produk)
-| # | Kriteria | Cara Ukur |
-|---|----------|-----------|
-| KS-1 | Member bisa registrasi → dapat poin dari POS → tukar reward (end-to-end) | Uji manual end-to-end di staging |
-| KS-2 | Sinkronisasi POS stabil, **tidak ada poin hilang/ganda** | Idempotency test: kirim webhook duplikat, poin tetap konsisten |
-| KS-3 | Admin dapat menjalankan minimal 1 siklus promo penuh | Buat → publish → expire promo dari dashboard |
-| KS-4 | Aplikasi responsif di mobile | Lighthouse Mobile **≥ 80** |
-
-### 3.3 Metrik Produk (pasca-launch, untuk evaluasi)
-- **Activation rate**: % pelanggan yang transaksi → registrasi member.
-- **Redemption rate**: % member yang menukar minimal 1 reward.
-- **Repeat visit**: rata-rata transaksi per member per bulan.
-- **Sync reliability**: % transaksi POS yang berhasil tercatat sebagai poin (target ≥ 99,9%).
+Integrasi POS menjadi bagian penting karena transaksi di kasir adalah sumber data untuk perhitungan poin pelanggan. Tim tidak membuat sistem kasir dari nol; POS dipahami sebagai sistem internal perusahaan yang perlu dihubungkan dengan CRM.
 
 ---
 
-## 4. Persona & Target Pengguna
+## 2. Latar Belakang
 
-### 4.1 Member (Pelanggan Cafe) — *primary, mobile-first*
-- **Konteks:** membuka web via browser HP, sering sambil mengantri/menunggu pesanan.
-- **Kebutuhan:** registrasi cepat, lihat saldo poin, tahu cara dapat reward, lihat promo.
-- **Pain point:** tidak mau install app, tidak mau isi form panjang.
+Cafe membutuhkan sistem loyalty yang dapat meningkatkan retensi pelanggan tanpa memaksa pelanggan menginstal aplikasi native. Web app dipilih karena lebih ringan, mudah diakses melalui browser, dan dapat dibuka dari QR/link yang disediakan cafe.
 
-### 4.2 Kasir / Staff Cafe — *trigger update poin*
-- **Konteks:** berada di POS, men-scan QR member saat transaksi.
-- **Kebutuhan:** identifikasi member cepat (scan QR / input no HP), poin terkirim otomatis.
-- **Pain point:** alur tidak boleh memperlambat antrian.
-
-### 4.3 Admin / Owner Cafe — *kelola & analitik*
-- **Konteks:** mengakses dashboard via desktop/laptop.
-- **Kebutuhan:** CRUD promo/reward/member, broadcast promo, lihat ringkasan member.
-- **Pain point:** butuh kontrol penuh tanpa harus minta developer.
+Masalah utama yang ingin diselesaikan:
+- Loyalty program belum terdigitalisasi secara rapi.
+- Pencatatan poin manual rawan salah dan sulit diaudit.
+- Customer tidak memiliki tempat mandiri untuk melihat poin, promo, reward, dan histori.
+- Admin membutuhkan dashboard untuk mengelola promo, reward, member, voucher, dan broadcast.
+- Transaksi POS perlu menjadi trigger otomatis untuk penambahan poin.
 
 ---
 
-## 5. Ruang Lingkup (Scope)
+## 3. Tujuan MVP
 
-### 5.1 In Scope (MVP — Must-have)
-- ✅ Registrasi & login (email atau no HP + OTP).
-- ✅ Halaman profil & saldo poin + **QR code member**.
-- ✅ Sinkronisasi otomatis poin dari transaksi POS (webhook/polling).
-- ✅ Daftar promo aktif (banner + detail).
-- ✅ Katalog reward & flow tukar poin (redeem → voucher kode unik).
-- ✅ Riwayat transaksi & riwayat redeem.
-- ✅ Admin dashboard: CRUD promo, reward, member, broadcast info promo.
+Tujuan MVP adalah menghasilkan web CRM yang dapat menjalankan alur loyalty secara end-to-end:
 
-### 5.2 Out of Scope (Fase Lanjutan — *nice-to-have*)
-- ⏳ Tier membership (silver/gold/platinum) dengan benefit berbeda.
-- ⏳ Notifikasi WhatsApp (Fonnte / WA Business API) saat promo & redeem.
-- ⏳ Referral program (member ajak member dapat poin).
-- ⏳ Birthday reward otomatis.
-- ⏳ Analitik member lanjutan (RFM, LTV).
+1. Customer melakukan register/login.
+2. Customer memiliki QR member.
+3. Transaksi POS dikirim atau diambil oleh CRM.
+4. CRM menghitung dan menambahkan poin ke member.
+5. Customer melihat saldo poin, promo, reward, dan histori.
+6. Customer redeem poin menjadi reward/voucher.
+7. Admin mengelola data dasar loyalty melalui dashboard.
 
-> **Catatan:** Skema data sebaiknya **sudah menyiapkan kolom tier** (mis. `tier_id` di tabel member) agar fitur lanjutan tidak butuh migrasi besar. Implementasi logika tier tetap di luar MVP.
+### Acceptance Criteria Produk
 
-### 5.3 Asumsi
-- POS internal perusahaan menyediakan environment **staging** untuk testing integrasi.
-- POS mampu melakukan push (webhook) **atau** menyediakan API untuk polling.
-- Setiap transaksi POS memiliki identifier member (QR member di-scan / no HP diinput kasir).
+| ID | Kriteria | Cara Verifikasi |
+|---|---|---|
+| AC-01 | Customer dapat register/login dan masuk ke dashboard member | Uji manual flow auth |
+| AC-02 | Customer dapat melihat profil, saldo poin, dan QR member | Uji halaman dashboard member |
+| AC-03 | CRM dapat menerima atau mengambil transaksi POS/mock POS | Uji endpoint webhook atau polling |
+| AC-04 | Transaksi valid menghasilkan penambahan poin | Cek transaksi, point ledger, dan saldo |
+| AC-05 | Transaksi duplikat tidak menggandakan poin | Kirim transaction ID yang sama dua kali |
+| AC-06 | Customer dapat redeem reward saat saldo cukup | Cek voucher dibuat dan poin berkurang |
+| AC-07 | Customer tidak dapat redeem jika saldo tidak cukup | Cek validasi dan saldo tidak berubah |
+| AC-08 | Admin dapat CRUD member, promo, reward, dan voucher | Uji dashboard admin |
+| AC-09 | Tampilan customer mobile-first dan admin desktop-friendly | Uji responsive design |
+
+---
+
+## 4. Role Pengguna
+
+| Role | Fungsi Utama | Implikasi ke Sistem |
+|---|---|---|
+| Customer / Member | Melihat poin, promo, reward, QR member, histori, dan melakukan redeem | Membutuhkan UI mobile-first, alur login sederhana, dan informasi yang jelas |
+| Admin / Owner | Mengelola member, promo, reward, voucher, broadcast, dan histori | Membutuhkan dashboard desktop-friendly dengan tabel, form, filter, dan status data |
+| Kasir / Staff | Melakukan transaksi melalui POS internal yang memicu update poin | Perlu dikonfirmasi apakah cukup memakai POS atau perlu halaman khusus di CRM |
+
+Catatan: untuk MVP, halaman yang diprioritaskan adalah Customer Web App dan Admin Dashboard. Role kasir masih menunggu konfirmasi mentor karena kasir kemungkinan tetap menggunakan POS internal.
+
+---
+
+## 5. Scope MVP
+
+### 5.1 Customer Web App
+
+| Fitur | Prioritas | Catatan |
+|---|---|---|
+| Register/login customer | P0 | Mekanisme OTP/provider perlu dikonfirmasi |
+| Profil customer | P0 | Nama, email/no HP, dan data dasar |
+| Saldo poin | P0 | Diambil dari point balance/ledger |
+| QR member | P0 | Untuk identifikasi member di POS |
+| Promo aktif | P0 | Banner/list dan detail promo |
+| Katalog reward | P0 | Menampilkan point cost dan stok/status |
+| Redeem reward/voucher | P0 | Menghasilkan kode voucher unik atau QR voucher sesuai keputusan mentor |
+| Histori transaksi | P0 | Menampilkan transaksi dan poin yang didapat |
+| Histori redeem | P0 | Menampilkan voucher, status, dan tanggal redeem |
+
+### 5.2 Admin Dashboard
+
+| Fitur | Prioritas | Catatan |
+|---|---|---|
+| Dashboard ringkas | P0 | Total member, promo aktif, reward, voucher/redeem |
+| Member management | P0 | List, search, detail member |
+| Promo management | P0 | CRUD promo dan status publish |
+| Reward management | P0 | CRUD reward, stok, point cost |
+| Voucher management | P0 | List voucher dan status active/used/expired |
+| Broadcast promo | P1 | Channel tergantung keputusan mentor/provider |
+| Point adjustment | P1 | Perlu alasan dan audit log |
+
+### 5.3 Backend CRM API
+
+| Fitur | Prioritas | Catatan |
+|---|---|---|
+| Auth API | P0 | Customer dan admin |
+| Member API | P0 | Profil, saldo, QR, histori |
+| Promo API | P0 | Public dan admin CRUD |
+| Reward API | P0 | Public dan admin CRUD |
+| Redeem API | P0 | Validasi poin, stok, dan voucher |
+| Transaction/Point API | P0 | Mapping transaksi menjadi poin |
+| POS Integration API | P0 | Webhook/polling sesuai hasil mentoring |
+| Dashboard API | P0 | Ringkasan admin |
+| API documentation | P0 | Swagger/OpenAPI jika disepakati |
+
+### 5.4 Out of Scope MVP
+
+- Membuat sistem POS/kasir dari nol.
+- Aplikasi native Android/iOS.
+- Tier membership lengkap jika belum diwajibkan mentor.
+- Analitik lanjutan seperti RFM, cohort, atau LTV.
+- Referral program.
+- Birthday reward otomatis.
+- Multi-outlet reporting lanjutan.
+- Integrasi production WhatsApp/SMS jika credential/provider belum tersedia.
 
 ---
 
 ## 6. Functional Requirements
 
-Setiap requirement diberi ID (`FR-x`) agar mudah dilacak ke test case. Prioritas: **P0** = wajib MVP, **P1** = sebaiknya, **P2** = lanjutan.
+Prioritas:
+- P0: wajib untuk MVP.
+- P1: penting, dapat menyusul setelah MVP inti stabil.
+- P2: fitur lanjutan.
 
-### 6.1 Autentikasi & Akun (FR-AUTH)
-| ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-AUTH-1 | Member dapat registrasi dengan email **atau** nomor HP | P0 |
-| FR-AUTH-2 | Verifikasi via OTP (kode 4–6 digit) yang dikirim ke email/WhatsApp | P0 |
-| FR-AUTH-3 | Login menggunakan email/no HP + OTP, session via JWT | P0 |
-| FR-AUTH-4 | OTP punya masa berlaku (mis. 5 menit) dan rate-limit (anti-spam) | P0 |
-| FR-AUTH-5 | Member dapat logout dan token di-invalidate | P0 |
-| FR-AUTH-6 | Admin login terpisah dengan role berbeda (RBAC: `admin`, `member`) | P0 |
+### 6.1 Auth dan Account
 
-### 6.2 Profil & Poin Member (FR-PROFILE)
 | ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-PROFILE-1 | Member dapat melihat & edit profil (nama, email, no HP, tgl lahir) | P0 |
-| FR-PROFILE-2 | Member dapat melihat saldo poin terkini | P0 |
-| FR-PROFILE-3 | Sistem menampilkan **QR code member** unik untuk di-scan kasir | P0 |
-| FR-PROFILE-4 | QR code merepresentasikan member ID (bukan data sensitif) | P0 |
+|---|---|---|
+| FR-AUTH-01 | Customer dapat register menggunakan email/no HP sesuai keputusan mentor | P0 |
+| FR-AUTH-02 | Customer dapat login dengan mekanisme sederhana dan aman | P0 |
+| FR-AUTH-03 | Admin memiliki login terpisah | P0 |
+| FR-AUTH-04 | Sistem membedakan role customer dan admin | P0 |
+| FR-AUTH-05 | OTP memiliki expiry, attempt limit, dan rate limit jika OTP dipakai | P0 |
+| FR-AUTH-06 | Provider OTP/email/WhatsApp dapat dikonfigurasi melalui environment variable | P1 |
 
-### 6.3 Poin & Transaksi (FR-POINT)
-| ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-POINT-1 | Sistem menerima data transaksi dari POS dan menambah poin otomatis | P0 |
-| FR-POINT-2 | Aturan poin terkonfigurasi (mis. X poin per Rp Y), termasuk pembulatan | P0 |
-| FR-POINT-3 | Setiap perubahan poin tercatat di **ledger** (earn/redeem/adjust) | P0 |
-| FR-POINT-4 | Proses penambahan poin **idempoten** (anti dobel dari webhook ganda) | P0 |
-| FR-POINT-5 | Member dapat melihat riwayat transaksi (tanggal, nominal, poin didapat) | P0 |
-| FR-POINT-6 | (Opsional MVP) Poin punya masa kedaluwarsa (expiry) | P1 |
+### 6.2 Member dan Point
 
-### 6.4 Promo (FR-PROMO)
 | ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-PROMO-1 | Member dapat melihat daftar promo aktif (banner + detail) | P0 |
-| FR-PROMO-2 | Promo punya periode mulai–berakhir dan status (draft/active/expired) | P0 |
-| FR-PROMO-3 | Admin dapat CRUD promo (judul, deskripsi, gambar, periode) | P0 |
-| FR-PROMO-4 | Admin dapat broadcast info promo ke member | P0 |
+|---|---|---|
+| FR-MEMBER-01 | Customer dapat melihat profil member | P0 |
+| FR-MEMBER-02 | Customer dapat melihat saldo poin | P0 |
+| FR-MEMBER-03 | Customer memiliki QR member unik | P0 |
+| FR-MEMBER-04 | QR member tidak memuat data sensitif langsung seperti email/no HP | P0 |
+| FR-POINT-01 | Sistem menghitung poin dari transaksi valid | P0 |
+| FR-POINT-02 | Mutasi poin dicatat sebagai point history/ledger | P0 |
+| FR-POINT-03 | Penambahan poin dari POS harus idempotent | P0 |
+| FR-POINT-04 | Admin dapat melihat histori poin member | P0 |
+| FR-POINT-05 | Admin dapat melakukan adjustment poin dengan alasan | P1 |
 
-### 6.5 Reward & Redeem (FR-REWARD)
-| ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-REWARD-1 | Member dapat melihat katalog reward (nama, poin dibutuhkan, stok) | P0 |
-| FR-REWARD-2 | Member dapat menukar poin → reward jika saldo cukup | P0 |
-| FR-REWARD-3 | Saat redeem, sistem generate **kode voucher unik** | P0 |
-| FR-REWARD-4 | Poin dipotong **atomik** saat redeem (tidak boleh saldo negatif) | P0 |
-| FR-REWARD-5 | Member dapat melihat riwayat redeem & status voucher (active/used/expired) | P0 |
-| FR-REWARD-6 | Admin/kasir dapat menandai voucher sebagai *used* (redemption di cafe) | P0 |
-| FR-REWARD-7 | Admin dapat CRUD reward (termasuk stok & status aktif) | P0 |
+### 6.3 Promo
 
-### 6.6 Admin Dashboard (FR-ADMIN)
 | ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-ADMIN-1 | Admin dapat melihat & mencari daftar member | P0 |
-| FR-ADMIN-2 | Admin dapat melihat detail member (saldo, riwayat, profil) | P0 |
-| FR-ADMIN-3 | Admin dapat melakukan penyesuaian poin manual (dengan alasan, tercatat di ledger) | P1 |
-| FR-ADMIN-4 | Admin dapat mengelola konfigurasi aturan poin | P1 |
-| FR-ADMIN-5 | Dashboard menampilkan ringkasan (total member, poin beredar, redeem) | P1 |
+|---|---|---|
+| FR-PROMO-01 | Customer dapat melihat promo aktif | P0 |
+| FR-PROMO-02 | Promo memiliki title, description, image/banner, periode, dan status | P0 |
+| FR-PROMO-03 | Admin dapat membuat, mengubah, publish, dan menonaktifkan promo | P0 |
+| FR-PROMO-04 | Promo dapat diberi periode mulai dan selesai | P0 |
+| FR-PROMO-05 | Admin dapat broadcast promo melalui channel yang tersedia | P1 |
 
-### 6.7 Integrasi POS (FR-POS) — lihat detail di [Bagian 8](#8-integrasi-pos-inti-proyek)
+### 6.4 Reward, Voucher, dan Redeem
+
 | ID | Requirement | Prioritas |
-|----|-------------|-----------|
-| FR-POS-1 | Endpoint menerima transaksi dari POS (webhook) **atau** polling ke POS | P0 |
-| FR-POS-2 | Autentikasi request POS (API key / signature / mTLS — sesuai spec POS) | P0 |
-| FR-POS-3 | Validasi & idempotency berdasarkan `transaction_id` POS | P0 |
-| FR-POS-4 | Logging setiap event sinkronisasi untuk audit & rekonsiliasi | P0 |
-| FR-POS-5 | Mekanisme retry/dead-letter untuk transaksi yang gagal diproses | P1 |
+|---|---|---|
+| FR-REWARD-01 | Customer dapat melihat katalog reward | P0 |
+| FR-REWARD-02 | Reward memiliki nama, deskripsi, gambar, point cost, stok, dan status | P0 |
+| FR-REWARD-03 | Customer dapat redeem reward jika poin cukup dan stok tersedia | P0 |
+| FR-REWARD-04 | Sistem membuat voucher unik setelah redeem berhasil | P0 |
+| FR-REWARD-05 | Redeem memotong poin dan membuat voucher secara atomik | P0 |
+| FR-REWARD-06 | Voucher memiliki status active, used, expired, atau cancelled | P0 |
+| FR-REWARD-07 | Admin/kasir dapat memvalidasi atau menandai voucher sebagai used | P0 |
+
+### 6.5 Admin Dashboard
+
+| ID | Requirement | Prioritas |
+|---|---|---|
+| FR-ADMIN-01 | Admin dapat melihat dashboard ringkas | P0 |
+| FR-ADMIN-02 | Admin dapat melihat, mencari, dan membuka detail member | P0 |
+| FR-ADMIN-03 | Admin dapat CRUD promo | P0 |
+| FR-ADMIN-04 | Admin dapat CRUD reward | P0 |
+| FR-ADMIN-05 | Admin dapat melihat dan mengelola voucher | P0 |
+| FR-ADMIN-06 | Admin dapat melihat histori transaksi dan histori redeem | P0 |
 
 ---
 
-## 7. User Flows
+## 7. User Flow Utama
 
-### 7.1 Registrasi & Onboarding Member
-```
-Buka link/scan QR cafe → Halaman registrasi → Input email/no HP
-  → Kirim OTP → Input OTP → Verifikasi sukses → Lengkapi profil
-  → Dashboard member (saldo 0, QR member tampil)
+### 7.1 Customer Register sampai Dashboard
+
+```text
+Customer membuka web CRM
+-> pilih register/login
+-> input email atau nomor HP
+-> verifikasi sesuai metode auth
+-> profil member dibuat/dimuat
+-> masuk ke dashboard member
+-> melihat saldo poin, QR member, promo, reward, dan histori
 ```
 
-### 7.2 Earn Point (transaksi di cafe)
-```
-Member pesan di kasir → Tunjukkan QR member → Kasir scan di POS
-  → POS proses transaksi → POS push webhook ke CRM (transaction_id, member_id, amount)
-  → CRM hitung poin (rule) → cek idempotency → tambah poin ke ledger
-  → Saldo member ter-update → (opsional) notifikasi
+### 7.2 Earn Point dari POS
+
+```text
+Customer melakukan transaksi di kasir
+-> kasir mengenali member melalui QR/no HP/member ID di POS
+-> transaksi berhasil di POS
+-> POS mengirim data ke CRM atau CRM mengambil data dari POS
+-> CRM memvalidasi payload dan member
+-> CRM menghitung poin sesuai aturan bisnis
+-> CRM menyimpan transaksi dan point history
+-> saldo poin customer bertambah
 ```
 
 ### 7.3 Redeem Reward
-```
-Member buka katalog reward → Pilih reward → Cek saldo cukup
-  → Konfirmasi tukar → Sistem potong poin (atomik) → Generate kode voucher unik
-  → Tampilkan voucher → Member tunjukkan ke kasir → Kasir tandai "used"
+
+```text
+Customer membuka katalog reward
+-> memilih reward
+-> sistem mengecek saldo poin dan stok
+-> customer konfirmasi redeem
+-> sistem memotong poin
+-> sistem membuat voucher unik
+-> customer melihat kode/QR voucher
+-> voucher divalidasi oleh admin/kasir/POS sesuai keputusan mentor
 ```
 
-### 7.4 Admin Kelola Promo
-```
-Admin login → Menu Promo → Buat promo (judul, gambar, periode) → Simpan (draft)
-  → Publish (status active) → Promo tampil di member app
-  → (opsional) Broadcast → Saat lewat periode → status expired otomatis
-```
+### 7.4 Admin Kelola Promo dan Reward
 
-> Diagram flow visual (Figma/Excalidraw) akan dilampirkan terpisah sebagai deliverable Minggu 1.
+```text
+Admin login
+-> membuka dashboard
+-> memilih menu promo/reward
+-> membuat atau mengubah data
+-> mengatur status publish/active
+-> data tampil di customer web app
+```
 
 ---
 
-## 8. Integrasi POS (Inti Proyek)
+## 8. Integrasi POS
 
-> ⚠️ **JANGAN biarkan coding agent menebak spesifikasi POS.** Ambil dokumen resmi dari mentor tim POS terlebih dahulu. Bagian ini adalah **rancangan asumsi** untuk diskusi.
+### 8.1 Prinsip Integrasi
 
-### 8.1 Dua Mekanisme Sinkronisasi
+Integrasi POS adalah bagian paling kritis dan belum boleh diasumsikan final sebelum mentor memberi konfirmasi. CRM hanya perlu terhubung dengan POS internal perusahaan, bukan menggantikan POS.
 
-**Opsi A — Webhook (push, direkomendasikan):**
-POS mengirim HTTP POST ke endpoint CRM setiap kali ada transaksi.
-- **Kelebihan:** real-time, hemat resource.
-- **Kebutuhan:** POS mendukung outbound webhook + signing.
+Prinsip wajib:
+- Setiap transaksi POS memiliki identifier unik.
+- Proses mapping transaksi menjadi poin harus idempotent.
+- Payload POS harus tervalidasi.
+- Transaksi, point history, dan saldo harus konsisten.
+- Kasus paid, cancel, refund, void, pending, dan failed perlu dikonfirmasi.
+- Perlu log sinkronisasi untuk debugging dan rekonsiliasi.
 
-**Opsi B — Polling (pull, fallback):**
-CRM memanggil API POS secara periodik (mis. setiap 1–5 menit) untuk mengambil transaksi baru.
-- **Kelebihan:** tidak butuh POS push, lebih mudah jika POS hanya punya API read.
-- **Kekurangan:** ada delay, butuh penanda *cursor*/timestamp terakhir.
+### 8.2 Opsi Mekanisme
 
-> **Rekomendasi:** mulai dengan **webhook** jika POS mendukung; siapkan **polling sebagai fallback**.
+| Opsi | Penjelasan | Catatan |
+|---|---|---|
+| Webhook / push | POS mengirim transaksi ke CRM | Direkomendasikan jika POS mendukung |
+| Polling / pull | CRM mengambil transaksi dari POS secara berkala | Fallback jika POS hanya menyediakan read API |
+| Batch import | Transaksi dikirim dalam batch/export | Fallback untuk testing/demo |
 
-### 8.2 Contoh Payload Webhook (ASUMSI — konfirmasi ke tim POS)
+### 8.3 Draft Payload Transaksi
+
+Contoh berikut hanya draft diskusi, bukan kontrak final:
+
 ```json
 {
-  "event": "transaction.completed",
   "transaction_id": "TRX-2026-0001",
-  "occurred_at": "2026-06-07T10:15:00+07:00",
-  "member_identifier": "MBR-abc123",   // dari QR scan / no HP
-  "amount": 55000,                      // total transaksi (Rp)
-  "outlet_id": "CAFE-JKT-01",
-  "items": [ { "name": "Latte", "qty": 2, "price": 27500 } ],
-  "signature": "hmac-sha256-..."        // verifikasi keaslian
+  "status": "paid",
+  "member_identifier": "MBR-0001",
+  "amount": 55000,
+  "discount_amount": 5000,
+  "final_amount": 50000,
+  "occurred_at": "2026-06-09T10:15:00+07:00",
+  "outlet_id": "CAFE-01",
+  "items": [
+    {
+      "sku": "LATTE",
+      "name": "Latte",
+      "qty": 2,
+      "price": 27500
+    }
+  ]
 }
 ```
 
-### 8.3 Keamanan & Keandalan (wajib)
-- **Autentikasi:** verifikasi signature (HMAC) atau API key — sesuai skema POS.
-- **Idempotency:** simpan `transaction_id`; tolak/abaikan duplikat agar **poin tidak dobel**.
-- **Validasi:** pastikan `member_identifier` valid; jika tidak ditemukan → simpan ke *pending/unmatched* untuk rekonsiliasi.
-- **Atomicity:** penambahan poin + pencatatan ledger dalam satu transaksi DB.
-- **Retry & Dead-letter:** transaksi gagal masuk antrian untuk diproses ulang (Redis queue).
-- **Audit log:** simpan raw payload + status proses tiap event.
+### 8.4 Endpoint Awal CRM
 
-### 8.4 Spec API CRM → POS (untuk dokumentasi Swagger)
-| Endpoint | Method | Fungsi |
-|----------|--------|--------|
-| `POST /api/v1/pos/webhook/transaction` | POST | Menerima transaksi dari POS |
-| `GET /api/v1/pos/sync/status` | GET | Status sinkronisasi terakhir |
-| (polling mode) panggil API POS | GET | Tarik transaksi baru sejak cursor |
+| Endpoint | Method | Fungsi | Prioritas |
+|---|---|---|---|
+| `/api/pos/transactions` | POST | Menerima transaksi dari POS/webhook | P0 |
+| `/api/pos/sync-events` | GET | Melihat log sinkronisasi POS | P1 |
+| `/api/pos/sync-status` | GET | Melihat status sinkronisasi terakhir | P1 |
+| `/api/vouchers/validate` | POST | Validasi voucher saat dipakai | P0 jika voucher harus divalidasi di CRM/POS |
 
 ---
 
-## 9. Arsitektur & Tech Stack
+## 9. Rencana Arsitektur dan Repository
 
-### 9.1 Tech Stack (saran brief — final menyusul keputusan peserta)
-| Layer | Teknologi |
-|-------|-----------|
-| **Frontend** | Next.js 14 (App Router) + TypeScript + Tailwind CSS + shadcn/ui |
-| **Backend** | NestJS (atau Fastify) + Prisma ORM |
-| **Database** | PostgreSQL (Supabase / Neon) |
-| **Cache & Queue** | Redis (Upstash) — OTP, rate-limit, queue webhook |
-| **Auth** | JWT + OTP (WhatsApp / email) |
-| **Storage** | S3 / MinIO — gambar promo & banner |
-| **Deploy** | Vercel (frontend) + Railway / Fly.io (backend) |
-| **API Docs** | OpenAPI / Swagger |
+### 9.1 Struktur Repository
 
-### 9.2 Arsitektur Tingkat Tinggi
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Member Web  │     │  Admin Web   │     │   POS Internal│
-│  (Next.js)   │     │  (Next.js)   │     │  (perusahaan) │
-└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
-       │  HTTPS/JWT         │                    │ webhook/poll
-       └─────────┬──────────┘                    │
-                 ▼                                ▼
-          ┌──────────────────────────────────────────┐
-          │            Backend API (NestJS)           │
-          │  Auth · Point Engine · Promo · Reward ·   │
-          │  POS Sync · Admin · Notification          │
-          └───────┬───────────────┬──────────┬────────┘
-                  ▼               ▼          ▼
-            ┌──────────┐    ┌─────────┐ ┌──────────┐
-            │PostgreSQL│    │  Redis  │ │  S3/MinIO│
-            └──────────┘    └─────────┘ └──────────┘
+Project direncanakan menggunakan monorepo sederhana:
+
+```text
+crm-cafe/
+  frontend/   Next.js untuk customer web app dan admin dashboard
+  backend/    REST API, database, logic poin, redeem, dan integrasi POS
+  docs/       PRD, user flow, wireframe, ERD, API spec, meeting notes, demo notes
+  README.md   Panduan setup dan informasi project
 ```
 
----
+### 9.2 Catatan Tech Stack
 
-## 10. Model Data (ERD)
+| Bagian | Rencana dari Planning | Catatan |
+|---|---|---|
+| Frontend | Next.js, Tailwind CSS, shadcn/ui | Fokus Sandria |
+| Backend | Laravel REST API | Fokus Alif |
+| Repo saat ini | Terdapat starter `backend/` berbasis NestJS | Perlu keputusan apakah lanjut NestJS atau disesuaikan ke Laravel |
+| Database | Menunggu keputusan mentor | Kandidat: MySQL/PostgreSQL/Supabase/database perusahaan |
+| API Docs | Swagger/OpenAPI | Perlu konfirmasi format |
+| Deploy | Menunggu keputusan mentor | Kandidat: Vercel, Railway, Render, VPS, server perusahaan |
 
-Entitas inti (draft — akan difinalkan sebagai diagram ERD Minggu 1):
-
-| Entitas | Field Kunci | Catatan |
-|---------|-------------|---------|
-| **members** | id, name, email, phone, birthdate, tier_id (nullable), point_balance, created_at | `tier_id` disiapkan untuk fitur lanjutan |
-| **point_ledger** | id, member_id, type (earn/redeem/adjust/expire), amount, balance_after, ref_type, ref_id, created_at | Sumber kebenaran saldo (immutable) |
-| **transactions** | id, pos_transaction_id (unique), member_id, amount, outlet_id, occurred_at, raw_payload, status | `pos_transaction_id` unik → idempotency |
-| **promos** | id, title, description, image_url, start_at, end_at, status, created_by | |
-| **rewards** | id, name, description, image_url, point_cost, stock, is_active | |
-| **redemptions** | id, member_id, reward_id, voucher_code (unique), point_spent, status (active/used/expired), created_at, used_at | |
-| **users (admin)** | id, name, email, password_hash, role | RBAC admin |
-| **otp_codes** | id, identifier, code_hash, expires_at, attempts | Rate-limit & verifikasi |
-| **tiers** | id, name, min_points, benefits | *Out of scope MVP* — struktur disiapkan |
-
-**Relasi utama:**
-- `members 1—N point_ledger`
-- `members 1—N transactions`
-- `members 1—N redemptions`
-- `rewards 1—N redemptions`
-- `members N—1 tiers` (opsional)
-
-**Aturan integritas kritikal:**
-- `transactions.pos_transaction_id` **UNIQUE** → cegah poin dobel.
-- Saldo dihitung/diverifikasi dari `point_ledger`, bukan sekadar kolom counter.
-- Redeem: cek saldo + insert ledger + buat voucher dalam **satu transaksi DB**.
+Keputusan tech stack backend harus dikonfirmasi karena planning awal menyebut Laravel, sementara repository saat ini berisi starter NestJS.
 
 ---
 
-## 11. Open Questions — Keputusan yang Perlu Dikonfirmasi
+## 10. Model Data Awal
 
-> Pertanyaan ini **harus dijawab bersama mentor/tim POS sebelum Minggu 4**. Jangan diasumsikan oleh coding agent.
+| Tabel | Field Utama | Catatan |
+|---|---|---|
+| `users` | `id`, `name`, `email`, `phone`, `password_hash`, `role` | Untuk customer/admin jika memakai satu tabel user |
+| `members` | `id`, `user_id`, `member_code`, `point_balance`, `tier_id`, `created_at` | Data loyalty customer |
+| `transactions` | `id`, `pos_transaction_id`, `member_id`, `amount`, `status`, `occurred_at`, `raw_payload` | Sumber transaksi dari POS |
+| `point_histories` | `id`, `member_id`, `type`, `points`, `balance_after`, `reference_type`, `reference_id`, `note` | Ledger mutasi poin |
+| `promos` | `id`, `title`, `description`, `image_url`, `start_at`, `end_at`, `status` | Promo customer |
+| `rewards` | `id`, `name`, `description`, `image_url`, `point_cost`, `stock`, `status` | Katalog reward |
+| `vouchers` | `id`, `code`, `reward_id`, `member_id`, `status`, `expired_at`, `used_at` | Output redeem |
+| `redeems` | `id`, `member_id`, `reward_id`, `voucher_id`, `points_spent`, `created_at` | Histori redeem |
+| `pos_sync_logs` | `id`, `external_id`, `status`, `raw_payload`, `error_message`, `created_at` | Audit integrasi POS |
+| `tiers` | `id`, `name`, `min_points`, `benefits` | Opsional jika tier dibutuhkan |
 
-### 11.1 Integrasi POS (prioritas tertinggi)
-- [ ] Bagaimana POS mengekspos data transaksi: **webhook, API pull, atau akses database**?
-- [ ] Skema autentikasi API POS: API key, HMAC signature, OAuth, atau mTLS?
-- [ ] Format & field payload transaksi yang pasti?
-- [ ] Bagaimana member diidentifikasi di POS (QR scan, no HP, kartu)?
-- [ ] Apakah tersedia **environment staging** POS untuk testing?
-- [ ] Bagaimana menangani transaksi refund/void (kurangi poin)?
-
-### 11.2 Skema Poin & Bisnis
-- [ ] Berapa **poin per Rupiah**? (mis. 1 poin / Rp 1.000)
-- [ ] Aturan **pembulatan** (ke bawah/terdekat)?
-- [ ] Apakah poin punya **masa kedaluwarsa (expiry)**? Berapa lama?
-- [ ] Apakah ada minimum transaksi untuk dapat poin?
-
-### 11.3 Membership & Skala
-- [ ] Apakah sudah ada **tier membership** saat ini?
-- [ ] Berapa **jumlah member existing** yang perlu dimigrasi (jika ada)?
-- [ ] Berapa estimasi volume transaksi/hari (untuk sizing)?
-
-### 11.4 Channel OTP & Notifikasi
-- [ ] OTP via **email, WhatsApp (Fonnte/WA Business), atau keduanya**?
-- [ ] Apakah perusahaan sudah punya gateway WhatsApp/SMS?
+Aturan integritas penting:
+- `member_code` harus unique.
+- `pos_transaction_id` harus unique untuk idempotency.
+- `voucher.code` harus unique.
+- Point history bersifat append-only.
+- Redeem harus memakai transaksi database agar poin dan voucher konsisten.
 
 ---
 
-## 12. Non-Functional Requirements
+## 11. Pembagian Peran Tim
+
+| Nama | Role | Fokus Tanggung Jawab |
+|---|---|---|
+| Muhammad Alif Akhdan Tsani | Lead Backend & Project Coordinator | Backend, database, ERD, REST API, auth, logic poin, redeem voucher, dokumentasi API, integrasi POS |
+| Sandria Nuriya Az Zahra | Lead Frontend & UI | User flow, wireframe, frontend Next.js, customer web app, admin dashboard, responsive design, integrasi UI dengan API |
+
+---
+
+## 12. Timeline 40 Hari Kerja
+
+| Minggu | Fase | Output Utama | Fokus Alif | Fokus Sandria |
+|---|---|---|---|---|
+| Week 1 | Riset & Desain | User flow, wireframe, ERD awal, draft spesifikasi API POS, daftar kebutuhan mentor | Kebutuhan POS, ERD awal, draft API POS | User flow, wireframe customer, wireframe admin, referensi UI |
+| Week 2 | Setup & Auth | Repository siap, struktur frontend-backend, base UI, auth awal | Setup backend, database, API auth | Setup Next.js, Tailwind, shadcn/ui, UI login/register |
+| Week 3 | Core Member | Saldo poin, QR member, promo, reward, API pendukung | API member, poin, promo, reward, data dummy | Dashboard member, profil, saldo poin, QR, promo, reward |
+| Week 4 | Integrasi POS | Endpoint sync transaksi POS, mapping transaksi menjadi poin, histori transaksi | Endpoint POS, payload mapping, paid/cancel/refund handling | Histori transaksi, point history, status transaksi, loading/empty/error state |
+| Week 5 | Admin Dashboard | Dashboard admin, CRUD member, promo, reward, broadcast promo | API admin, CRUD member, promo, reward, broadcast | Layout admin, table, form, modal, management page |
+| Week 6 | Redeem & Histori | Flow redeem reward, kode voucher unik, histori redeem, status voucher | API redeem, validasi poin, kode voucher, status voucher | UI redeem, konfirmasi, kode voucher, histori redeem, status badge |
+| Week 7 | QA & Polish | Bug fixing, responsive check, error handling, dokumentasi API, Lighthouse mobile check | Testing API, bug backend, logic poin/redeem, dokumentasi API | Responsive check, polish UI, loading/empty/error state, bug frontend |
+| Week 8 | Demo & Handover | Deploy, demo internal, dokumentasi final, demo video, handover | Deploy backend, final API test, dokumentasi integrasi POS | Deploy frontend, final UI check, demo flow customer/admin |
+
+---
+
+## 13. Sprint Backlog Minggu Pertama
+
+| Task | Penanggung Jawab | Target Output |
+|---|---|---|
+| Kumpulkan kebutuhan dari mentor | Alif dan Sandria | Catatan kebutuhan POS, loyalty, role, branding, data dummy, scope MVP |
+| Buat user flow customer | Sandria | Alur customer dari register sampai redeem dan histori |
+| Buat user flow admin | Sandria | Alur admin dari login sampai mengelola promo, reward, member, histori |
+| Buat wireframe customer web app | Sandria | Login, dashboard member, saldo poin, QR, promo, reward, redeem, histori |
+| Buat wireframe admin dashboard | Sandria | Overview, member management, promo, reward, voucher, broadcast, histori |
+| Buat ERD awal | Alif | Tabel users, members, transactions, point histories, promos, rewards, vouchers, redeems, tier jika dibutuhkan |
+| Buat draft spesifikasi API POS | Alif | Endpoint, payload, webhook/polling, auth, paid/cancel/refund, kebutuhan staging |
+| Review output Week 1 | Alif dan Sandria | Revisi setelah arahan mentor dan kesiapan lanjut ke Week 2 |
+
+---
+
+## 14. Non-Functional Requirements
 
 | Kategori | Requirement |
-|----------|-------------|
-| **Performance** | Lighthouse Mobile ≥ 80; halaman utama member load < 3 dtk di 4G |
-| **Responsiveness** | Mobile-first, berfungsi penuh di layar ≥ 360px |
-| **Reliability** | Sinkronisasi POS ≥ 99,9% transaksi tercatat; idempoten |
-| **Security** | JWT, hash password (admin), OTP rate-limit, validasi signature POS, HTTPS only, input sanitization |
-| **Privacy** | QR member tidak memuat data sensitif; PII (no HP/email) tersimpan aman |
-| **Scalability** | Queue (Redis) untuk lonjakan webhook saat jam ramai |
-| **Observability** | Logging audit sinkronisasi POS; error tracking |
-| **Maintainability** | Kode di-review manual sebelum merge; struktur modular |
-| **Documentation** | OpenAPI/Swagger untuk seluruh endpoint, khususnya POS |
-| **Compatibility** | Browser modern (Chrome, Safari, Firefox) mobile & desktop |
+|---|---|
+| Responsiveness | Customer web app mobile-first; admin dashboard desktop/laptop-friendly |
+| Performance | Halaman utama customer ringan dan cepat dibuka di mobile |
+| Reliability | Integrasi POS idempotent dan memiliki log sinkronisasi |
+| Security | Auth aman, secret lewat environment variable, validasi input, proteksi endpoint admin |
+| Privacy | QR member tidak memuat data sensitif langsung |
+| Maintainability | Struktur folder jelas, API terdokumentasi, kode modular |
+| Observability | Error log untuk POS sync, redeem, auth, dan admin action |
+| Data Consistency | Poin, transaksi, redeem, dan voucher diproses konsisten |
+| Documentation | PRD, ERD, user flow, API spec, dan meeting notes tersedia di `docs/` |
 
 ---
 
-## 13. Milestone & Timeline (40 Hari Kerja)
+## 15. Risiko dan Mitigasi
 
-| Minggu | Fase | Output Utama |
-|--------|------|--------------|
-| **1** | Riset & Desain | User flow, wireframe, ERD, **dokumen spec API POS** (hasil diskusi mentor) |
-| **2** | Setup & Auth | Repo, CI/CD, base UI, sistem auth OTP, halaman profil member |
-| **3** | Core Member | Saldo poin, QR member, halaman promo, halaman reward (UI + API) |
-| **4** | Integrasi POS | Endpoint sinkronisasi transaksi → poin, simulasi webhook dari POS |
-| **5** | Admin Dashboard | CRUD promo, reward, member, broadcast (UI + API) |
-| **6** | Redeem & Histori | Flow tukar poin, kode voucher unik, halaman histori |
-| **7** | QA & Polish | Bug fix, responsive check, error handling, dokumentasi API |
-| **8** | Demo & Handover | Deploy production, demo internal, serah terima ke tim POS |
-
-> **Catatan timeline:** Spec POS (Minggu 1) adalah *blocker* untuk Minggu 4. Jika dokumen POS belum siap, prioritaskan eskalasi ke mentor lebih awal. Gunakan **mock/simulator webhook** agar Minggu 3–4 tidak terblokir menunggu staging POS.
+| Area Risiko | Asumsi Awal | Dampak Jika Tidak Dikonfirmasi | Mitigasi |
+|---|---|---|---|
+| Integrasi POS | POS tersedia dan tim hanya membuat integrasi | Development Week 4 dapat tertunda | Prioritaskan pertanyaan POS di mentoring, buat mock POS |
+| Aturan Poin | Poin dihitung dari nominal transaksi valid | Logic backend dan UI saldo berubah | Konfirmasi rumus poin dan pembulatan sebelum implementasi |
+| Redeem Voucher | Voucher berupa kode unik atau QR | Jika harus divalidasi di POS, perlu endpoint tambahan | Konfirmasi bentuk voucher dan tempat validasi |
+| Tier Membership | Tier disiapkan sebagai fitur lanjutan | Jika wajib MVP, scope database dan UI bertambah | Pastikan tier masuk MVP atau P2 |
+| Provider OTP | OTP memakai email/WhatsApp sesuai credential | Auth Week 2 dapat terhambat | Sediakan fallback auth untuk staging |
+| Tech Stack Backend | Planning menyebut Laravel, repo saat ini NestJS | Risiko rework setup backend | Putuskan stack final secepatnya |
+| Libur Minggu Pertama | Timeline dapat digeser | Due date dan estimasi berubah | Update timeline setelah tanggal efektif disetujui |
 
 ---
 
-## 14. Deliverables
+## 16. Pertanyaan Mentor
 
-- [ ] Source code (Git repo) — frontend & backend.
-- [ ] MVP terdeploy — **staging + production**.
-- [ ] Dokumentasi API (OpenAPI/Swagger) — khususnya endpoint integrasi POS.
-- [ ] ERD database & user flow diagram.
-- [ ] Demo video singkat (3–5 menit).
-- [ ] Catatan koordinasi dengan tim POS (notulen / Loom).
+### 16.1 Prioritas Saat Mentoring
+
+Pertanyaan paling prioritas:
+- A1 sampai A6: mekanisme integrasi POS, payload, identitas member, refund/void, staging, dan auth POS.
+- B1 dan B4: rumus poin dan expiry poin.
+- C3: tempat validasi voucher.
+- D1, D3, D5: channel OTP, tech stack backend final, dan target deploy.
+
+### 16.2 Frontend dan UI
+
+| Topik | Pertanyaan |
+|---|---|
+| Logo | Apakah sudah ada file logo resmi cafe/perusahaan dalam PNG atau SVG? |
+| Warna Brand | Apakah ada warna utama brand yang wajib diikuti? |
+| Referensi Tampilan | Apakah ada referensi loyalty app seperti Fore, Kopi Kenangan, Starbucks Rewards, atau dashboard tertentu? |
+| Banner Promo | Apakah tersedia contoh banner promo atau ukuran banner yang biasa digunakan? |
+| Data Dummy | Apakah mentor dapat menyediakan data dummy member, promo, reward, voucher, transaksi, dan redeem? |
+| Halaman Customer | Halaman customer apa saja yang wajib untuk MVP dan mana yang boleh menyusul? |
+| Halaman Admin | Halaman admin apa saja yang wajib untuk MVP? |
+| QR Member | QR member digunakan untuk identitas member, voucher redeem, atau keduanya? |
+| Redeem Voucher | Setelah redeem, output berupa kode voucher unik, QR voucher, barcode, atau status voucher saja? |
+| Prioritas Device | Customer harus mobile-first dan admin desktop/laptop-first? |
+
+### 16.3 Loyalty dan Role
+
+| Topik | Pertanyaan |
+|---|---|
+| Aturan Poin | Bagaimana skema poin, pembulatan, dan masa berlaku poin? |
+| Aturan Redeem | Bagaimana minimal poin, masa berlaku voucher, status voucher, dan pengurangan poin? |
+| Role Pengguna | Apakah role hanya customer, admin, kasir, atau ada role tambahan? |
+| Role Kasir | Apakah kasir cukup memakai POS internal atau perlu halaman khusus di CRM? |
+| Tier Membership | Apakah silver/gold/platinum masuk MVP atau fitur lanjutan? |
+
+### 16.4 Backend dan Integrasi POS
+
+| Kode | Pertanyaan |
+|---|---|
+| A1 | Apakah POS mengirim data ke CRM via webhook/push atau CRM mengambil data via polling/pull? |
+| A2 | Apa isi payload transaksi POS dan apakah ada contoh JSON real? |
+| A3 | Field apa yang digunakan POS untuk mengenali member: no HP, member ID, email, QR code, atau barcode? |
+| A4 | Bagaimana menangani refund, void, atau pembatalan transaksi? |
+| A5 | Apakah tersedia staging atau sandbox POS untuk testing? |
+| A6 | Autentikasi endpoint integrasi memakai API key, HMAC signature, OAuth, IP whitelist, atau lainnya? |
+| A7 | Apakah POS hanya mengirim transaksi berhasil atau juga pending, failed, refund, dan void? |
+| A8 | Apakah transaksi POS dikirim satu per satu atau batch? |
+| A9 | Jika webhook gagal, apakah POS memiliki mekanisme retry? |
+| A10 | Apakah transaksi lama perlu diimport ke CRM? |
+
+### 16.5 Aturan Bisnis Poin
+
+| Kode | Pertanyaan |
+|---|---|
+| B1 | Bagaimana rumus poin, misalnya berapa poin per rupiah? |
+| B2 | Apakah ada minimum transaksi untuk mendapatkan poin? |
+| B3 | Poin dihitung dari total sebelum diskon atau setelah diskon? |
+| B4 | Apakah poin memiliki expiry? |
+| B5 | Apakah poin bisa digunakan di POS atau hanya untuk redeem reward di CRM? |
+| B6 | Apakah ada batas maksimal poin per transaksi atau per hari? |
+
+### 16.6 Member, Reward, dan Voucher
+
+| Kode | Pertanyaan |
+|---|---|
+| C1 | Apakah sudah ada data member existing dari POS, Excel, atau sistem lain? |
+| C2 | Member baru hanya dibuat dari CRM atau juga bisa dibuat dari POS? |
+| C3 | Voucher hasil redeem divalidasi di POS, admin CRM, atau hanya ditunjukkan customer? |
+| C4 | Bentuk voucher berupa kode unik, QR code, barcode, atau kombinasi? |
+| C5 | Apakah voucher memiliki masa berlaku? |
+| C6 | Apakah reward memiliki stok? |
+| C7 | Apakah tier membership masuk MVP atau disiapkan untuk pengembangan berikutnya? |
+
+### 16.7 Backend, Auth, dan Operasional
+
+| Kode | Pertanyaan |
+|---|---|
+| D1 | OTP dikirim melalui WhatsApp gateway, email, SMS, atau provider lain? |
+| D2 | Apakah credential OTP provider sudah tersedia? |
+| D3 | Backend final memakai Laravel sesuai planning atau NestJS/Fastify sesuai starter repo/brief? |
+| D4 | Database final memakai MySQL, PostgreSQL, Supabase, atau database perusahaan? |
+| D5 | Target deployment memakai Vercel, Railway, Render, VPS, server perusahaan, atau platform lain? |
+| D6 | Siapa yang menyediakan environment variable dan secret seperti database URL, POS API key, OTP credential, JWT secret, dan deploy credential? |
+| D7 | Apakah dokumentasi API harus dibuat dalam format Swagger/OpenAPI? |
 
 ---
 
-## 15. Risiko & Mitigasi
+## 17. Deliverables
 
-| Risiko | Dampak | Mitigasi |
-|--------|--------|----------|
-| Spec POS belum jelas / staging belum siap | Blokir Minggu 4 | Eskalasi awal; bangun **mock webhook simulator** untuk paralel kerja |
-| Poin dobel/hilang dari webhook ganda | Kepercayaan member rusak | **Idempotency** via `pos_transaction_id` unik + ledger + transaksi atomik |
-| Race condition saat redeem (saldo) | Saldo negatif / voucher invalid | Operasi redeem atomik (DB transaction + lock/cek saldo) |
-| OTP disalahgunakan (spam) | Biaya & abuse | Rate-limit per identifier/IP, masa berlaku OTP pendek |
-| Scope creep ke fitur lanjutan | Telat MVP | Pegang batas In/Out of Scope; tier/WA/referral ke fase berikutnya |
-| Performa mobile < 80 | Gagal kriteria sukses | Optimasi gambar (S3 + lazy), code-split, audit Lighthouse rutin |
-| Ketergantungan coding agent tanpa review | Bug masuk produksi | **Code review manual wajib** sebelum merge (sesuai catatan brief) |
-
----
-
-## 16. Lampiran
-
-### 16.1 Referensi Kompetitor / Riset
-- Loyverse Loyalty — https://loyverse.com/loyalty-program
-- Tada (loyalty Indonesia) — https://tada.network
-- Supabase Auth (OTP) — https://supabase.com/docs/guides/auth
-- shadcn/ui — https://ui.shadcn.com
-
-### 16.2 Glosarium
-| Istilah | Arti |
-|---------|------|
-| **Ledger** | Catatan immutable setiap mutasi poin (earn/redeem/adjust/expire) |
-| **Idempotency** | Sifat operasi yang aman dijalankan berulang tanpa efek ganda |
-| **Redeem** | Proses menukar poin menjadi reward/voucher |
-| **Webhook** | HTTP callback dari POS ke CRM saat ada event transaksi |
-| **Tier** | Tingkatan membership (silver/gold/platinum) — fitur lanjutan |
-| **RFM** | Recency, Frequency, Monetary — metrik analitik member (lanjutan) |
+- Customer Web App.
+- Admin Dashboard.
+- Backend CRM API.
+- Database schema dan migration.
+- Integrasi POS atau mock POS untuk demo.
+- ERD.
+- User flow customer dan admin.
+- Wireframe customer dan admin.
+- API documentation.
+- Dokumentasi integrasi POS.
+- Testing notes untuk auth, POS sync, point calculation, redeem, dan admin CRUD.
+- Demo video atau demo notes.
+- Handover document.
 
 ---
 
-*Dokumen ini adalah PRD turunan dari Brief P1. Keputusan desain & arsitektur final tetap di tangan peserta magang, dengan detail teknis integrasi POS dikonfirmasi bersama mentor sebelum eksekusi.*
+## 18. Kesimpulan
+
+Project Web Apps CRM Cafe difokuskan pada pengembangan customer web app, admin dashboard, backend CRM API, database, dan integrasi dengan POS internal perusahaan. Tim tidak membangun sistem kasir dari nol, melainkan menyiapkan CRM agar transaksi dari POS dapat menjadi dasar penambahan poin member.
+
+Pada tahap awal, tim memprioritaskan pendalaman kebutuhan, user flow, wireframe, ERD awal, dan draft spesifikasi API POS. Setelah mentoring teknis, dokumen ini perlu diperbarui agar scope, timeline, tech stack, dan rancangan integrasi sesuai dengan kebutuhan perusahaan.
