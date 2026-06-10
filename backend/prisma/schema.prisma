@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// model contoh untuk verifikasi koneksi
+model HealthCheck {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+}
+
+// ── Integrasi POS Fase 1 (transaction.completed → CRM) ──────────────────────
+// Lihat docs/integrasi-crm.md. CRM = source of truth saldo poin.
+
+// Pelanggan CRM. Member (punya customer.id dari POS) maupun walk-in yang
+// diidentifikasi via phone. Walk-in benar-benar anonim (id+phone null) TIDAK
+// dibuatkan baris di sini — transaksinya tetap dicatat tanpa member (lihat §11 #4).
+model Member {
+  id                 String   @id @default(cuid())
+  memberCode         String   @unique
+  // customer.id dari POS dipakai sebagai external key (§11 #5).
+  externalCustomerId String?  @unique
+  name               String?
+  phone              String?  @unique
+  pointBalance       Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  transactions   Transaction[]
+  pointHistories PointHistory[]
+
+  @@map("members")
+}
+
+model Transaction {
+  id             String  @id @default(cuid())
+  // transaction.order_id dari POS; idempotency_key = order_id (§6).
+  posOrderId     String? @unique
+  posOrderNumber String?
+  idempotencyKey String  @unique
+  // event_id beda tiap retry — disimpan untuk audit, bukan kunci dedup.
+  eventId        String?
+
+  memberId String?
+  member   Member? @relation(fields: [memberId], references: [id])
+
+  storeId  String?
+  branchId String?
+
+  orderType     String?
+  status        String?
+  cashierId     String?
+  currency      String? @default("IDR")
+
+  subtotal             Int @default(0)
+  discountTotal        Int @default(0)
+  taxTotal             Int @default(0)
+  taxInclusive         Boolean @default(true)
+  grandTotal           Int
+  paymentMethod        String?
+  pointsUsed           Int @default(0)
+  pointsDiscountRupiah Int @default(0)
+
+  // Poin yang di-award CRM untuk transaksi ini (earning).
+  pointsAwarded Int @default(0)
+
+  occurredAt DateTime?
+  // Payload §4 mentah, disimpan apa adanya untuk audit/replay.
+  rawPayload Json
+  createdAt  DateTime @default(now())
+
+  items TransactionItem[]
+
+  @@index([memberId])
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  productId String?
+  name      String
+  qty       Int
+  unitPrice Int
+  variant   String?
+  addons    String[]
+  notes     String?
+  isReward  Boolean  @default(false)
+  lineTotal Int
+
+  @@index([transactionId])
+  @@map("transaction_items")
+}
+
+// Ledger mutasi poin, append-only (§10 PRD).
+model PointHistory {
+  id           String @id @default(cuid())
+  memberId     String
+  member       Member @relation(fields: [memberId], references: [id])
+  type         String // earn | redeem | adjust | reverse
+  points       Int    // signed: + earn, - redeem
+  balanceAfter Int
+  referenceType String? // "transaction"
+  referenceId   String?
+  note          String?
+  createdAt     DateTime @default(now())
+
+  @@index([memberId])
+  @@map("point_histories")
+}
+
+// Audit setiap event POS yang diterima (termasuk duplikat & error).
+model PosSyncLog {
+  id             String   @id @default(cuid())
+  eventId        String?
+  idempotencyKey String
+  status         String // received | processed | duplicate | invalid_signature | error
+  errorMessage   String?
+  rawPayload     Json
+  createdAt      DateTime @default(now())
+
+  @@index([idempotencyKey])
+  @@map("pos_sync_logs")
+}

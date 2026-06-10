@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CRM Cafe
 
 Web application CRM untuk cafe dengan fokus pada loyalty program, promo, reward, member, dan integrasi POS.
@@ -25,3 +26,6 @@ CRM Cafe membantu pelanggan mengumpulkan poin dari setiap transaksi, menukar rew
 
 - Frontend: Sandria
 - Backend: Alif
+=======
+# crm-cafe
+>>>>>>> main
