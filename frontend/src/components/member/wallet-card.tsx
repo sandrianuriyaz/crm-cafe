@@ -1,12 +1,14 @@
+/* eslint-disable @next/next/no-img-element */
 import { QrCode } from "lucide-react";
 
 type WalletCardProps = {
   tier: string;
   points: number;
   memberId: string;
+  qrImage?: string | null;
 };
 
-export function WalletCard({ tier, points, memberId }: WalletCardProps) {
+export function WalletCard({ tier, points, memberId, qrImage }: WalletCardProps) {
   return (
     <section
       aria-label="Kartu loyalty member"
@@ -28,7 +30,15 @@ export function WalletCard({ tier, points, memberId }: WalletCardProps) {
 
         <div className="flex flex-col items-center gap-1">
           <div className="flex size-12 items-center justify-center rounded-lg bg-white p-1">
-            <QrCode className="size-8 text-primary" aria-hidden="true" />
+            {qrImage ? (
+              <img
+                src={qrImage}
+                alt="QR member"
+                className="size-full rounded"
+              />
+            ) : (
+              <QrCode className="size-8 text-primary" aria-hidden="true" />
+            )}
           </div>
           <span className="text-xs text-cream-text">Member QR</span>
         </div>

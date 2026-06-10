@@ -9,6 +9,10 @@ async function bootstrap() {
   // rawBody: true → req.rawBody (Buffer) tersedia untuk verifikasi HMAC webhook POS
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
+  // CORS — izinkan frontend (Next.js) memanggil API. Pakai Bearer token (bukan
+  // cookie), origin:true memantulkan origin pemanggil. Batasi di production.
+  app.enableCors({ origin: true });
+
   // Validasi DTO global + buang field tak dikenal
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
