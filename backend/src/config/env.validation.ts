@@ -7,6 +7,14 @@ const envSchema = z.object({
   DIRECT_URL: z.string().url(),
   REDIS_URL: z.string().url(),
   JWT_SECRET: z.string().min(16),
+
+  // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
+  // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.
+  CRM_WEBHOOK_SECRET: z.string().min(16),
+  // Aturan poin (§8): poin = floor(grand_total / POIN_PER_RUPIAH).
+  POIN_PER_RUPIAH: z.coerce.number().int().positive().default(1000),
+  // Konversi tukar poin: 1 poin = POIN_NILAI_RUPIAH rupiah (dipakai Fase 2).
+  POIN_NILAI_RUPIAH: z.coerce.number().int().positive().default(1000),
 });
 
 export type Env = z.infer<typeof envSchema>;

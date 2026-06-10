@@ -6,7 +6,8 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true → req.rawBody (Buffer) tersedia untuk verifikasi HMAC webhook POS
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Validasi DTO global + buang field tak dikenal
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -14,8 +15,11 @@ async function bootstrap() {
   // Format error seragam
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Prefix versi API
-  app.setGlobalPrefix('api/v1');
+  // Prefix versi API. Webhook POS dikecualikan agar path persis sesuai kontrak
+  // §4: POST /webhooks/pos/transactions (tanpa /api/v1).
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['webhooks/pos/transactions'],
+  });
 
   // Swagger
   const config = new DocumentBuilder()
