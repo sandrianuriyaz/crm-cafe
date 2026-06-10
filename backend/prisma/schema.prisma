@@ -14,6 +14,43 @@ model HealthCheck {
   createdAt DateTime @default(now())
 }
 
+// ── Auth & Account ──────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// Akun login (customer & admin). Satu User customer terhubung ke satu Member
+// (relasi 1:1 opsional). Admin tidak perlu Member.
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?  @unique
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  member Member?
+
+  @@map("users")
+}
+
+// Tier keanggotaan (opsional, dipakai nanti untuk benefit per level poin).
+model Tier {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  minPoints Int      @default(0)
+  benefits  String?
+  createdAt DateTime @default(now())
+
+  members Member[]
+
+  @@map("tiers")
+}
+
 // ── Integrasi POS Fase 1 (transaction.completed → CRM) ──────────────────────
 // Lihat docs/integrasi-crm.md. CRM = source of truth saldo poin.
 
@@ -30,6 +67,14 @@ model Member {
   pointBalance       Int      @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  // Akun login pemilik member (null = member dari POS yang belum punya akun /
+  // belum diklaim lewat register by phone). Lihat alur klaim member.
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  tierId String?
+  tier   Tier?   @relation(fields: [tierId], references: [id])
 
   transactions   Transaction[]
   pointHistories PointHistory[]
@@ -52,19 +97,19 @@ model Transaction {
   storeId  String?
   branchId String?
 
-  orderType     String?
-  status        String?
-  cashierId     String?
-  currency      String? @default("IDR")
+  orderType String?
+  status    String?
+  cashierId String?
+  currency  String? @default("IDR")
 
-  subtotal             Int @default(0)
-  discountTotal        Int @default(0)
-  taxTotal             Int @default(0)
+  subtotal             Int     @default(0)
+  discountTotal        Int     @default(0)
+  taxTotal             Int     @default(0)
   taxInclusive         Boolean @default(true)
   grandTotal           Int
   paymentMethod        String?
-  pointsUsed           Int @default(0)
-  pointsDiscountRupiah Int @default(0)
+  pointsUsed           Int     @default(0)
+  pointsDiscountRupiah Int     @default(0)
 
   // Poin yang di-award CRM untuk transaksi ini (earning).
   pointsAwarded Int @default(0)
@@ -72,7 +117,7 @@ model Transaction {
   occurredAt DateTime?
   // Payload §4 mentah, disimpan apa adanya untuk audit/replay.
   rawPayload Json
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   items TransactionItem[]
 
@@ -101,12 +146,12 @@ model TransactionItem {
 
 // Ledger mutasi poin, append-only (§10 PRD).
 model PointHistory {
-  id           String @id @default(cuid())
-  memberId     String
-  member       Member @relation(fields: [memberId], references: [id])
-  type         String // earn | redeem | adjust | reverse
-  points       Int    // signed: + earn, - redeem
-  balanceAfter Int
+  id            String   @id @default(cuid())
+  memberId      String
+  member        Member   @relation(fields: [memberId], references: [id])
+  type          String // earn | redeem | adjust | reverse
+  points        Int // signed: + earn, - redeem
+  balanceAfter  Int
   referenceType String? // "transaction"
   referenceId   String?
   note          String?
