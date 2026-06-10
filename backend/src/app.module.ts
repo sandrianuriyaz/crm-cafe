@@ -4,6 +4,7 @@ import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthController } from './health/health.controller';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     }),
     PrismaModule,
     WebhooksModule,
+    AuthModule,
   ],
   controllers: [HealthController],
   providers: [],

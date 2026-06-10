@@ -7,6 +7,7 @@ const envSchema = z.object({
   DIRECT_URL: z.string().url(),
   REDIS_URL: z.string().url(),
   JWT_SECRET: z.string().min(16),
+  JWT_EXPIRES_IN: z.string().default('7d'),
 
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.
