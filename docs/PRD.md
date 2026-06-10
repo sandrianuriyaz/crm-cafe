@@ -8,10 +8,10 @@
 | Tim | Tim 5 - Cafe CRM Crew |
 | Anggota | Muhammad Alif Akhdan Tsani, Sandria Nuriya Az Zahra |
 | Durasi Acuan | 40 hari kerja untuk MVP |
-| Versi Dokumen | 1.2 |
-| Tanggal Revisi | 9 Juni 2026 |
+| Versi Dokumen | 1.3 |
+| Tanggal Revisi | 10 Juni 2026 |
 | Status | Draft untuk review mentor |
-| Fokus Dokumen | PRD, scope MVP, rencana kerja, risiko, dan pertanyaan mentor |
+| Fokus Dokumen | PRD, scope MVP, rencana kerja, integrasi POS Fase 1, risiko, dan pertanyaan mentor |
 
 Dokumen ini disusun sebagai acuan awal pengembangan Web Apps CRM Cafe. Isi dokumen menggabungkan kebutuhan produk, rencana teknis, pembagian kerja, timeline, dan daftar pertanyaan yang perlu dikonfirmasi sebelum development utama dimulai.
 
@@ -61,6 +61,8 @@ Admin dapat menggunakan dashboard untuk:
 
 Integrasi POS menjadi bagian penting karena transaksi di kasir adalah sumber data untuk perhitungan poin pelanggan. Tim tidak membuat sistem kasir dari nol; POS dipahami sebagai sistem internal perusahaan yang perlu dihubungkan dengan CRM.
 
+Update integrasi 10 Juni 2026: Fase 1 integrasi POS sudah diarahkan sebagai alur `transaction.completed` dari POS/Supabase ke CRM melalui webhook. CRM menjadi source of truth untuk perhitungan poin, saldo poin, dan konversi poin ke rupiah.
+
 ---
 
 ## 2. Latar Belakang
@@ -82,7 +84,7 @@ Tujuan MVP adalah menghasilkan web CRM yang dapat menjalankan alur loyalty secar
 
 1. Customer melakukan register/login.
 2. Customer memiliki QR member.
-3. Transaksi POS dikirim atau diambil oleh CRM.
+3. POS/Supabase mengirim event transaksi selesai ke webhook CRM.
 4. CRM menghitung dan menambahkan poin ke member.
 5. Customer melihat saldo poin, promo, reward, dan histori.
 6. Customer redeem poin menjadi reward/voucher.
@@ -94,9 +96,9 @@ Tujuan MVP adalah menghasilkan web CRM yang dapat menjalankan alur loyalty secar
 |---|---|---|
 | AC-01 | Customer dapat register/login dan masuk ke dashboard member | Uji manual flow auth |
 | AC-02 | Customer dapat melihat profil, saldo poin, dan QR member | Uji halaman dashboard member |
-| AC-03 | CRM dapat menerima atau mengambil transaksi POS/mock POS | Uji endpoint webhook atau polling |
+| AC-03 | CRM dapat menerima event `transaction.completed` dari POS/mock POS | Uji endpoint webhook dengan HMAC |
 | AC-04 | Transaksi valid menghasilkan penambahan poin | Cek transaksi, point ledger, dan saldo |
-| AC-05 | Transaksi duplikat tidak menggandakan poin | Kirim transaction ID yang sama dua kali |
+| AC-05 | Transaksi duplikat tidak menggandakan poin | Kirim `X-Idempotency-Key` yang sama dua kali |
 | AC-06 | Customer dapat redeem reward saat saldo cukup | Cek voucher dibuat dan poin berkurang |
 | AC-07 | Customer tidak dapat redeem jika saldo tidak cukup | Cek validasi dan saldo tidak berubah |
 | AC-08 | Admin dapat CRUD member, promo, reward, dan voucher | Uji dashboard admin |
@@ -154,7 +156,7 @@ Catatan: untuk MVP, halaman yang diprioritaskan adalah Customer Web App dan Admi
 | Reward API | P0 | Public dan admin CRUD |
 | Redeem API | P0 | Validasi poin, stok, dan voucher |
 | Transaction/Point API | P0 | Mapping transaksi menjadi poin |
-| POS Integration API | P0 | Webhook/polling sesuai hasil mentoring |
+| POS Integration API | P0 | Webhook `POST /webhooks/pos/transactions` untuk event `transaction.completed` |
 | Dashboard API | P0 | Ringkasan admin |
 | API documentation | P0 | Swagger/OpenAPI jika disepakati |
 
@@ -168,6 +170,8 @@ Catatan: untuk MVP, halaman yang diprioritaskan adalah Customer Web App dan Admi
 - Birthday reward otomatis.
 - Multi-outlet reporting lanjutan.
 - Integrasi production WhatsApp/SMS jika credential/provider belum tersedia.
+- Pemrosesan event POS `transaction.voided` dan `transaction.refunded` pada Fase 1.
+- Sinkronisasi saldo poin kembali ke POS/struk untuk Fase 1.
 
 ---
 
@@ -199,11 +203,26 @@ Prioritas:
 | FR-MEMBER-04 | QR member tidak memuat data sensitif langsung seperti email/no HP | P0 |
 | FR-POINT-01 | Sistem menghitung poin dari transaksi valid | P0 |
 | FR-POINT-02 | Mutasi poin dicatat sebagai point history/ledger | P0 |
-| FR-POINT-03 | Penambahan poin dari POS harus idempotent | P0 |
+| FR-POINT-03 | Penambahan poin dari POS harus idempotent berdasarkan `idempotency_key` | P0 |
 | FR-POINT-04 | Admin dapat melihat histori poin member | P0 |
 | FR-POINT-05 | Admin dapat melakukan adjustment poin dengan alasan | P1 |
 
-### 6.3 Promo
+### 6.3 Integrasi POS Fase 1
+
+| ID | Requirement | Prioritas |
+|---|---|---|
+| FR-POS-01 | CRM menyediakan endpoint `POST /webhooks/pos/transactions` | P0 |
+| FR-POS-02 | Endpoint menerima event `transaction.completed` | P0 |
+| FR-POS-03 | Endpoint memvalidasi header `X-Signature` HMAC-SHA256 dari raw body | P0 |
+| FR-POS-04 | Endpoint membaca `X-Idempotency-Key` dan `idempotency_key` dari body untuk deduplication | P0 |
+| FR-POS-05 | CRM menyimpan raw payload dan parsed payload untuk audit | P0 |
+| FR-POS-06 | CRM melakukan upsert customer berdasarkan `customer.id`, fallback ke `customer.phone` | P0 |
+| FR-POS-07 | Walk-in tanpa `customer.id` dan `phone` tetap dicatat sebagai guest anonim | P0 |
+| FR-POS-08 | CRM menghitung poin dari `transaction.grand_total` menggunakan aturan CRM | P0 |
+| FR-POS-09 | Endpoint membalas 2xx cepat agar worker POS tidak timeout | P0 |
+| FR-POS-10 | Event refund/void tidak diproses di Fase 1 dan dicatat sebagai Fase 2 | P1 |
+
+### 6.4 Promo
 
 | ID | Requirement | Prioritas |
 |---|---|---|
@@ -213,7 +232,7 @@ Prioritas:
 | FR-PROMO-04 | Promo dapat diberi periode mulai dan selesai | P0 |
 | FR-PROMO-05 | Admin dapat broadcast promo melalui channel yang tersedia | P1 |
 
-### 6.4 Reward, Voucher, dan Redeem
+### 6.5 Reward, Voucher, dan Redeem
 
 | ID | Requirement | Prioritas |
 |---|---|---|
@@ -225,7 +244,7 @@ Prioritas:
 | FR-REWARD-06 | Voucher memiliki status active, used, expired, atau cancelled | P0 |
 | FR-REWARD-07 | Admin/kasir dapat memvalidasi atau menandai voucher sebagai used | P0 |
 
-### 6.5 Admin Dashboard
+### 6.6 Admin Dashboard
 
 | ID | Requirement | Prioritas |
 |---|---|---|
@@ -258,8 +277,9 @@ Customer membuka web CRM
 Customer melakukan transaksi di kasir
 -> kasir mengenali member melalui QR/no HP/member ID di POS
 -> transaksi berhasil di POS
--> POS mengirim data ke CRM atau CRM mengambil data dari POS
--> CRM memvalidasi payload dan member
+-> POS/Supabase menulis event ke outbox
+-> worker crm-sync mengirim webhook ke CRM
+-> CRM memvalidasi signature, idempotency, payload, dan member
 -> CRM menghitung poin sesuai aturan bisnis
 -> CRM menyimpan transaksi dan point history
 -> saldo poin customer bertambah
@@ -293,59 +313,233 @@ Admin login
 
 ## 8. Integrasi POS
 
-### 8.1 Prinsip Integrasi
+### 8.1 Tujuan Fase 1
 
-Integrasi POS adalah bagian paling kritis dan belum boleh diasumsikan final sebelum mentor memberi konfirmasi. CRM hanya perlu terhubung dengan POS internal perusahaan, bukan menggantikan POS.
+Fase 1 integrasi POS berfokus pada event `transaction.completed`. Saat transaksi selesai di POS, sistem POS/Supabase akan mengirim event transaksi ke CRM agar:
 
-Prinsip wajib:
-- Setiap transaksi POS memiliki identifier unik.
-- Proses mapping transaksi menjadi poin harus idempotent.
-- Payload POS harus tervalidasi.
-- Transaksi, point history, dan saldo harus konsisten.
-- Kasus paid, cancel, refund, void, pending, dan failed perlu dikonfirmasi.
-- Perlu log sinkronisasi untuk debugging dan rekonsiliasi.
+- Pelanggan tercatat di CRM, baik member maupun walk-in.
+- Transaksi tercatat di CRM lengkap dengan nominal, item, dan metode bayar.
+- CRM menghitung poin earning.
+- CRM menyimpan saldo poin sebagai source of truth.
 
-### 8.2 Opsi Mekanisme
+CRM tidak membuat sistem POS baru. CRM menerima event dari POS, memproses customer, transaksi, dan poin, lalu menyimpan hasilnya untuk customer app dan admin dashboard.
 
-| Opsi | Penjelasan | Catatan |
-|---|---|---|
-| Webhook / push | POS mengirim transaksi ke CRM | Direkomendasikan jika POS mendukung |
-| Polling / pull | CRM mengambil transaksi dari POS secara berkala | Fallback jika POS hanya menyediakan read API |
-| Batch import | Transaksi dikirim dalam batch/export | Fallback untuk testing/demo |
+### 8.2 Ruang Lingkup Fase 1
 
-### 8.3 Draft Payload Transaksi
+| Masuk Fase 1 | Tidak Masuk Fase 1 |
+|---|---|
+| Event `transaction.completed` | Event `transaction.voided` |
+| Penerimaan webhook dari POS/Supabase | Event `transaction.refunded` |
+| HMAC signature verification | Sinkronisasi saldo resmi kembali ke POS |
+| Idempotency transaksi | Penukaran poin langsung di POS |
+| Upsert customer dari payload POS | Validasi voucher di POS jika belum disepakati |
+| Pencatatan transaksi dan raw payload | Multi-event ordering antar transaksi |
+| Perhitungan dan award poin oleh CRM | |
 
-Contoh berikut hanya draft diskusi, bukan kontrak final:
+### 8.3 Arsitektur Pengiriman Event
 
-```json
-{
-  "transaction_id": "TRX-2026-0001",
-  "status": "paid",
-  "member_identifier": "MBR-0001",
-  "amount": 55000,
-  "discount_amount": 5000,
-  "final_amount": 50000,
-  "occurred_at": "2026-06-09T10:15:00+07:00",
-  "outlet_id": "CAFE-01",
-  "items": [
-    {
-      "sku": "LATTE",
-      "name": "Latte",
-      "qty": 2,
-      "price": 27500
-    }
-  ]
-}
+POS bersifat offline-first. Transaksi disimpan lokal lalu di-sync ke Supabase. Dari sisi POS/Supabase, event ke CRM dikirim menggunakan pola outbox agar transaksi tidak hilang walau CRM sedang down.
+
+```text
+POS
+-> sync-upload ke Supabase
+-> orders status selesai
+-> DB trigger enqueue_crm_transaction
+-> crm_outbox
+-> worker crm-sync terjadwal/cron
+-> POST + HMAC
+-> webhook CRM
 ```
 
-### 8.4 Endpoint Awal CRM
+Pembagian tanggung jawab:
+
+| Komponen | Penanggung Jawab |
+|---|---|
+| Pengirim event, outbox, retry, signing HMAC | Tim POS/Supabase |
+| Endpoint webhook penerima di CRM | Tim CRM |
+| Perhitungan poin, saldo, dan konversi poin ke rupiah | Tim CRM |
+| Customer app dan admin dashboard | Tim CRM |
+
+Sifat pengiriman event:
+- Asinkron.
+- At-least-once delivery.
+- Bisa terlambat jika POS offline lalu online.
+- Bisa dikirim ulang karena retry.
+- Urutan antar transaksi tidak dijamin.
+
+Karena itu endpoint CRM wajib idempotent.
+
+### 8.4 Identitas Pelanggan dari POS
+
+Payload transaksi membawa customer dalam tiga kemungkinan:
+
+| Kondisi | `customer.id` | `customer.phone` | `customer.name` | Perlakuan CRM |
+|---|---|---|---|---|
+| Member / scan QR | UUID stabil | Bisa ada | Nama asli | Match utama memakai `customer.id` |
+| Walk-in tetapi diisi kasir | `null` | Bisa ada | Nama input kasir | Fallback match memakai `phone` |
+| Walk-in umum | `null` | `null` | `Pelanggan Umum` | Catat transaksi sebagai guest anonim |
+
+QR pelanggan dari POS berisi data `{ id: <serverId>, nama, hp }`. Ketika pelanggan kembali dan QR discan kasir, `customer.id` akan terisi. CRM harus menyimpan `customer.id` dari POS sebagai external customer key.
+
+### 8.5 Contract Webhook CRM
+
+Request:
+
+```http
+POST {CRM_WEBHOOK_URL}/webhooks/pos/transactions
+Content-Type: application/json
+X-Event: transaction.completed
+X-Idempotency-Key: <idempotency_key>
+X-Signature: sha256=<hex hmac-sha256 dari raw body>
+```
+
+Endpoint final CRM:
 
 | Endpoint | Method | Fungsi | Prioritas |
 |---|---|---|---|
-| `/api/pos/transactions` | POST | Menerima transaksi dari POS/webhook | P0 |
-| `/api/pos/sync-events` | GET | Melihat log sinkronisasi POS | P1 |
+| `/webhooks/pos/transactions` | POST | Menerima event transaksi selesai dari POS/Supabase | P0 |
+| `/api/pos/sync-events` | GET | Melihat log sinkronisasi POS untuk admin/internal | P1 |
 | `/api/pos/sync-status` | GET | Melihat status sinkronisasi terakhir | P1 |
-| `/api/vouchers/validate` | POST | Validasi voucher saat dipakai | P0 jika voucher harus divalidasi di CRM/POS |
+
+### 8.6 Contoh Payload `transaction.completed`
+
+```json
+{
+  "event": "transaction.completed",
+  "event_id": "5f2c1e9a-0000-0000-0000-0000000000d1",
+  "occurred_at": "2026-06-10T05:34:56Z",
+  "idempotency_key": "#ORD-20260610-001_1718000096000",
+  "store_id": "b3a1-store-uuid",
+  "branch_id": "c4d2-branch-uuid",
+  "customer": {
+    "id": "9a8b-customer-uuid",
+    "name": "Budi Santoso",
+    "phone": "+6281234567890",
+    "is_member": true,
+    "consent_saved": true
+  },
+  "transaction": {
+    "order_id": "0f1e-order-uuid",
+    "order_number": "#ORD-20260610-001",
+    "order_type": "dine_in",
+    "status": "selesai",
+    "cashier_id": "77aa-user-uuid",
+    "currency": "IDR",
+    "subtotal": 50000,
+    "discount_total": 5000,
+    "tax_total": 4500,
+    "tax_inclusive": true,
+    "grand_total": 49500,
+    "payment_method": "qris",
+    "points_used": 0,
+    "points_discount_rupiah": 0,
+    "items": [
+      {
+        "product_id": "p1-product-uuid",
+        "name": "Kopi Susu",
+        "qty": 2,
+        "unit_price": 18000,
+        "variant": "Large",
+        "addons": ["Extra Shot"],
+        "notes": null,
+        "is_reward": false,
+        "line_total": 36000
+      }
+    ]
+  }
+}
+```
+
+Semua nominal uang memakai integer rupiah tanpa desimal.
+
+### 8.7 Referensi Field Penting
+
+| Field | Tipe | Catatan |
+|---|---|---|
+| `event` | string | Selalu `transaction.completed` untuk Fase 1 |
+| `event_id` | uuid | Unik per pengiriman; bisa berbeda saat retry |
+| `occurred_at` | ISO-8601 UTC | Waktu transaksi selesai |
+| `idempotency_key` | string | Stabil per order dan menjadi kunci dedup |
+| `store_id` | uuid | ID toko dari POS |
+| `branch_id` | uuid | ID cabang dari POS |
+| `customer.id` | uuid/null | Identifier utama customer dari POS |
+| `customer.phone` | string/null | Fallback match jika `customer.id` null |
+| `transaction.order_id` | uuid | ID order server |
+| `transaction.order_number` | string | Nomor order yang tampil di POS |
+| `transaction.order_type` | enum | `dine_in` atau `take_away` |
+| `transaction.status` | string | `selesai` untuk Fase 1 |
+| `transaction.grand_total` | int | Total akhir yang dibayar; baseline earning poin |
+| `transaction.payment_method` | enum | `tunai`, `qris`, `transfer_bank`, `kartu_debit`, `kartu_kredit`, `compliment`, `nota_gantung` |
+| `transaction.points_used` | int | Fase 1 umumnya `0` |
+| `transaction.items[].is_reward` | bool | `true` jika item gratis hasil hadiah poin |
+
+### 8.8 Idempotency, Auth, dan Retry
+
+Prinsip wajib:
+- Simpan `idempotency_key` dengan unique constraint.
+- Jika key belum pernah diproses, proses transaksi dan award poin.
+- Jika key sudah diproses, balas 200 dan jangan award poin lagi.
+- Verifikasi `X-Signature` menggunakan HMAC-SHA256 atas raw request body.
+- Jika signature tidak valid, balas 401 dan jangan proses payload.
+- Jika CRM balas non-2xx atau timeout, worker POS akan retry dengan backoff.
+- Target response webhook dari sisi POS sekitar 10 detik.
+
+### 8.9 Respons dari CRM
+
+Minimum Fase 1:
+
+```json
+{
+  "ok": true
+}
+```
+
+Respons opsional untuk Fase 2:
+
+```json
+{
+  "ok": true,
+  "customer_crm_id": "crm-cust-123",
+  "points_awarded": 4950,
+  "points_balance": 18230
+}
+```
+
+Pada Fase 1, POS belum memakai respons poin karena struk sudah tercetak sebelum CRM menjawab. Field opsional boleh dikirim tetapi akan diabaikan oleh POS.
+
+### 8.10 Aturan Poin Baseline
+
+CRM bebas menentukan aturan final, tetapi untuk menjaga konsistensi dengan estimasi poin di struk POS, baseline yang disarankan:
+
+```text
+poin = floor(grand_total / poin_per_rupiah)
+```
+
+Keputusan default dari dokumen integrasi:
+
+| Hal | Keputusan Default |
+|---|---|
+| Metode auth | HMAC-SHA256 melalui `X-Signature` |
+| Earning dihitung dari | `transaction.grand_total` |
+| Pajak | `tax_inclusive: true` |
+| Walk-in tanpa ID dan phone | Catat transaksi sebagai guest anonim |
+| Pemetaan ID pelanggan | `customer.id` POS disimpan sebagai external key CRM |
+| Respons saldo/poin ke POS | Tidak dipakai di Fase 1 |
+| Worker pengirim | Cron/terjadwal sekitar 1 menit |
+
+### 8.11 Checklist Implementasi Tim CRM
+
+- [ ] Buat endpoint `POST /webhooks/pos/transactions`.
+- [ ] Validasi header `X-Event: transaction.completed`.
+- [ ] Validasi `X-Signature` HMAC-SHA256 dari raw body.
+- [ ] Simpan dan deduplicate `idempotency_key`.
+- [ ] Upsert pelanggan berdasarkan `customer.id`, fallback `customer.phone`.
+- [ ] Tangani walk-in anonim tanpa memblokir transaksi.
+- [ ] Catat transaksi, item, raw payload, dan status pemrosesan.
+- [ ] Hitung poin dari `grand_total`.
+- [ ] Simpan mutasi poin di ledger/history.
+- [ ] Balas 2xx cepat.
+- [ ] Sediakan URL webhook staging dan shared secret untuk testing.
 
 ---
 
@@ -383,19 +577,22 @@ Keputusan tech stack backend harus dikonfirmasi karena planning awal menyebut La
 | Tabel | Field Utama | Catatan |
 |---|---|---|
 | `users` | `id`, `name`, `email`, `phone`, `password_hash`, `role` | Untuk customer/admin jika memakai satu tabel user |
-| `members` | `id`, `user_id`, `member_code`, `point_balance`, `tier_id`, `created_at` | Data loyalty customer |
-| `transactions` | `id`, `pos_transaction_id`, `member_id`, `amount`, `status`, `occurred_at`, `raw_payload` | Sumber transaksi dari POS |
+| `members` | `id`, `user_id`, `member_code`, `external_customer_id`, `point_balance`, `tier_id`, `created_at` | `external_customer_id` menyimpan `customer.id` dari POS |
+| `transactions` | `id`, `pos_order_id`, `pos_order_number`, `idempotency_key`, `member_id`, `store_id`, `branch_id`, `grand_total`, `payment_method`, `status`, `occurred_at`, `raw_payload` | Sumber transaksi dari POS |
+| `transaction_items` | `id`, `transaction_id`, `product_id`, `name`, `qty`, `unit_price`, `variant`, `addons`, `is_reward`, `line_total` | Snapshot item dari payload POS |
 | `point_histories` | `id`, `member_id`, `type`, `points`, `balance_after`, `reference_type`, `reference_id`, `note` | Ledger mutasi poin |
 | `promos` | `id`, `title`, `description`, `image_url`, `start_at`, `end_at`, `status` | Promo customer |
 | `rewards` | `id`, `name`, `description`, `image_url`, `point_cost`, `stock`, `status` | Katalog reward |
 | `vouchers` | `id`, `code`, `reward_id`, `member_id`, `status`, `expired_at`, `used_at` | Output redeem |
 | `redeems` | `id`, `member_id`, `reward_id`, `voucher_id`, `points_spent`, `created_at` | Histori redeem |
-| `pos_sync_logs` | `id`, `external_id`, `status`, `raw_payload`, `error_message`, `created_at` | Audit integrasi POS |
+| `pos_sync_logs` | `id`, `event_id`, `idempotency_key`, `status`, `raw_payload`, `error_message`, `created_at` | Audit integrasi POS |
 | `tiers` | `id`, `name`, `min_points`, `benefits` | Opsional jika tier dibutuhkan |
 
 Aturan integritas penting:
 - `member_code` harus unique.
-- `pos_transaction_id` harus unique untuk idempotency.
+- `members.external_customer_id` sebaiknya unique jika tersedia.
+- `transactions.idempotency_key` harus unique untuk idempotency.
+- `transactions.pos_order_id` sebaiknya unique jika tersedia.
 - `voucher.code` harus unique.
 - Point history bersifat append-only.
 - Redeem harus memakai transaksi database agar poin dan voucher konsisten.
@@ -418,7 +615,7 @@ Aturan integritas penting:
 | Week 1 | Riset & Desain | User flow, wireframe, ERD awal, draft spesifikasi API POS, daftar kebutuhan mentor | Kebutuhan POS, ERD awal, draft API POS | User flow, wireframe customer, wireframe admin, referensi UI |
 | Week 2 | Setup & Auth | Repository siap, struktur frontend-backend, base UI, auth awal | Setup backend, database, API auth | Setup Next.js, Tailwind, shadcn/ui, UI login/register |
 | Week 3 | Core Member | Saldo poin, QR member, promo, reward, API pendukung | API member, poin, promo, reward, data dummy | Dashboard member, profil, saldo poin, QR, promo, reward |
-| Week 4 | Integrasi POS | Endpoint sync transaksi POS, mapping transaksi menjadi poin, histori transaksi | Endpoint POS, payload mapping, paid/cancel/refund handling | Histori transaksi, point history, status transaksi, loading/empty/error state |
+| Week 4 | Integrasi POS | Webhook `transaction.completed`, HMAC, idempotency, mapping transaksi menjadi poin, histori transaksi | Endpoint webhook, signature verification, idempotency, payload mapping | Histori transaksi, point history, status transaksi, loading/empty/error state |
 | Week 5 | Admin Dashboard | Dashboard admin, CRUD member, promo, reward, broadcast promo | API admin, CRUD member, promo, reward, broadcast | Layout admin, table, form, modal, management page |
 | Week 6 | Redeem & Histori | Flow redeem reward, kode voucher unik, histori redeem, status voucher | API redeem, validasi poin, kode voucher, status voucher | UI redeem, konfirmasi, kode voucher, histori redeem, status badge |
 | Week 7 | QA & Polish | Bug fixing, responsive check, error handling, dokumentasi API, Lighthouse mobile check | Testing API, bug backend, logic poin/redeem, dokumentasi API | Responsive check, polish UI, loading/empty/error state, bug frontend |
@@ -436,7 +633,7 @@ Aturan integritas penting:
 | Buat wireframe customer web app | Sandria | Login, dashboard member, saldo poin, QR, promo, reward, redeem, histori |
 | Buat wireframe admin dashboard | Sandria | Overview, member management, promo, reward, voucher, broadcast, histori |
 | Buat ERD awal | Alif | Tabel users, members, transactions, point histories, promos, rewards, vouchers, redeems, tier jika dibutuhkan |
-| Buat draft spesifikasi API POS | Alif | Endpoint, payload, webhook/polling, auth, paid/cancel/refund, kebutuhan staging |
+| Buat draft spesifikasi API POS | Alif | Endpoint webhook, payload `transaction.completed`, HMAC auth, idempotency, kebutuhan staging |
 | Review output Week 1 | Alif dan Sandria | Revisi setelah arahan mentor dan kesiapan lanjut ke Week 2 |
 
 ---
@@ -448,7 +645,7 @@ Aturan integritas penting:
 | Responsiveness | Customer web app mobile-first; admin dashboard desktop/laptop-friendly |
 | Performance | Halaman utama customer ringan dan cepat dibuka di mobile |
 | Reliability | Integrasi POS idempotent dan memiliki log sinkronisasi |
-| Security | Auth aman, secret lewat environment variable, validasi input, proteksi endpoint admin |
+| Security | Auth aman, secret lewat environment variable, validasi input, proteksi endpoint admin, validasi HMAC webhook |
 | Privacy | QR member tidak memuat data sensitif langsung |
 | Maintainability | Struktur folder jelas, API terdokumentasi, kode modular |
 | Observability | Error log untuk POS sync, redeem, auth, dan admin action |
@@ -461,9 +658,13 @@ Aturan integritas penting:
 
 | Area Risiko | Asumsi Awal | Dampak Jika Tidak Dikonfirmasi | Mitigasi |
 |---|---|---|---|
-| Integrasi POS | POS tersedia dan tim hanya membuat integrasi | Development Week 4 dapat tertunda | Prioritaskan pertanyaan POS di mentoring, buat mock POS |
+| URL webhook CRM belum siap | POS/Supabase sudah menunggu URL staging/prod dari CRM | Worker `crm-sync` belum bisa diuji end-to-end | Siapkan endpoint staging lebih awal |
+| HMAC signature salah | Shared secret atau raw body handling tidak cocok | Webhook valid ditolak 401 | Buat test curl HMAC dan dokumentasikan cara verifikasi |
+| Duplicate delivery | Worker POS mengirim at-least-once | Poin bisa dobel jika tidak idempotent | Unique constraint `idempotency_key` dan no-op untuk duplikat |
+| POS offline / event terlambat | POS offline-first | Poin tidak langsung muncul di CRM | Tampilkan histori berdasarkan waktu transaksi dan log sync |
 | Aturan Poin | Poin dihitung dari nominal transaksi valid | Logic backend dan UI saldo berubah | Konfirmasi rumus poin dan pembulatan sebelum implementasi |
 | Redeem Voucher | Voucher berupa kode unik atau QR | Jika harus divalidasi di POS, perlu endpoint tambahan | Konfirmasi bentuk voucher dan tempat validasi |
+| Double award poin | POS/Supabase masih punya trigger poin lama | Saldo pelanggan dobel | Koordinasi agar trigger poin lama dimatikan saat CRM jadi source of truth |
 | Tier Membership | Tier disiapkan sebagai fitur lanjutan | Jika wajib MVP, scope database dan UI bertambah | Pastikan tier masuk MVP atau P2 |
 | Provider OTP | OTP memakai email/WhatsApp sesuai credential | Auth Week 2 dapat terhambat | Sediakan fallback auth untuk staging |
 | Tech Stack Backend | Planning menyebut Laravel, repo saat ini NestJS | Risiko rework setup backend | Putuskan stack final secepatnya |
@@ -475,11 +676,23 @@ Aturan integritas penting:
 
 ### 16.1 Prioritas Saat Mentoring
 
-Pertanyaan paling prioritas:
-- A1 sampai A6: mekanisme integrasi POS, payload, identitas member, refund/void, staging, dan auth POS.
-- B1 dan B4: rumus poin dan expiry poin.
-- C3: tempat validasi voucher.
-- D1, D3, D5: channel OTP, tech stack backend final, dan target deploy.
+Keputusan integrasi yang sudah ditetapkan dari dokumen `integrasi-crm.docx`:
+- Fase 1 hanya memproses `transaction.completed`.
+- POS/Supabase mengirim event ke CRM via webhook.
+- Endpoint CRM: `POST /webhooks/pos/transactions`.
+- Auth webhook memakai HMAC-SHA256 pada header `X-Signature`.
+- Deduplication memakai `idempotency_key` / `X-Idempotency-Key`.
+- CRM menjadi source of truth saldo poin.
+- Earning default dihitung dari `transaction.grand_total`.
+- Walk-in tanpa ID dan phone tetap dicatat sebagai guest anonim.
+- Refund/void dan sync saldo balik ke POS masuk Fase 2.
+
+Pertanyaan tersisa yang paling prioritas:
+- URL webhook CRM staging dan production.
+- Shared secret HMAC dan cara distribusinya.
+- Nilai konfigurasi poin final: `poin_per_rupiah`, nilai rupiah per poin, expiry poin.
+- Keputusan tech stack backend final.
+- Target deployment CRM.
 
 ### 16.2 Frontend dan UI
 
@@ -510,16 +723,16 @@ Pertanyaan paling prioritas:
 
 | Kode | Pertanyaan |
 |---|---|
-| A1 | Apakah POS mengirim data ke CRM via webhook/push atau CRM mengambil data via polling/pull? |
-| A2 | Apa isi payload transaksi POS dan apakah ada contoh JSON real? |
-| A3 | Field apa yang digunakan POS untuk mengenali member: no HP, member ID, email, QR code, atau barcode? |
-| A4 | Bagaimana menangani refund, void, atau pembatalan transaksi? |
-| A5 | Apakah tersedia staging atau sandbox POS untuk testing? |
-| A6 | Autentikasi endpoint integrasi memakai API key, HMAC signature, OAuth, IP whitelist, atau lainnya? |
-| A7 | Apakah POS hanya mengirim transaksi berhasil atau juga pending, failed, refund, dan void? |
-| A8 | Apakah transaksi POS dikirim satu per satu atau batch? |
-| A9 | Jika webhook gagal, apakah POS memiliki mekanisme retry? |
-| A10 | Apakah transaksi lama perlu diimport ke CRM? |
+| A1 | Apa URL webhook CRM untuk staging dan production? |
+| A2 | Bagaimana shared secret HMAC dikirim dan dirotasi? |
+| A3 | Apakah CRM perlu menyediakan IP allowlist atau cukup HMAC? |
+| A4 | Apakah event dari staging POS sudah bisa dikirim ke endpoint staging CRM? |
+| A5 | Apakah transaksi lama dari POS perlu diimport ke CRM? |
+| A6 | Kapan trigger poin lama di POS/Supabase dimatikan agar tidak terjadi double-award? |
+| A7 | Bagaimana format final `poin_per_rupiah` dan `poin_nilai_rupiah` yang harus diikuti CRM? |
+| A8 | Apakah `compliment` dan `nota_gantung` tetap mendapat poin atau dikecualikan? |
+| A9 | Apakah CRM perlu memproses item `is_reward: true` untuk earning poin atau dikecualikan? |
+| A10 | Untuk Fase 2, apakah refund/void akan dikirim sebagai event baru atau koreksi transaksi lama? |
 
 ### 16.5 Aturan Bisnis Poin
 
@@ -527,7 +740,7 @@ Pertanyaan paling prioritas:
 |---|---|
 | B1 | Bagaimana rumus poin, misalnya berapa poin per rupiah? |
 | B2 | Apakah ada minimum transaksi untuk mendapatkan poin? |
-| B3 | Poin dihitung dari total sebelum diskon atau setelah diskon? |
+| B3 | Apakah keputusan final tetap memakai `grand_total` untuk earning poin? |
 | B4 | Apakah poin memiliki expiry? |
 | B5 | Apakah poin bisa digunakan di POS atau hanya untuk redeem reward di CRM? |
 | B6 | Apakah ada batas maksimal poin per transaksi atau per hari? |
@@ -564,7 +777,9 @@ Pertanyaan paling prioritas:
 - Admin Dashboard.
 - Backend CRM API.
 - Database schema dan migration.
-- Integrasi POS atau mock POS untuk demo.
+- Endpoint webhook POS `POST /webhooks/pos/transactions`.
+- Integrasi POS/mock POS untuk demo event `transaction.completed`.
+- Dokumentasi HMAC signature dan idempotency.
 - ERD.
 - User flow customer dan admin.
 - Wireframe customer dan admin.
@@ -578,6 +793,6 @@ Pertanyaan paling prioritas:
 
 ## 18. Kesimpulan
 
-Project Web Apps CRM Cafe difokuskan pada pengembangan customer web app, admin dashboard, backend CRM API, database, dan integrasi dengan POS internal perusahaan. Tim tidak membangun sistem kasir dari nol, melainkan menyiapkan CRM agar transaksi dari POS dapat menjadi dasar penambahan poin member.
+Project Web Apps CRM Cafe difokuskan pada pengembangan customer web app, admin dashboard, backend CRM API, database, dan integrasi dengan POS internal perusahaan. Tim tidak membangun sistem kasir dari nol, melainkan menyiapkan CRM agar event transaksi selesai dari POS dapat menjadi dasar pencatatan customer, transaksi, dan penambahan poin member.
 
-Pada tahap awal, tim memprioritaskan pendalaman kebutuhan, user flow, wireframe, ERD awal, dan draft spesifikasi API POS. Setelah mentoring teknis, dokumen ini perlu diperbarui agar scope, timeline, tech stack, dan rancangan integrasi sesuai dengan kebutuhan perusahaan.
+Pada tahap berikutnya, tim perlu memprioritaskan endpoint webhook staging, validasi HMAC, idempotency, model data transaksi, dan aturan poin final. Dokumen ini tetap perlu diperbarui jika ada perubahan kontrak POS, URL staging/production, atau keputusan tech stack backend.
