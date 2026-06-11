@@ -78,6 +78,8 @@ model Member {
 
   transactions   Transaction[]
   pointHistories PointHistory[]
+  vouchers       Voucher[]
+  redeems        Redeem[]
 
   @@map("members")
 }
@@ -173,4 +175,70 @@ model PosSyncLog {
 
   @@index([idempotencyKey])
   @@map("pos_sync_logs")
+}
+
+// ── Reward, Voucher, Redeem ─────────────────────────────────────────────────
+
+enum RewardStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VoucherStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+// Katalog reward yang bisa ditukar dengan poin.
+model Reward {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  pointCost   Int
+  stock       Int          @default(0)
+  status      RewardStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  vouchers Voucher[]
+  redeems  Redeem[]
+
+  @@map("rewards")
+}
+
+// Voucher hasil redeem — bukti tukar poin yang bisa dipakai pelanggan.
+model Voucher {
+  id        String        @id @default(cuid())
+  code      String        @unique
+  rewardId  String
+  reward    Reward        @relation(fields: [rewardId], references: [id])
+  memberId  String
+  member    Member        @relation(fields: [memberId], references: [id])
+  status    VoucherStatus @default(ACTIVE)
+  expiredAt DateTime?
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  redeem Redeem?
+
+  @@index([memberId])
+  @@map("vouchers")
+}
+
+// Histori redeem (poin keluar → voucher). 1 redeem = 1 voucher.
+model Redeem {
+  id          String   @id @default(cuid())
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id])
+  rewardId    String
+  reward      Reward   @relation(fields: [rewardId], references: [id])
+  voucherId   String   @unique
+  voucher     Voucher  @relation(fields: [voucherId], references: [id])
+  pointsSpent Int
+  createdAt   DateTime @default(now())
+
+  @@index([memberId])
+  @@map("redeems")
 }
