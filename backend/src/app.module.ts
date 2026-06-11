@@ -7,6 +7,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { AuthModule } from './auth/auth.module';
 import { MemberModule } from './member/member.module';
 import { RewardsModule } from './rewards/rewards.module';
+import { PromosModule } from './promos/promos.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RewardsModule } from './rewards/rewards.module';
     AuthModule,
     MemberModule,
     RewardsModule,
+    PromosModule,
   ],
   controllers: [HealthController],
   providers: [],

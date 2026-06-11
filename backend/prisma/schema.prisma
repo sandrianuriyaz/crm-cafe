@@ -177,6 +177,29 @@ model PosSyncLog {
   @@map("pos_sync_logs")
 }
 
+// ── Promo ───────────────────────────────────────────────────────────────────
+
+enum PromoStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Promo untuk ditampilkan ke customer. "Tampil" = status ACTIVE & sekarang
+// berada dalam rentang startAt–endAt (null = tak dibatasi).
+model Promo {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  startAt     DateTime?
+  endAt       DateTime?
+  status      PromoStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("promos")
+}
+
 // ── Reward, Voucher, Redeem ─────────────────────────────────────────────────
 
 enum RewardStatus {
