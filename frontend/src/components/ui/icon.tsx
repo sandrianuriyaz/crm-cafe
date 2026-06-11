@@ -1,4 +1,5 @@
 import {
+  ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
@@ -71,6 +72,7 @@ const MAP: Record<string, LucideIcon> = {
   add_circle: PlusCircle,
   analytics: BarChart3,
   arrow_back: ArrowLeft,
+  arrow_downward: ArrowDown,
   arrow_forward: ArrowRight,
   arrow_upward: ArrowUp,
   calendar_month: CalendarDays,
