@@ -37,14 +37,13 @@ export class MemberService {
     return { pointBalance: m.pointBalance };
   }
 
-  // QR member: payload yang bisa dipindai POS untuk mengenali returning customer.
-  // Isi mengikuti pola POS { id, nama, hp } (lihat docs/integrasi-crm.md §3),
-  // ditambah member_code untuk identifikasi sisi CRM.
+  // QR member: payload yang dipindai POS untuk mengenali pelanggan.
+  // Opsi A (CRM yang punya id): `id` = memberCode terbitan CRM. POS menyimpan id
+  // ini & mengirimnya kembali di customer.id. Format {id, nama, hp} sesuai §3.
   async getQr(userId: string) {
     const m = await this.getMemberOrThrow(userId);
     const payload = {
-      id: m.externalCustomerId, // serverId POS (null kalau member CRM-native)
-      member_code: m.memberCode,
+      id: m.memberCode, // id milik CRM (di-echo balik POS sebagai customer.id)
       nama: m.name,
       hp: m.phone,
     };

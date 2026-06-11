@@ -165,45 +165,46 @@ export class WebhooksService {
     return Math.floor(grandTotal / per);
   }
 
-  // §3/§11 #4: match by customer.id → fallback phone. Walk-in anonim (id+phone
-  // null) → null (transaksi tetap dicatat tanpa member, tanpa poin).
+  // Opsi A (CRM yang punya id): customer.id = memberCode terbitan CRM yang
+  // di-echo POS. Cocokkan ke memberCode (utama) → phone (cadangan). Walk-in
+  // anonim (id+phone null) → null (transaksi tetap dicatat tanpa member/poin).
+  // Lihat docs/usulan-kepemilikan-id-customer.md.
   private async upsertMember(
     tx: Prisma.TransactionClient,
     dto: PosTransactionEventDto,
   ) {
     const c = dto.customer ?? {};
-    const externalId = c.id || null;
+    const crmId = c.id || null; // = memberCode milik CRM
     const phone = c.phone || null;
     const name = c.name && c.name !== 'Pelanggan Umum' ? c.name : null;
 
-    if (!externalId && !phone) {
+    if (!crmId && !phone) {
       return null; // guest anonim
     }
 
-    // Cari existing: prioritas externalCustomerId, lalu phone.
-    let member =
-      (externalId
-        ? await tx.member.findUnique({ where: { externalCustomerId: externalId } })
+    // Cari existing: prioritas memberCode (id CRM), lalu phone.
+    const member =
+      (crmId
+        ? await tx.member.findUnique({ where: { memberCode: crmId } })
         : null) ??
       (phone ? await tx.member.findUnique({ where: { phone } }) : null);
 
     if (member) {
-      // Lengkapi field yang belum ada (mis. member lama match by phone,
-      // sekarang datang dengan externalCustomerId).
+      // Lengkapi field yang masih kosong.
       return tx.member.update({
         where: { id: member.id },
         data: {
-          externalCustomerId: member.externalCustomerId ?? externalId,
           phone: member.phone ?? phone,
           name: member.name ?? name,
         },
       });
     }
 
+    // Tidak ditemukan → walk-in baru; CRM terbitkan memberCode baru.
+    // (customer.id tak dikenal diabaikan; identitas pakai phone bila ada.)
     return tx.member.create({
       data: {
         memberCode: this.generateMemberCode(),
-        externalCustomerId: externalId,
         phone,
         name,
       },
