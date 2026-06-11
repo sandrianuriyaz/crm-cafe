@@ -1,15 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import { inter } from "@/lib/fonts";
 import { AuthProvider } from "@/lib/auth";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-manrope",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "POLKS Group — Member",
@@ -28,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body className={cn(manrope.variable, "font-sans")}>
+    <html lang="id" className={inter.variable}>
+      <body className="font-body bg-background text-on-background antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
