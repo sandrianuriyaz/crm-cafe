@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { MemberModule } from './member/member.module';
 import { RewardsModule } from './rewards/rewards.module';
 import { PromosModule } from './promos/promos.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PromosModule } from './promos/promos.module';
     MemberModule,
     RewardsModule,
     PromosModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [],
