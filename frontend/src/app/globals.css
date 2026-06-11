@@ -2,122 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* POLKS Group — espresso + caramel + warm cream (HSL channels) */
-    --background: 13 100% 98%;           /* warm cream #FFF8F6 */
-    --foreground: 15 7% 11%;             /* #1E1B1A */
-
-    --card: 0 0% 100%;                   /* surface-container-lowest */
-    --card-foreground: 15 7% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 15 7% 11%;
-
-    --primary: 12 41% 12%;               /* espresso #2B1712 (wallet / nav) */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 15 35% 39%;             /* #855140 (icons) */
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 13 35% 95%;
-    --muted-foreground: 9 10% 29%;       /* #504442 */
-
-    --accent: 27 62% 45%;                /* caramel #B86B2B — CTA / FAB / badges */
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 75% 42%;            /* #BA1A1A */
-    --destructive-foreground: 0 0% 100%;
-
-    /* Status (voucher / transaction) */
-    --success: 142 71% 36%;              /* #16A34A */
-    --success-foreground: 0 0% 100%;
-    --warning: 27 62% 45%;               /* caramel — matches brand 'active' pill */
-    --warning-foreground: 0 0% 100%;
-
-    --border: 13 16% 89%;                /* surface-variant #E8E1DF */
-    --input: 13 16% 89%;
-    --ring: 27 62% 45%;
-
-    --radius: 0.75rem;
-
-    /* Charts — warm palette */
-    --chart-1: 12 41% 12%;
-    --chart-2: 15 35% 39%;
-    --chart-3: 27 62% 45%;
-    --chart-4: 24 75% 55%;
-    --chart-5: 142 71% 36%;
-
-    /* Sidebar (admin nav) */
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 15 7% 11%;
-    --sidebar-primary: 12 41% 12%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 13 35% 95%;
-    --sidebar-accent-foreground: 15 7% 11%;
-    --sidebar-border: 13 16% 89%;
-    --sidebar-ring: 27 62% 45%;
-  }
-
-  /* Admin shell: pure white background instead of cream */
-  .admin {
-    --background: 0 0% 100%;
-    --muted: 30 20% 96%;
-  }
-
-  .dark {
-    --background: 22 30% 10%;
-    --foreground: 48 60% 92%;
-    --card: 22 28% 14%;
-    --card-foreground: 48 60% 92%;
-    --popover: 22 28% 14%;
-    --popover-foreground: 48 60% 92%;
-    --primary: 32 81% 50%;
-    --primary-foreground: 22 78% 12%;
-    --secondary: 25 50% 30%;
-    --secondary-foreground: 48 60% 92%;
-    --muted: 22 20% 20%;
-    --muted-foreground: 40 25% 70%;
-    --accent: 45 93% 45%;
-    --accent-foreground: 22 78% 12%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142 60% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 55%;
-    --warning-foreground: 22 78% 12%;
-    --border: 22 20% 24%;
-    --input: 22 20% 24%;
-    --ring: 45 93% 45%;
-    --sidebar: 22 28% 14%;
-    --sidebar-foreground: 48 60% 92%;
-    --sidebar-primary: 32 81% 50%;
-    --sidebar-primary-foreground: 22 78% 12%;
-    --sidebar-accent: 22 20% 20%;
-    --sidebar-accent-foreground: 48 60% 92%;
-    --sidebar-border: 22 20% 24%;
-    --sidebar-ring: 45 93% 45%;
-  }
+body {
+  background-color: theme("colors.background");
+  color: theme("colors.on-background");
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
-  }
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Design-system input focus ring (from mockups) */
+.ds-input:focus {
+  outline: none;
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px #dbeafe;
 }

@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-<<<<<<< HEAD
+**/node_modules/
 vendor/
 
 # Build output
@@ -8,13 +8,8 @@ vendor/
 dist/
 build/
 public/build/
-
-# Environment files
-.env
-.env.*
-!.env.example
-=======
-**/node_modules/
+**/dist/
+**/build/
 
 # Environment & secrets — JANGAN commit
 .env
@@ -23,28 +18,15 @@ public/build/
 **/.env
 !**/.env.example
 
-# Build output
-dist/
-build/
-**/dist/
-**/build/
->>>>>>> main
-
 # Logs
 *.log
 npm-debug.log*
-<<<<<<< HEAD
 yarn-debug.log*
 yarn-error.log*
 
-# OS and editor files
-.DS_Store
-.vscode/
-.idea/
-=======
-
 # OS / editor
 .DS_Store
+.vscode/
 .idea/
 
 # Local AI assistant config
@@ -53,4 +35,3 @@ yarn-error.log*
 
 # Coverage
 coverage/
->>>>>>> main

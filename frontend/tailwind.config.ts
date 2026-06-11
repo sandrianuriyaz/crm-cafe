@@ -1,88 +1,108 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-    darkMode: ["class"],
-    content: [
+  darkMode: "class",
+  content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-  	extend: {
-  		fontFamily: {
-  			sans: ['var(--font-manrope)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-  			heading: ['var(--font-manrope)', 'ui-sans-serif', 'sans-serif']
-  		},
-  		colors: {
-  			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
-  			espresso: '#2B1712',
-  			caramel: '#B86B2B',
-  			'cream-text': '#E3BEB6',
-  			success: {
-  				DEFAULT: 'hsl(var(--success))',
-  				foreground: 'hsl(var(--success-foreground))'
-  			},
-  			warning: {
-  				DEFAULT: 'hsl(var(--warning))',
-  				foreground: 'hsl(var(--warning-foreground))'
-  			},
-  			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
-  			},
-  			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
-  			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
-  			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
-  			},
-  			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
-  			},
-  			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
-  			},
-  			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
-  			},
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
-  			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
-  			},
-  			sidebar: {
-  				DEFAULT: 'hsl(var(--sidebar))',
-  				foreground: 'hsl(var(--sidebar-foreground))',
-  				primary: 'hsl(var(--sidebar-primary))',
-  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-  				accent: 'hsl(var(--sidebar-accent))',
-  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-  				border: 'hsl(var(--sidebar-border))',
-  				ring: 'hsl(var(--sidebar-ring))'
-  			}
-  		},
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
-  		}
-  	}
+    extend: {
+      colors: {
+        "on-tertiary-container": "#d3d1ff",
+        "surface-container-low": "#f3f2fe",
+        "on-tertiary-fixed": "#0f0069",
+        "on-primary-fixed": "#001551",
+        "error-container": "#ffdad6",
+        "surface-container": "#ededf9",
+        "on-secondary-fixed": "#131b2e",
+        outline: "#747686",
+        "surface-container-highest": "#e2e1ed",
+        "on-background": "#1a1b23",
+        "on-surface": "#1a1b23",
+        "inverse-on-surface": "#f0f0fb",
+        "tertiary-container": "#4b41e1",
+        "outline-variant": "#c4c5d7",
+        "surface-bright": "#faf8ff",
+        "primary-container": "#1d4ed8",
+        "tertiary-fixed": "#e2dfff",
+        surface: "#faf8ff",
+        "on-secondary-fixed-variant": "#3f465c",
+        "secondary-fixed": "#dae2fd",
+        "surface-container-high": "#e8e7f3",
+        "on-secondary": "#ffffff",
+        "on-tertiary": "#ffffff",
+        "surface-dim": "#d9d9e5",
+        "inverse-primary": "#b7c4ff",
+        error: "#ba1a1a",
+        "on-secondary-container": "#5c647a",
+        "secondary-container": "#dae2fd",
+        "on-surface-variant": "#434655",
+        "surface-tint": "#2151da",
+        "surface-variant": "#e2e1ed",
+        "on-primary-container": "#cad3ff",
+        primary: "#0037b0",
+        "primary-fixed": "#dce1ff",
+        "inverse-surface": "#2e3039",
+        tertiary: "#311fca",
+        "surface-container-lowest": "#ffffff",
+        "on-tertiary-fixed-variant": "#3323cc",
+        "secondary-fixed-dim": "#bec6e0",
+        "on-error-container": "#93000a",
+        background: "#faf8ff",
+        "tertiary-fixed-dim": "#c3c0ff",
+        secondary: "#565e74",
+        "on-primary": "#ffffff",
+        "on-error": "#ffffff",
+        "on-primary-fixed-variant": "#0039b5",
+        "primary-fixed-dim": "#b7c4ff",
+        "deep-navy": "#0F172A",
+        gold: "#F5B82E",
+        "soft-gold": "#FFF3C4",
+      },
+      borderRadius: {
+        DEFAULT: "0.25rem",
+        lg: "0.5rem",
+        xl: "0.75rem",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        full: "9999px",
+      },
+      spacing: {
+        xs: "4px",
+        sm: "8px",
+        base: "8px",
+        md: "16px",
+        "margin-mobile": "16px",
+        lg: "24px",
+        gutter: "24px",
+        xl: "32px",
+        "margin-desktop": "32px",
+      },
+      fontFamily: {
+        "app-name": ["var(--font-inter)", "Inter", "sans-serif"],
+        body: ["var(--font-inter)", "Inter", "sans-serif"],
+        "card-title": ["var(--font-inter)", "Inter", "sans-serif"],
+        "label-xs": ["var(--font-inter)", "Inter", "sans-serif"],
+        "page-title": ["var(--font-inter)", "Inter", "sans-serif"],
+        caption: ["var(--font-inter)", "Inter", "sans-serif"],
+        "section-title": ["var(--font-inter)", "Inter", "sans-serif"],
+        "body-semibold": ["var(--font-inter)", "Inter", "sans-serif"],
+      },
+      fontSize: {
+        "app-name": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        body: ["14px", { lineHeight: "20px", fontWeight: "400" }],
+        "card-title": ["16px", { lineHeight: "24px", fontWeight: "600" }],
+        "label-xs": ["11px", { lineHeight: "12px", fontWeight: "700" }],
+        "page-title": ["24px", { lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700" }],
+        caption: ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }],
+        "section-title": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "body-semibold": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+      },
+    },
   },
   plugins: [require("tailwindcss-animate")],
 };
+
 export default config;

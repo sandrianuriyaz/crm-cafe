@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CRM Cafe
 
 Web application CRM untuk cafe dengan fokus pada loyalty program, promo, reward, member, dan integrasi POS.
@@ -19,13 +18,10 @@ CRM Cafe membantu pelanggan mengumpulkan poin dari setiap transaksi, menukar rew
 ## Tech Stack
 
 - Frontend: Next.js
-- Backend: Laravel
+- Backend: NestJS
 - Database: PostgreSQL
 
 ## Tim
 
 - Frontend: Sandria
 - Backend: Alif
-=======
-# crm-cafe
->>>>>>> main
