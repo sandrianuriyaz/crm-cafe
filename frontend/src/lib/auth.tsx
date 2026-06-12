@@ -32,6 +32,8 @@ type AuthContextValue = {
     phone?: string;
   }) => Promise<void>;
   logout: () => void;
+  // Ambil ulang profil member (mis. setelah redeem agar saldo poin terbaru).
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -102,8 +104,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  // Sinkron ulang profil (name/memberCode/pointBalance) dari /member/profile.
+  const refreshProfile = useCallback(async () => {
+    if (!getToken()) return;
+    try {
+      const p = await api<{
+        name: string;
+        memberCode: string;
+        pointBalance: number;
+      }>("/member/profile");
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: p.name,
+              memberCode: p.memberCode,
+              pointBalance: p.pointBalance,
+            }
+          : prev,
+      );
+    } catch {
+      // Diamkan: gagal refresh tidak boleh mengganggu alur halaman.
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );

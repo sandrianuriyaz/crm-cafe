@@ -1,28 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { RewardCard } from "@/components/customer/reward-card";
+import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
-import { member, rewards, vouchers, type RewardCategory } from "@/lib/loyalty/mock-data";
+import { api, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import {
+  LAST_REDEEM_KEY,
+  type RedeemResult,
+  type Reward,
+} from "@/lib/loyalty/types";
 
-const categories: { value: RewardCategory; label: string }[] = [
+// Catatan: backend Reward belum punya field "category", jadi chip di bawah
+// tetap dirender (UI dipertahankan) namun tidak memfilter — semua reward aktif
+// selalu tampil. Begitu backend menambah kategori, tinggal isi filter di sini.
+const categories = [
   { value: "all", label: "All" },
   { value: "drinks", label: "Drinks" },
   { value: "pastry", label: "Pastry" },
   { value: "voucher", label: "Voucher" },
-];
+] as const;
 
 export default function RewardCatalogPage() {
-  const [active, setActive] = useState<RewardCategory>("all");
+  const router = useRouter();
+  const { user, refreshProfile } = useAuth();
 
-  const showRewards = active === "all" || active === "drinks" || active === "pastry";
-  const showVouchers = active === "all" || active === "voucher";
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState<(typeof categories)[number]["value"]>("all");
 
-  const visibleRewards =
-    active === "all" ? rewards : rewards.filter((r) => r.category === active);
+  // Reward yang sedang dikonfirmasi untuk ditukar (null = modal tertutup).
+  const [confirming, setConfirming] = useState<Reward | null>(null);
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemError, setRedeemError] = useState<string | null>(null);
+
+  async function loadRewards() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api<Reward[]>("/rewards");
+      setRewards(data);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      setError(
+        err instanceof Error ? err.message : "Gagal memuat katalog reward",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadRewards();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleRedeem(reward: Reward) {
+    setRedeeming(true);
+    setRedeemError(null);
+    try {
+      const result = await api<RedeemResult>(`/rewards/${reward.id}/redeem`, {
+        method: "POST",
+      });
+      // Oper voucher asli ke halaman sukses + segarkan saldo poin.
+      window.sessionStorage.setItem(LAST_REDEEM_KEY, JSON.stringify(result));
+      await refreshProfile();
+      router.push("/voucher-success");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      setRedeemError(
+        err instanceof Error ? err.message : "Redeem gagal, coba lagi",
+      );
+      setRedeeming(false);
+    }
+  }
 
   return (
     <CustomerShell>
@@ -47,7 +109,7 @@ export default function RewardCatalogPage() {
                 Available Balance
               </div>
               <div className="font-card-title text-card-title font-bold">
-                {member.points.toLocaleString("id-ID")} pts
+                {(user?.pointBalance ?? 0).toLocaleString("id-ID")} pts
               </div>
             </div>
           </div>
@@ -66,52 +128,118 @@ export default function RewardCatalogPage() {
           ))}
         </div>
 
-        {/* Rewards grid */}
-        <div className="grid grid-cols-2 gap-lg">
-          {showVouchers &&
-            vouchers.map((v) => (
-              <Link key={v.id} href="/voucher-success" className="block">
-                <div className="bg-surface rounded-xl border border-outline-variant overflow-hidden group hover:border-primary transition-colors flex flex-col h-full">
-                  <div className="h-40 bg-secondary-container flex items-center justify-center relative">
-                    <Icon
-                      name="local_activity"
-                      className="size-16 text-on-secondary-container opacity-50"
-                    />
-                    <div className="absolute top-sm right-sm bg-surface-container-lowest text-primary font-label-xs text-label-xs px-sm py-xs rounded-full shadow-sm flex items-center gap-xs">
-                      <Icon name="stars" className="size-3.5" />
-                      {v.points.toLocaleString("id-ID")} pts
-                    </div>
-                  </div>
-                  <div className="p-md flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="font-caption text-caption text-primary mb-xs">
-                        Voucher
-                      </div>
-                      <h3 className="font-card-title text-card-title text-on-surface">
-                        {v.title} {v.value}
-                      </h3>
-                      <p className="font-body text-body text-on-surface-variant mt-xs">
-                        {v.validUntil}
-                      </p>
-                    </div>
-                  </div>
+        {/* States */}
+        {loading ? (
+          <div className="grid grid-cols-2 gap-lg">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-surface rounded-xl border border-outline-variant overflow-hidden flex flex-col h-full animate-pulse"
+              >
+                <div className="h-40 bg-surface-container-high" />
+                <div className="p-md">
+                  <div className="h-4 w-2/3 rounded bg-surface-container-high" />
                 </div>
-              </Link>
+              </div>
             ))}
-
-          {showRewards &&
-            visibleRewards.map((reward) => (
-              <Link key={reward.id} href="/voucher-success" className="block">
-                <RewardCard
-                  title={reward.title}
-                  points={reward.points}
-                  availability={reward.availability}
-                  className="h-full"
-                />
-              </Link>
-            ))}
-        </div>
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-outline-variant bg-surface p-lg flex flex-col items-center text-center gap-md">
+            <Icon name="error" className="size-10 text-error" />
+            <p className="font-body text-body text-on-surface-variant">{error}</p>
+            <Button variant="outline" onClick={loadRewards}>
+              <Icon name="refresh" />
+              Coba lagi
+            </Button>
+          </div>
+        ) : rewards.length === 0 ? (
+          <div className="rounded-xl border border-outline-variant bg-surface p-lg text-center">
+            <p className="font-body text-body text-on-surface-variant">
+              Belum ada reward yang tersedia.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-lg">
+            {rewards.map((reward) => {
+              const soldOut = reward.stock <= 0;
+              return (
+                <button
+                  key={reward.id}
+                  type="button"
+                  disabled={soldOut}
+                  onClick={() => {
+                    setRedeemError(null);
+                    setConfirming(reward);
+                  }}
+                  className="block text-left disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <RewardCard
+                    title={reward.name}
+                    points={reward.pointCost}
+                    availability={soldOut ? "Stok habis" : undefined}
+                    imageSrc={reward.imageUrl ?? undefined}
+                    className="h-full"
+                  />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
+
+      {/* Konfirmasi redeem */}
+      {confirming ? (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-md">
+          <button
+            type="button"
+            aria-label="Tutup"
+            className="absolute inset-0 bg-black/40"
+            onClick={() => (redeeming ? null : setConfirming(null))}
+          />
+          <div className="relative z-10 w-full max-w-[420px] rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-lg shadow-lg">
+            <h2 className="font-card-title text-card-title text-on-surface">
+              Tukar reward?
+            </h2>
+            <p className="mt-xs font-body text-body text-on-surface-variant">
+              Kamu akan menukar{" "}
+              <span className="font-body-semibold text-on-surface">
+                {confirming.name}
+              </span>{" "}
+              seharga{" "}
+              <span className="font-body-semibold text-primary">
+                {confirming.pointCost.toLocaleString("id-ID")} pts
+              </span>
+              . Saldo kamu saat ini{" "}
+              {(user?.pointBalance ?? 0).toLocaleString("id-ID")} pts.
+            </p>
+
+            {redeemError ? (
+              <div className="mt-md flex items-center gap-sm rounded-lg bg-error-container px-md py-sm text-on-error-container">
+                <Icon name="error" className="size-5 shrink-0" />
+                <span className="font-body text-body">{redeemError}</span>
+              </div>
+            ) : null}
+
+            <div className="mt-lg flex gap-sm">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={redeeming}
+                onClick={() => setConfirming(null)}
+              >
+                Batal
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={redeeming}
+                onClick={() => handleRedeem(confirming)}
+              >
+                {redeeming ? "Memproses..." : "Tukar sekarang"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </CustomerShell>
   );
 }

@@ -1,8 +1,37 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { LAST_REDEEM_KEY, type RedeemResult } from "@/lib/loyalty/types";
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function VoucherSuccessPage() {
+  const [result, setResult] = useState<RedeemResult | null>(null);
+
+  useEffect(() => {
+    const raw = window.sessionStorage.getItem(LAST_REDEEM_KEY);
+    if (raw) {
+      try {
+        setResult(JSON.parse(raw) as RedeemResult);
+      } catch {
+        setResult(null);
+      }
+    }
+  }, []);
+
+  const voucher = result?.voucher;
+
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background font-body text-on-background">
       {/* Decorative background blobs */}
@@ -29,13 +58,15 @@ export default function VoucherSuccessPage() {
           {/* Voucher value */}
           <div className="mt-lg rounded-2xl border border-dashed border-outline-variant bg-surface-container-low p-lg">
             <p className="font-label-xs text-label-xs uppercase tracking-widest text-primary">
-              Discount Voucher
+              Reward Voucher
             </p>
             <p className="mt-xs font-page-title text-page-title font-bold text-on-surface">
-              Rp25k
+              {voucher?.reward.name ?? "—"}
             </p>
             <p className="mt-xs font-body text-body text-on-surface-variant">
-              Valid until 31 Jul 2026
+              {voucher?.expiredAt
+                ? `Valid until ${formatDate(voucher.expiredAt)}`
+                : "Your voucher is ready to use"}
             </p>
           </div>
 
@@ -45,7 +76,7 @@ export default function VoucherSuccessPage() {
               Voucher Code
             </p>
             <p className="mt-xs font-mono text-card-title font-bold tracking-[0.18em]">
-              PLKS25
+              {voucher?.code ?? "—"}
             </p>
           </div>
 
