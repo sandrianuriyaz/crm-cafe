@@ -1,10 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 import { member } from "@/lib/loyalty/mock-data";
 
 export default function MemberCardPage() {
@@ -13,6 +16,22 @@ export default function MemberCardPage() {
   const name = user?.name ?? member.name;
   const memberId = user?.memberCode ?? member.memberId;
   const points = user?.pointBalance ?? member.points;
+
+  // QR asli dari backend (berisi memberCode — id milik CRM, dipindai POS).
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [loadingQr, setLoadingQr] = useState(true);
+
+  const loadQr = useCallback(() => {
+    setLoadingQr(true);
+    api<{ image_data_url: string }>("/member/qr")
+      .then((res) => setQrImage(res.image_data_url))
+      .catch(() => setQrImage(null))
+      .finally(() => setLoadingQr(false));
+  }, []);
+
+  useEffect(() => {
+    loadQr();
+  }, [loadQr]);
 
   return (
     <CustomerShell maxWidth="max-w-md">
@@ -51,19 +70,35 @@ export default function MemberCardPage() {
             </div>
           </div>
 
-          {/* QR Code Area (placeholder block) */}
+          {/* QR Code Area — gambar asli dari /member/qr */}
           <div className="w-full max-w-[240px] aspect-square bg-surface-container-lowest rounded-lg flex items-center justify-center mb-md relative overflow-hidden">
-            <Icon name="qr_code_2" className="size-40 text-on-surface" />
-            {/* Decorative scan-line overlay */}
-            <div
-              className="absolute left-0 w-full h-1 bg-primary/50 blur-sm"
-              style={{ animation: "membercard-scan 2s ease-in-out infinite" }}
-            />
-            <style>{`@keyframes membercard-scan {
-              0% { transform: translateY(0); }
-              50% { transform: translateY(240px); }
-              100% { transform: translateY(0); }
-            }`}</style>
+            {loadingQr ? (
+              <span className="font-caption text-caption text-on-surface-variant">
+                Memuat QR…
+              </span>
+            ) : qrImage ? (
+              <img
+                src={qrImage}
+                alt={`QR member ${memberId}`}
+                className="size-full object-contain p-2"
+              />
+            ) : (
+              <Icon name="qr_code_2" className="size-40 text-on-surface" />
+            )}
+            {/* Decorative scan-line overlay hanya saat QR tampil */}
+            {qrImage ? (
+              <>
+                <div
+                  className="absolute left-0 w-full h-1 bg-primary/50 blur-sm"
+                  style={{ animation: "membercard-scan 2s ease-in-out infinite" }}
+                />
+                <style>{`@keyframes membercard-scan {
+                  0% { transform: translateY(0); }
+                  50% { transform: translateY(240px); }
+                  100% { transform: translateY(0); }
+                }`}</style>
+              </>
+            ) : null}
           </div>
 
           <p className="font-body-semibold text-body-semibold text-primary-fixed-dim mb-xl text-center">
@@ -82,9 +117,14 @@ export default function MemberCardPage() {
 
         {/* Actions */}
         <div className="w-full flex gap-md">
-          <Button variant="outline" className="flex-1">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={loadQr}
+            disabled={loadingQr}
+          >
             <Icon name="refresh" className="size-5" />
-            Refresh QR
+            {loadingQr ? "Memuat…" : "Refresh QR"}
           </Button>
           <Button asChild variant="outline" className="flex-1">
             <Link href="/history">
