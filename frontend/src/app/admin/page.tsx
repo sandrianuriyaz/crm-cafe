@@ -1,184 +1,102 @@
-import { AdminShell } from "@/components/layout/admin-shell";
-import { Icon } from "@/components/ui/icon";
-import { StatCard } from "@/components/ui/stat-card";
-import { adminStats, type AdminActivity } from "@/lib/loyalty/mock-data";
-import { cn } from "@/lib/utils";
+"use client";
 
-const ACTIVITY_STYLE: Record<
-  AdminActivity["kind"],
-  { icon: string; className: string; fill?: boolean }
-> = {
-  sync: { icon: "sync", className: "bg-blue-50 text-blue-600" },
-  webhook: { icon: "webhook", className: "bg-purple-50 text-purple-600" },
-  reward: { icon: "stars", className: "bg-soft-gold text-gold", fill: true },
-  warning: { icon: "warning", className: "bg-red-50 text-red-600" },
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Users, Zap, Store, Gift } from "lucide-react";
+import { AdminShell } from "@/components/layout/admin-shell";
+import { MetricCard, AdminTable, SectionHeader } from "@/components/admin/admin-ui";
+import { api } from "@/lib/api";
+import { type Paginated } from "@/lib/loyalty/types";
+
+type AdminMember = {
+  id: string;
+  memberCode: string;
+  name: string;
+  pointBalance: number;
+  createdAt: string;
+  user: { email: string } | null;
+};
+type AdminTxn = {
+  id: string;
+  posOrderNumber: string;
+  grandTotal: string | number;
+  pointsAwarded: number;
+  paymentMethod: string | null;
+  createdAt: string;
 };
 
-export default function AdminDashboardPage() {
-  const { cards, pointsFlow, recentActivity } = adminStats;
+function rp(v: string | number) {
+  return "Rp" + Number(v).toLocaleString("id-ID");
+}
+function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+}
 
-  // Drive bar heights from the sample data: each day's total (issued + redeemed)
-  // as a percentage of the largest day's total.
-  const maxTotal = Math.max(
-    ...pointsFlow.days.map((d) => d.issued + d.redeemed),
-  );
+export default function AdminOverviewPage() {
+  const [members, setMembers] = useState<Paginated<AdminMember> | null>(null);
+  const [txns, setTxns] = useState<Paginated<AdminTxn> | null>(null);
+  const [rewardCount, setRewardCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    api<Paginated<AdminMember>>("/admin/members?take=5").then(setMembers).catch(() => {});
+    api<Paginated<AdminTxn>>("/admin/transactions?take=5").then(setTxns).catch(() => {});
+    api<unknown[]>("/rewards").then((r) => setRewardCount(r.length)).catch(() => {});
+  }, []);
 
   return (
     <AdminShell title="Overview">
-      {/* Bento Grid Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-        {cards.map((card) => (
-          <StatCard
-            key={card.label}
-            title={card.label}
-            value={card.value}
-            iconName={card.icon}
-            accent={card.icon === "stars" ? "gold" : "primary"}
-            delta={card.trend}
-            deltaTone={
-              card.trend === "-" ? "neutral" : card.trendUp ? "up" : "down"
-            }
-          />
-        ))}
-      </div>
-
-      {/* Charts & Activity Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-        {/* Chart Area */}
-        <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col overflow-hidden">
-          <div className="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright">
-            <h3 className="font-section-title text-section-title text-on-surface">
-              Points Flow
-            </h3>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="px-3 py-1 text-xs font-body-semibold rounded-md bg-surface-container-highest text-on-surface-variant hover:bg-surface-dim transition-colors"
-              >
-                Week
-              </button>
-              <button
-                type="button"
-                className="px-3 py-1 text-xs font-body-semibold rounded-md bg-primary text-on-primary"
-              >
-                Month
-              </button>
-            </div>
-          </div>
-          <div className="p-6 flex-1 flex flex-col relative min-h-[300px]">
-            {/* Legend / Summary */}
-            <div className="flex gap-6 mb-4">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-primary mr-2" />
-                <span className="font-caption text-caption text-on-surface-variant">
-                  Issued ({pointsFlow.issuedTotalLabel})
-                </span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-gold mr-2" />
-                <span className="font-caption text-caption text-on-surface-variant">
-                  Redeemed ({pointsFlow.redeemedTotalLabel})
-                </span>
-              </div>
-            </div>
-
-            {/* CSS/HTML bar chart */}
-            <div className="flex-1 flex items-end justify-between gap-2 mt-4">
-              <div className="w-full flex justify-around items-end h-full relative border-b border-outline-variant/20 pb-2">
-                {/* Y-Axis labels */}
-                <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-on-surface-variant/50 -ml-2 -mt-2">
-                  <span>1M</span>
-                  <span>500k</span>
-                  <span>0</span>
-                </div>
-                {pointsFlow.days.map((d) => {
-                  const total = d.issued + d.redeemed;
-                  const colHeight = (total / maxTotal) * 100;
-                  const issuedPct = (d.issued / total) * 100;
-                  const redeemedPct = (d.redeemed / total) * 100;
-                  return (
-                    <div
-                      key={d.day}
-                      className="w-8 flex flex-col justify-end space-y-1 group relative"
-                      style={{ height: `${colHeight}%` }}
-                    >
-                      <div
-                        className="w-full bg-gold rounded-sm hover:opacity-80 transition-opacity"
-                        style={{ height: `${redeemedPct}%` }}
-                      />
-                      <div
-                        className="w-full bg-primary rounded-sm hover:opacity-80 transition-opacity"
-                        style={{ height: `${issuedPct}%` }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="flex justify-around mt-2 text-xs text-on-surface-variant px-8">
-              {pointsFlow.days.map((d) => (
-                <span key={d.day}>{d.day}</span>
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <MetricCard label="Total Members" value={members?.total ?? "—"} Icon={Users} accent sub="Member terdaftar" />
+          <MetricCard label="POS Transactions" value={txns?.total ?? "—"} Icon={Zap} sub="Total transaksi masuk" />
+          <MetricCard label="Active Outlets" value={3} Icon={Store} sub="Outlet POLKS" />
+          <MetricCard label="Reward Aktif" value={rewardCount ?? "—"} Icon={Gift} sub="Katalog reward" />
         </div>
 
-        {/* Recent Activity / System Status */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col overflow-hidden h-[400px]">
-          <div className="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright flex justify-between items-center">
-            <h3 className="font-section-title text-section-title text-on-surface">
-              System Activity
-            </h3>
-            <span className="flex items-center text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1 animate-pulse" />
-              All Systems Op
-            </span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-0">
-            <ul className="divide-y divide-outline-variant/20">
-              {recentActivity.map((item) => {
-                const style = ACTIVITY_STYLE[item.kind];
-                return (
-                  <li
-                    key={item.id}
-                    className="p-4 hover:bg-surface-container-low transition-colors flex gap-3"
-                  >
-                    <div
-                      className={cn(
-                        "mt-1 p-1.5 rounded-lg h-fit",
-                        style.className,
-                      )}
-                    >
-                      <Icon
-                        name={style.icon}
-                        className="size-4"
-                        fill={style.fill}
-                      />
-                    </div>
-                    <div>
-                      <p className="font-body-semibold text-body-semibold text-on-surface">
-                        {item.title}
-                      </p>
-                      <p className="font-caption text-caption text-on-surface-variant mt-0.5">
-                        {item.description}
-                      </p>
-                      <p className="font-caption text-xs text-outline mt-1">
-                        {item.time}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          <div className="p-3 border-t border-outline-variant/30 bg-surface-bright text-center">
-            <a
-              className="text-sm font-body-semibold text-primary hover:underline"
-              href="#"
-            >
-              View All Logs
-            </a>
-          </div>
+        <div>
+          <SectionHeader
+            title="Member Terbaru"
+            action={
+              <Link href="/admin/members" className="text-xs font-semibold text-polks-brand">
+                Lihat semua
+              </Link>
+            }
+          />
+          <AdminTable
+            columns={["Nama", "Member ID", "Poin", "Bergabung"]}
+            empty="Belum ada member."
+            rows={(members?.items ?? []).map((m) => [
+              <div key="n">
+                <p className="font-semibold text-polks-text">{m.name}</p>
+                <p className="text-[11px] text-polks-muted">{m.user?.email ?? "—"}</p>
+              </div>,
+              <span key="c" className="font-mono text-[11px]">{m.memberCode}</span>,
+              <span key="p" className="font-semibold">{m.pointBalance.toLocaleString("id-ID")} pts</span>,
+              shortDate(m.createdAt),
+            ])}
+          />
+        </div>
+
+        <div>
+          <SectionHeader
+            title="Transaksi Terbaru"
+            action={
+              <Link href="/admin/transactions" className="text-xs font-semibold text-polks-brand">
+                Lihat semua
+              </Link>
+            }
+          />
+          <AdminTable
+            columns={["Order", "Nominal", "Poin", "Metode", "Tanggal"]}
+            empty="Belum ada transaksi."
+            rows={(txns?.items ?? []).map((t) => [
+              <span key="o" className="font-mono text-[11px]">{t.posOrderNumber}</span>,
+              <span key="g" className="font-semibold">{rp(t.grandTotal)}</span>,
+              <span key="p" className="font-semibold text-polks-success">+{t.pointsAwarded}</span>,
+              t.paymentMethod ?? "—",
+              shortDate(t.createdAt),
+            ])}
+          />
         </div>
       </div>
     </AdminShell>

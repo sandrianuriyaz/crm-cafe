@@ -1,237 +1,217 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Search, Plus, Minus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { DataTable, type Column } from "@/components/ui/data-table";
-import { Icon } from "@/components/ui/icon";
-import { cn } from "@/lib/utils";
-import {
-  adminMembers,
-  type AdminMember,
-  type MemberTier,
-  type MemberStatus,
-} from "@/lib/loyalty/mock-data";
+import { AdminTable, SectionHeader } from "@/components/admin/admin-ui";
+import { api, ApiError } from "@/lib/api";
+import { type Paginated } from "@/lib/loyalty/types";
 
-const TIER_STYLE: Record<MemberTier, { className: string; icon?: string }> = {
-  Gold: { className: "bg-soft-gold text-deep-navy", icon: "stars" },
-  Silver: { className: "bg-secondary-fixed text-on-secondary-fixed", icon: "workspace_premium" },
-  Base: { className: "bg-surface-container-high text-on-surface-variant" },
+type AdminMember = {
+  id: string;
+  memberCode: string;
+  name: string;
+  phone: string | null;
+  pointBalance: number;
+  createdAt: string;
+  user: { email: string } | null;
 };
-
-const TIER_OPTIONS: Array<{ value: "all" | MemberTier; label: string }> = [
-  { value: "all", label: "All Tiers" },
-  { value: "Gold", label: "Gold" },
-  { value: "Silver", label: "Silver" },
-  { value: "Base", label: "Base" },
-];
-
-const STATUS_OPTIONS: Array<{ value: "all" | MemberStatus; label: string }> = [
-  { value: "all", label: "All Status" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
-
-const AVATAR_TONE: Record<MemberTier, string> = {
-  Gold: "bg-primary-container/20 text-primary",
-  Silver: "bg-secondary-container text-on-secondary-container",
-  Base: "bg-surface-container-high text-on-surface-variant",
-};
-
-const columns: Column<AdminMember>[] = [
-  {
-    key: "name",
-    header: "Member Details",
-    render: (m) => (
-      <div className="flex items-center gap-3">
-        <div
-          className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-full font-body-semibold text-body-semibold",
-            AVATAR_TONE[m.tier],
-          )}
-        >
-          {m.initials}
-        </div>
-        <div>
-          <div className="font-body-semibold text-body-semibold text-on-surface">{m.name}</div>
-          <div className="font-caption text-caption text-on-surface-variant">{m.email}</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "memberCode",
-    header: "Member ID",
-    render: (m) => <span className="font-body text-body text-on-surface-variant">{m.memberCode}</span>,
-  },
-  {
-    key: "points",
-    header: "Points Balance",
-    className: "text-right",
-    render: (m) => (
-      <span className="font-body-semibold text-body-semibold text-on-surface">
-        {m.points.toLocaleString("id-ID")}
-        <span className="ml-1 font-caption text-on-surface-variant">pts</span>
-      </span>
-    ),
-  },
-  {
-    key: "tier",
-    header: "Tier",
-    render: (m) => {
-      const tier = TIER_STYLE[m.tier];
-      return (
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2 py-1 font-label-xs text-label-xs",
-            tier.className,
-          )}
-        >
-          {tier.icon ? <Icon name={tier.icon} className="size-3.5" fill /> : null}
-          {m.tier}
-        </span>
-      );
-    },
-  },
-  {
-    key: "lastVisit",
-    header: "Last Visit",
-    render: (m) => <span className="font-body text-body text-on-surface-variant">{m.lastVisit}</span>,
-  },
-  {
-    key: "status",
-    header: "Status",
-    render: (m) => (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1.5 font-caption text-caption",
-          m.status === "inactive" && "text-on-surface-variant",
-        )}
-      >
-        <span
-          className={cn("size-2 rounded-full", m.status === "active" ? "bg-primary" : "bg-outline")}
-        />
-        {m.status === "active" ? "Active" : "Inactive"}
-      </span>
-    ),
-  },
-  {
-    key: "actions",
-    header: "Actions",
-    className: "text-right",
-    render: () => (
-      <div className="flex items-center justify-end gap-1">
-        {(["edit", "history", "add_circle", "more_vert"] as const).map((name) => (
-          <button
-            key={name}
-            type="button"
-            className="rounded-md p-1.5 text-primary transition-colors hover:bg-secondary-container"
-          >
-            <Icon name={name} className="size-[18px]" />
-          </button>
-        ))}
-      </div>
-    ),
-  },
-];
 
 export default function AdminMembersPage() {
+  const [data, setData] = useState<Paginated<AdminMember> | null>(null);
   const [search, setSearch] = useState("");
-  const [tier, setTier] = useState<"all" | MemberTier>("all");
-  const [status, setStatus] = useState<"all" | MemberStatus>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [adjusting, setAdjusting] = useState<AdminMember | null>(null);
 
-  const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return adminMembers.filter((m) => {
-      const matchesSearch =
-        !q ||
-        m.name.toLowerCase().includes(q) ||
-        m.email.toLowerCase().includes(q) ||
-        m.memberCode.toLowerCase().includes(q);
-      const matchesTier = tier === "all" || m.tier === tier;
-      const matchesStatus = status === "all" || m.status === status;
-      return matchesSearch && matchesTier && matchesStatus;
-    });
-  }, [search, tier, status]);
+  const load = useCallback(async (q: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ take: "50" });
+      if (q) params.set("search", q);
+      const res = await api<Paginated<AdminMember>>(`/admin/members?${params}`);
+      setData(res);
+    } catch (err) {
+      if (!(err instanceof ApiError && err.status === 401)) {
+        setError(err instanceof Error ? err.message : "Gagal memuat member");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => load(search), 300);
+    return () => clearTimeout(t);
+  }, [search, load]);
 
   return (
-    <AdminShell title="Member Management">
-      <div className="mb-lg flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
-        <p className="font-body text-body text-on-surface-variant">
-          Manage loyalty members, view history, and adjust points balances.
-        </p>
-        <button
-          type="button"
-          className="inline-flex items-center gap-xs rounded-lg bg-primary px-4 py-2 font-body-semibold text-body-semibold text-on-primary transition-colors hover:bg-primary/90"
-        >
-          <Icon name="person_add" className="size-5" />
-          Add Member
-        </button>
-      </div>
+    <AdminShell title="Members">
+      <div className="flex flex-col gap-4">
+        <SectionHeader
+          title={`Member${data ? ` (${data.total})` : ""}`}
+          action={
+            <div className="relative flex items-center">
+              <Search size={13} className="absolute left-2.5 text-[#8A959D]" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari nama / email / kode..."
+                className="h-9 w-[240px] rounded-[10px] border-[1.5px] border-polks-border bg-white pl-7 pr-3 text-xs text-polks-text outline-none focus:border-polks-brand"
+              />
+            </div>
+          }
+        />
 
-      {/* Search + filters */}
-      <div className="flex flex-col gap-md rounded-t-xl border border-b-0 border-outline-variant bg-surface p-md sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-md">
-          <Icon
-            name="search"
-            className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant"
+        {error ? (
+          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center text-sm text-polks-muted">
+            {error}
+          </div>
+        ) : (
+          <AdminTable
+            columns={["Member", "Member ID", "Telepon", "Poin", "Aksi"]}
+            empty={loading ? "Memuat…" : "Tidak ada member."}
+            rows={(data?.items ?? []).map((m) => [
+              <div key="m">
+                <p className="font-semibold text-polks-text">{m.name}</p>
+                <p className="text-[11px] text-polks-muted">{m.user?.email ?? "—"}</p>
+              </div>,
+              <span key="c" className="font-mono text-[11px]">{m.memberCode}</span>,
+              m.phone ?? "—",
+              <span key="p" className="font-semibold">{m.pointBalance.toLocaleString("id-ID")} pts</span>,
+              <button
+                key="a"
+                type="button"
+                onClick={() => setAdjusting(m)}
+                className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+              >
+                Adjust Poin
+              </button>,
+            ])}
           />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search members by name, ID, or email..."
-            className="ds-input h-10 w-full rounded-lg border border-outline-variant bg-surface pl-10 pr-4 font-body text-body text-on-surface placeholder:text-on-surface-variant/60"
-          />
-        </div>
-        <div className="flex items-center gap-sm">
-          <select
-            value={tier}
-            onChange={(e) => setTier(e.target.value as "all" | MemberTier)}
-            className="h-10 rounded-lg border border-outline-variant bg-surface px-3 font-body text-body text-on-surface"
-          >
-            {TIER_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as "all" | MemberStatus)}
-            className="h-10 rounded-lg border border-outline-variant bg-surface px-3 font-body text-body text-on-surface"
-          >
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        )}
       </div>
 
-      <DataTable columns={columns} rows={rows} className="rounded-t-none border-t-0" />
-
-      {/* Pagination (presentational) */}
-      <div className="mt-md flex items-center justify-between">
-        <span className="font-caption text-caption text-on-surface-variant">
-          Showing {rows.length} of {adminMembers.length} members
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            disabled
-            className="rounded p-1 text-on-surface-variant hover:bg-surface-container-high disabled:opacity-50"
-          >
-            <Icon name="chevron_left" className="size-5" />
-          </button>
-          <button
-            type="button"
-            className="rounded p-1 text-on-surface-variant hover:bg-surface-container-high"
-          >
-            <Icon name="chevron_right" className="size-5" />
-          </button>
-        </div>
-      </div>
+      {adjusting ? (
+        <AdjustPointsModal
+          member={adjusting}
+          onClose={() => setAdjusting(null)}
+          onDone={() => {
+            setAdjusting(null);
+            load(search);
+          }}
+        />
+      ) : null}
     </AdminShell>
+  );
+}
+
+function AdjustPointsModal({
+  member,
+  onClose,
+  onDone,
+}: {
+  member: AdminMember;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [points, setPoints] = useState(0);
+  const [reason, setReason] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (points === 0 || reason.trim().length < 3) {
+      setError("Poin tidak boleh 0 dan alasan minimal 3 karakter.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await api(`/admin/members/${member.id}/adjust-points`, {
+        method: "POST",
+        body: { points, reason },
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menyesuaikan poin");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button type="button" aria-label="Tutup" className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-[400px] rounded-2xl bg-white p-5">
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <h2 className="text-base font-bold text-polks-text">Adjust Poin</h2>
+            <p className="text-xs text-polks-muted">
+              {member.name} · saldo {member.pointBalance.toLocaleString("id-ID")} pts
+            </p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Tutup" className="text-polks-muted">
+            <X size={18} />
+          </button>
+        </div>
+
+        <label className="mb-1.5 block text-xs font-semibold text-polks-text">Jumlah Poin (+/−)</label>
+        <div className="mb-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPoints((p) => p - 50)}
+            className="flex size-10 items-center justify-center rounded-xl border border-polks-border text-polks-brand"
+          >
+            <Minus size={16} />
+          </button>
+          <input
+            type="number"
+            value={points}
+            onChange={(e) => setPoints(Number(e.target.value))}
+            className="h-10 flex-1 rounded-xl border-[1.5px] border-polks-border bg-white text-center text-sm font-bold text-polks-text outline-none focus:border-polks-brand"
+          />
+          <button
+            type="button"
+            onClick={() => setPoints((p) => p + 50)}
+            className="flex size-10 items-center justify-center rounded-xl border border-polks-border text-polks-brand"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+
+        <label className="mb-1.5 block text-xs font-semibold text-polks-text">Alasan</label>
+        <input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="mis. Kompensasi komplain"
+          className="mb-3 h-10 w-full rounded-xl border-[1.5px] border-polks-border bg-white px-3 text-sm text-polks-text outline-none focus:border-polks-brand"
+        />
+
+        {error ? <p className="mb-3 text-[13px] text-polks-error">{error}</p> : null}
+
+        <p className="mb-4 text-xs text-polks-muted">
+          Saldo setelah: <span className="font-semibold text-polks-text">{(member.pointBalance + points).toLocaleString("id-ID")} pts</span>
+        </p>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-11 flex-1 rounded-xl border-[1.5px] border-polks-border bg-white text-sm font-semibold text-polks-brand"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={submit}
+            className="h-11 flex-1 rounded-xl bg-polks-brand text-sm font-bold text-white disabled:opacity-60"
+          >
+            {saving ? "Menyimpan…" : "Simpan"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
