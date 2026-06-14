@@ -93,45 +93,41 @@ export default function HistoryPage() {
   );
 
   return (
-    <CustomerShell>
-      <div className="flex flex-col gap-5 px-5 pb-28 pt-5">
-        {/* Header */}
-        <div>
-          <h1 className="text-[22px] font-black text-polks-text">
-            Riwayat Poin
-          </h1>
-          <p className="mt-1 text-sm text-polks-muted">
-            Semua mutasi poin kamu di POLKS.
-          </p>
-        </div>
+    <CustomerShell showHeader={false} topbarRight={null}>
+      {/* Header navy + ringkasan */}
+      <div className="bg-polks-brand px-5 pb-6 pt-4">
+        <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Riwayat Poin</h1>
+        <p className="mt-1 text-[13px] text-white/50">Semua mutasi poin kamu di POLKS.</p>
 
-        {/* Ringkasan */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 rounded-2xl border border-polks-border bg-white p-4">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-polks-surface">
-              <Icon name="trending_up" className="size-5 text-polks-success" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs text-polks-muted">Total Diperoleh</div>
-              <div className="text-base font-bold text-polks-success">
-                +{totalEarned.toLocaleString("id-ID")}
-              </div>
-            </div>
+        <div className="mt-4 flex gap-3">
+          <div
+            className="flex-1 rounded-2xl border border-[rgba(246,184,75,0.2)] px-4 py-3"
+            style={{ background: "linear-gradient(135deg,#1A2830 0%,#2A3D4D 45%,#2D3A28 100%)" }}
+          >
+            <p className="text-[10px] text-white/45">Total Diperoleh</p>
+            <p className="text-xl font-bold tracking-[-0.02em] text-[#F6B84B]">
+              +{totalEarned.toLocaleString("id-ID")}
+              <span className="ml-0.5 text-xs font-semibold">pts</span>
+            </p>
           </div>
-
-          <div className="flex items-center gap-3 rounded-2xl bg-polks-brand p-4 text-white shadow-[0_12px_32px_rgba(37,52,63,0.22)]">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-polks-point-soft">
-              <Icon name="stars" fill className="size-5 text-polks-point" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs text-white/55">Saldo Saat Ini</div>
-              <div className="text-base font-bold text-white">
-                {(user?.pointBalance ?? 0).toLocaleString("id-ID")}
-              </div>
-            </div>
+          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-3">
+            <p className="text-[10px] text-white/45">Saldo Saat Ini</p>
+            <p className="text-xl font-bold tracking-[-0.02em] text-white">
+              {(user?.pointBalance ?? 0).toLocaleString("id-ID")}
+              <span className="ml-0.5 text-xs font-semibold">pts</span>
+            </p>
           </div>
         </div>
+      </div>
 
+      {/* Wave */}
+      <div className="bg-polks-brand leading-none">
+        <svg viewBox="0 0 390 28" preserveAspectRatio="none" className="block h-7 w-full">
+          <path d="M0,0 Q195,28 390,0 L390,28 L0,28 Z" fill="#F6F8FA" />
+        </svg>
+      </div>
+
+      <div className="flex flex-col gap-5 bg-polks-bg px-5 pb-28">
         {/* Filter */}
         <div className="flex items-center gap-2">
           <Icon name="filter_list" className="size-4 shrink-0 text-polks-muted" />

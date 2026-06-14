@@ -37,7 +37,7 @@ export function CustomerBottomNav() {
               className={cn(
                 "flex items-center justify-center transition-all",
                 isActive
-                  ? "size-[74px] rounded-full border-[6px] border-polks-bg bg-polks-smile text-white shadow-[0_12px_24px_rgba(255,107,74,0.35)]"
+                  ? "size-[74px] rounded-full border-[6px] border-polks-bg bg-white text-polks-brand shadow-[0_12px_24px_rgba(37,52,63,0.3)]"
                   : "size-8 text-white/42",
               )}
             >

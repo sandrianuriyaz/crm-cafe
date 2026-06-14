@@ -1,15 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import {
+  ChevronRight,
+  User,
+  Store,
+  Bell,
+  HelpCircle,
+  LogOut,
+  Shield,
+} from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { getTier, getNextTier, TIER_META } from "@/lib/loyalty/tier";
 
-// Bentuk response GET /member/profile (backend/src/member).
 type MemberProfile = {
   id: string;
   memberCode: string;
@@ -21,49 +28,40 @@ type MemberProfile = {
   createdAt: string;
 };
 
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+function initialOf(name: string) {
+  return (name.trim()[0] || "?").toUpperCase();
 }
 
-function formatJoined(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
+const menuSections = [
+  {
+    title: "Akun",
+    items: [
+      { label: "Informasi Akun", Icon: User },
+      { label: "Lokasi Outlet", Icon: Store },
+      { label: "Notifikasi", Icon: Bell },
+      { label: "Keamanan", Icon: Shield },
+    ],
+  },
+  {
+    title: "Bantuan",
+    items: [{ label: "Pusat Bantuan", Icon: HelpCircle }],
+  },
+];
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
   const [profile, setProfile] = useState<MemberProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    setError(null);
     api<MemberProfile>("/member/profile")
       .then((p) => {
         if (alive) setProfile(p);
       })
       .catch((err) => {
-        if (!alive) return;
-        if (err instanceof ApiError && err.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        setError(err instanceof Error ? err.message : "Gagal memuat profil");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
+        if (err instanceof ApiError && err.status === 401) router.replace("/login");
       });
     return () => {
       alive = false;
@@ -75,115 +73,141 @@ export default function ProfilePage() {
     router.replace("/login");
   }
 
-  // Fallback ke data auth context selama fetch detail berjalan.
-  const name = profile?.name ?? user?.name ?? "—";
-  const email = profile?.email ?? user?.email ?? "";
-  const memberCode = profile?.memberCode ?? user?.memberCode ?? "—";
+  const name = profile?.name || user?.name || "Member";
+  const phone = profile?.phone || "—";
   const points = profile?.pointBalance ?? user?.pointBalance ?? 0;
-
-  const infoRows = [
-    { icon: "badge", label: "Member ID", value: memberCode },
-    { icon: "call", label: "Telepon", value: profile?.phone || "—" },
-    {
-      icon: "workspace_premium",
-      label: "Tier",
-      value: profile?.tier || "Member",
-    },
-    {
-      icon: "calendar_month",
-      label: "Bergabung",
-      value: profile ? formatJoined(profile.createdAt) : "—",
-    },
-  ];
+  const memberId = profile?.memberCode || user?.memberCode || "—";
+  const tier = getTier(points);
+  const tierMeta = TIER_META[tier];
+  const next = getNextTier(points);
+  const progress = next ? Math.min(100, (points / next.target) * 100) : 100;
 
   return (
-    <CustomerShell>
-      <div className="flex flex-col gap-5 px-5 pb-28 pt-5">
-        <div>
-          <h1 className="text-[22px] font-black text-polks-text">
-            Profil
-          </h1>
-          <p className="mt-1 text-sm text-polks-muted">
-            Detail membership POLKS
-          </p>
+    <CustomerShell showHeader={false} topbarRight={null}>
+      {/* Header */}
+      <div className="bg-polks-brand px-5 pb-7 pt-4">
+        <div className="mb-5 flex items-center justify-between">
+          <Image
+            src="/polks/logo.png"
+            alt="POLKS"
+            width={80}
+            height={32}
+            className="h-7 w-auto object-contain"
+            priority
+          />
+          <span className="text-[11px] text-white/40">POLKS Group</span>
         </div>
 
-        {error ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-white p-5 text-center">
-            <Icon name="error" className="size-10 text-error" />
-            <p className="text-sm text-polks-muted">{error}</p>
+        {/* Profile row */}
+        <div className="flex items-center gap-4">
+          <div
+            className="flex size-[60px] shrink-0 items-center justify-center rounded-full text-[22px] font-bold"
+            style={{
+              background: "linear-gradient(135deg,#1A2830,#2A3D4D)",
+              border: `2.5px solid ${tierMeta.badgeText}`,
+              color: tierMeta.badgeText,
+            }}
+          >
+            {initialOf(name)}
           </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-4 rounded-2xl border border-polks-border bg-white p-5">
-              <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-polks-brand text-base font-bold text-white">
-                {loading ? "" : initialsOf(name)}
-              </div>
-              <div className="min-w-0">
-                <h2 className="truncate text-base font-bold text-polks-text">
-                  {name}
-                </h2>
-                <p className="truncate text-sm text-polks-muted">
-                  {email}
-                </p>
-              </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-bold tracking-[-0.01em] text-white">{name}</h1>
+            <p className="mt-0.5 text-xs text-white/45">{phone}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <span
+                className="rounded-full px-2.5 py-[3px] text-[9px] font-semibold uppercase tracking-[0.07em]"
+                style={{ backgroundColor: tierMeta.badgeBg, color: tierMeta.badgeText }}
+              >
+                {tierMeta.label} Member
+              </span>
+              <span className="rounded-full bg-polks-brand px-2 py-0.5 text-[10px] font-bold text-white ring-1 ring-white/20">
+                Aktif
+              </span>
             </div>
+          </div>
+        </div>
 
-            <div className="flex items-center gap-3 rounded-2xl bg-polks-brand p-4 text-white shadow-[0_12px_32px_rgba(37,52,63,0.22)]">
-              <div className="flex size-11 items-center justify-center rounded-full bg-polks-point-soft">
-                <Icon name="stars" fill className="size-5 text-polks-point" />
-              </div>
-              <div>
-                <div className="text-xs text-white/55">
-                  Saldo Poin
-                </div>
-                <div className="text-base font-bold text-white">
-                  {points.toLocaleString("id-ID")} pts
-                </div>
-              </div>
+        {/* Points + ID */}
+        <div className="mt-5 flex gap-3">
+          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-3">
+            <p className="text-[10px] text-white/40">Saldo Poin</p>
+            <p className="text-xl font-bold tracking-[-0.02em]" style={{ color: tierMeta.badgeText }}>
+              {points.toLocaleString("id-ID")}
+              <span className="ml-1 text-[11px] font-semibold">pts</span>
+            </p>
+          </div>
+          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-3">
+            <p className="text-[10px] text-white/40">Member ID</p>
+            <p className="mt-1 text-xs font-medium tracking-[0.02em] text-white">{memberId}</p>
+          </div>
+        </div>
+
+        {/* Tier progress */}
+        {next ? (
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] text-white/40">
+                {next.need.toLocaleString("id-ID")} pts lagi menuju {next.label}
+              </span>
             </div>
+            <div className="h-[5px] rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${progress}%`, backgroundColor: tierMeta.badgeText }}
+              />
+            </div>
+          </div>
+        ) : null}
+      </div>
 
+      {/* Wave */}
+      <div className="bg-polks-brand leading-none">
+        <svg viewBox="0 0 390 28" preserveAspectRatio="none" className="block h-7 w-full">
+          <path d="M0,0 Q195,28 390,0 L390,28 L0,28 Z" fill="#F6F8FA" />
+        </svg>
+      </div>
+
+      <div className="flex flex-col gap-5 bg-polks-bg px-5 pb-28">
+        {menuSections.map((section) => (
+          <div key={section.title}>
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A959D]">
+              {section.title}
+            </p>
             <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
-              {infoRows.map((row) => (
+              {section.items.map(({ label, Icon }, i) => (
                 <div
-                  key={row.label}
-                  className="flex items-center gap-3 border-b border-polks-border px-4 py-3 last:border-b-0"
+                  key={label}
+                  className={
+                    "flex items-center justify-between px-4 py-3.5 " +
+                    (i > 0 ? "border-t border-polks-surface" : "")
+                  }
                 >
-                  <Icon
-                    name={row.icon}
-                    className="size-5 shrink-0 text-polks-muted"
-                  />
-                  <span className="flex-1 text-sm text-polks-muted">
-                    {row.label}
-                  </span>
-                  <span className="text-right text-sm font-semibold text-polks-text">
-                    {loading ? "…" : row.value}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-polks-surface">
+                      <Icon size={15} color="#25343F" />
+                    </div>
+                    <span className="text-[13px] font-semibold text-polks-text">{label}</span>
+                  </div>
+                  <ChevronRight size={16} color="#C0CBD3" />
                 </div>
               ))}
             </div>
+          </div>
+        ))}
 
-            <div className="flex gap-3">
-              <Button asChild variant="outline" className="flex-1">
-                <Link href="/member-card">
-                  <Icon name="account_balance_wallet" className="size-5" />
-                  Member Card
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="flex-1">
-                <Link href="/history">
-                  <Icon name="history" className="size-5" />
-                  History
-                </Link>
-              </Button>
-            </div>
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-white py-4"
+        >
+          <LogOut size={16} color="#E04F4F" />
+          <span className="text-sm font-bold text-polks-error">Keluar</span>
+        </button>
 
-            <Button variant="destructive" onClick={handleLogout} className="rounded-xl">
-              <Icon name="logout" className="size-5" />
-              Keluar
-            </Button>
-          </>
-        )}
+        <p className="text-center text-[11px] text-[#C0CBD3]">
+          POLKS Loyalty v1.0.0 · POLKS Group
+        </p>
       </div>
     </CustomerShell>
   );
