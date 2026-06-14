@@ -28,3 +28,23 @@ export type RedeemResult = {
 
 // Kunci sessionStorage untuk mengoper voucher hasil redeem ke /voucher-success.
 export const LAST_REDEEM_KEY = "crm_last_redeem";
+
+// Respons paginated standar backend (lihat member/admin service).
+export type Paginated<T> = {
+  total: number;
+  skip: number;
+  take: number;
+  items: T[];
+};
+
+// Entri ledger poin — GET /member/point-histories
+export type PointHistory = {
+  id: string;
+  type: string; // earn | redeem | adjust | reverse
+  points: number; // bertanda: + masuk, - keluar
+  balanceAfter: number;
+  referenceType: string | null;
+  referenceId: string | null;
+  note: string | null;
+  createdAt: string;
+};

@@ -1,11 +1,77 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CustomerShell } from "@/components/layout/customer-shell";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { pointSummary, transactions } from "@/lib/loyalty/mock-data";
+import { api, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { type Paginated, type PointHistory } from "@/lib/loyalty/types";
+
+// Tampilan per-tipe mutasi poin.
+function entryView(type: string) {
+  switch (type) {
+    case "earn":
+      return { icon: "storefront", label: "Poin masuk" };
+    case "redeem":
+      return { icon: "card_giftcard", label: "Tukar reward" };
+    case "adjust":
+      return { icon: "tune", label: "Penyesuaian" };
+    case "reverse":
+      return { icon: "undo", label: "Pembatalan" };
+    default:
+      return { icon: "receipt_long", label: type };
+  }
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function HistoryPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const [entries, setEntries] = useState<PointHistory[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api<Paginated<PointHistory>>(
+        "/member/point-histories?take=50",
+      );
+      setEntries(data.items);
+      setTotal(data.total);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      setError(err instanceof Error ? err.message : "Gagal memuat histori");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <CustomerShell maxWidth="max-w-5xl">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-lg">
         <h1 className="font-page-title text-page-title text-on-surface mb-2">
           Transaction History
@@ -15,20 +81,20 @@ export default function HistoryPage() {
         </p>
       </div>
 
-      {/* Point Summary Bento Box */}
+      {/* Summary */}
       <div className="mb-lg grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="col-span-1 md:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between">
           <div>
             <h3 className="font-card-title text-card-title text-on-surface mb-1">
-              {pointSummary.totalEarnedLabel}
+              Saldo Poin
             </h3>
             <p className="font-caption text-caption text-on-surface-variant">
-              {pointSummary.totalEarnedSubtitle}
+              Saldo poin kamu saat ini
             </p>
           </div>
           <div className="mt-6 flex items-end gap-3">
             <span className="text-4xl font-bold tracking-tight text-primary">
-              {pointSummary.totalEarned.toLocaleString("id-ID")}
+              {(user?.pointBalance ?? 0).toLocaleString("id-ID")}
             </span>
             <span className="font-body-semibold text-body-semibold text-primary pb-1">
               pts
@@ -36,127 +102,102 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        <div className="col-span-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all" />
+        <div className="col-span-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
           <div>
             <h3 className="font-card-title text-card-title text-on-surface mb-1">
-              Quick Actions
+              Total Mutasi
             </h3>
-            <p className="font-caption text-caption text-on-surface-variant mb-4">
-              Manage sync status
+            <p className="font-caption text-caption text-on-surface-variant">
+              Jumlah catatan poin
             </p>
           </div>
-          <button className="w-full py-2 px-4 bg-primary text-on-primary rounded-lg font-body-semibold text-body-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-            <Icon name="sync" className="text-[18px] size-[18px]" />
-            Sync All Now
-          </button>
+          <div className="mt-6 flex items-end gap-2">
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              {total.toLocaleString("id-ID")}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Transactions List */}
+      {/* List */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
         <div className="p-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
           <h3 className="font-section-title text-section-title text-on-surface">
             Recent Transactions
           </h3>
-          <div className="flex gap-2">
-            <button className="p-2 rounded hover:bg-surface-variant transition-colors text-on-surface-variant">
-              <Icon name="filter_list" className="text-[20px] size-5" />
-            </button>
-          </div>
         </div>
 
-        <div className="divide-y divide-outline-variant">
-          {transactions.map((trx) => {
-            const isEarn = trx.type === "earn";
-            const pointsLabel = `${isEarn ? "+" : "-"}${Math.abs(
-              trx.points
-            ).toLocaleString("id-ID")} pts`;
-
-            const statusStyle =
-              trx.status === "success"
-                ? "bg-success-container text-on-success-container"
-                : trx.status === "failed"
-                  ? "bg-error-container text-on-error-container"
-                  : "bg-surface-container-high text-on-surface-variant";
-            const statusIcon =
-              trx.status === "success"
-                ? "check_circle"
-                : trx.status === "failed"
-                  ? "error"
-                  : "sync";
-            const statusLabel =
-              trx.status === "success"
-                ? "Success"
-                : trx.status === "failed"
-                  ? "Failed"
-                  : "Pending";
-
-            return (
-              <div
-                key={trx.id}
-                className="p-4 hover:bg-surface-container-low transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
-                      <Icon name={isEarn ? "storefront" : "card_giftcard"} />
-                    </div>
-                    <div>
-                      <h4 className="font-body-semibold text-body-semibold text-on-surface">
-                        {trx.outlet}
-                      </h4>
-                      <p className="font-caption text-caption text-on-surface-variant">
-                        Order #{trx.orderNumber} • {trx.date}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-body-semibold text-body-semibold text-on-surface">
-                      {trx.amount}
-                    </div>
-                    <div
-                      className={
-                        "font-caption text-caption " +
-                        (isEarn ? "text-on-success-container" : "text-error")
-                      }
-                    >
-                      {pointsLabel}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-3 ml-[52px]">
-                  <span
-                    className={
-                      "inline-flex items-center gap-1 px-2 py-1 rounded font-label-xs text-label-xs " +
-                      statusStyle
-                    }
-                  >
-                    <Icon name={statusIcon} className="text-[14px] size-[14px]" />
-                    {statusLabel}
-                  </span>
-                  {trx.synced ? (
-                    <span className="font-caption text-caption text-on-surface-variant flex items-center gap-1">
-                      <Icon name="cloud_done" className="text-[14px] size-[14px]" />
-                      Synced
-                    </span>
-                  ) : (
-                    <span className="font-caption text-caption text-on-surface-variant flex items-center gap-1">
-                      <Icon name="sync" className="text-[14px] size-[14px]" />
-                      Syncing
-                    </span>
-                  )}
+        {loading ? (
+          <div className="divide-y divide-outline-variant">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="p-4 animate-pulse flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-surface-container-high" />
+                <div className="flex-1">
+                  <div className="h-4 w-1/2 rounded bg-surface-container-high mb-2" />
+                  <div className="h-3 w-1/3 rounded bg-surface-container-high" />
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        <div className="p-4 border-t border-outline-variant text-center">
-          <button className="font-body-semibold text-body-semibold text-primary hover:underline">
-            View All Transactions
-          </button>
-        </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="p-lg flex flex-col items-center text-center gap-md">
+            <Icon name="error" className="size-10 text-error" />
+            <p className="font-body text-body text-on-surface-variant">{error}</p>
+            <Button variant="outline" onClick={load}>
+              <Icon name="refresh" />
+              Coba lagi
+            </Button>
+          </div>
+        ) : entries.length === 0 ? (
+          <div className="p-lg text-center">
+            <p className="font-body text-body text-on-surface-variant">
+              Belum ada riwayat poin.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-outline-variant">
+            {entries.map((e) => {
+              const isEarn = e.points >= 0;
+              const view = entryView(e.type);
+              const pointsLabel = `${isEarn ? "+" : "-"}${Math.abs(
+                e.points,
+              ).toLocaleString("id-ID")} pts`;
+              return (
+                <div key={e.id} className="p-4 hover:bg-surface-container-low transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+                        <Icon name={view.icon} />
+                      </div>
+                      <div>
+                        <h4 className="font-body-semibold text-body-semibold text-on-surface">
+                          {e.note ?? view.label}
+                        </h4>
+                        <p className="font-caption text-caption text-on-surface-variant">
+                          {view.label} • {formatDate(e.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div
+                        className={
+                          "font-body-semibold text-body-semibold " +
+                          (isEarn ? "text-on-success-container" : "text-error")
+                        }
+                      >
+                        {pointsLabel}
+                      </div>
+                      <div className="font-caption text-caption text-on-surface-variant">
+                        Saldo: {e.balanceAfter.toLocaleString("id-ID")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </CustomerShell>
   );
