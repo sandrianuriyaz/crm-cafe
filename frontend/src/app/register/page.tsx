@@ -18,7 +18,7 @@ const perks = [
 
 export default function RegisterPage() {
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text">
+    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
       <div className="polks-phone flex min-h-screen w-full flex-col bg-white">
         {/* Back */}
         <div className="px-5 pt-5">
@@ -35,7 +35,7 @@ export default function RegisterPage() {
               alt="POLKS"
               width={64}
               height={64}
-              className="size-16 object-contain"
+              className="size-16 object-contain brightness-0 invert"
               priority
             />
           </div>

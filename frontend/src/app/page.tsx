@@ -78,7 +78,7 @@ export default function GuestHomePage() {
   const [activeBanner, setActiveBanner] = useState(0);
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-polks-bg font-body text-polks-text">
+    <div className="polks-phone relative w-full overflow-x-hidden bg-polks-bg font-body text-polks-text">
       {/* Topbar */}
       <div className="sticky top-0 z-40 flex items-center justify-between bg-polks-brand px-4 py-3">
         <Image

@@ -5,14 +5,23 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Smartphone, Clock, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 const OTP_LENGTH = 6;
 const PHONE = "+62 812 **** 7890";
 
+// ── Jembatan login DEV (sementara) ──────────────────────────────────────────
+// Backend OTP belum ada, jadi verifikasi memakai akun seed agar token tersimpan
+// & sesi bertahan antar halaman. Ganti dengan OTP asli saat backend siap.
+const DEV_EMAIL = process.env.NEXT_PUBLIC_DEV_EMAIL ?? "sandria@polks.test";
+const DEV_PASSWORD = process.env.NEXT_PUBLIC_DEV_PASSWORD ?? "password123";
+
 export default function VerifyAccountPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [countdown, setCountdown] = useState(0);
+  const [verifying, setVerifying] = useState(false);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const complete = otp.every((d) => d !== "");
 
@@ -44,13 +53,20 @@ export default function VerifyAccountPage() {
     }, 1000);
   }
 
-  function onVerify() {
-    if (!complete) return;
+  async function onVerify() {
+    if (!complete || verifying) return;
+    setVerifying(true);
+    // Dev bridge: dapatkan token via akun seed agar sesi bertahan antar halaman.
+    try {
+      await login(DEV_EMAIL, DEV_PASSWORD);
+    } catch {
+      // Abaikan bila backend mati — tetap lanjut ke dashboard (mode UI).
+    }
     router.push("/dashboard");
   }
 
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text">
+    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
       <div className="polks-phone min-h-screen w-full bg-white">
         {/* Back */}
         <div className="px-5 pb-3 pt-5">
@@ -68,7 +84,7 @@ export default function VerifyAccountPage() {
         <div className="px-5 pb-8">
           <div className="flex justify-center">
             <div className="flex size-14 items-center justify-center rounded-2xl bg-polks-brand">
-              <Image src="/polks/icon.png" alt="POLKS" width={32} height={32} className="size-8 object-contain" />
+              <Image src="/polks/icon.png" alt="POLKS" width={32} height={32} className="size-8 object-contain brightness-0 invert" />
             </div>
           </div>
           <div className="mt-6">
@@ -127,11 +143,11 @@ export default function VerifyAccountPage() {
 
           <button
             type="button"
-            disabled={!complete}
+            disabled={!complete || verifying}
             onClick={onVerify}
             className="flex h-[50px] w-full items-center justify-center rounded-[14px] bg-polks-brand text-sm font-bold text-white disabled:opacity-50"
           >
-            Verifikasi &amp; Lanjut
+            {verifying ? "Memproses…" : "Verifikasi & Lanjut"}
           </button>
 
           {/* Resend */}

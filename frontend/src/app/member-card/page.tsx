@@ -12,7 +12,6 @@ import {
   MapPin,
   Shield,
   CheckCircle2,
-  User,
   QrCode,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
@@ -166,11 +165,11 @@ export default function MemberCardPage() {
             Riwayat
           </Link>
           <Link
-            href="/profile"
+            href="/outlets"
             className="flex h-[46px] flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/12 bg-white/10 text-[13px] font-semibold text-white/70"
           >
-            <User size={15} />
-            Profil
+            <MapPin size={15} />
+            Outlet
           </Link>
         </div>
 

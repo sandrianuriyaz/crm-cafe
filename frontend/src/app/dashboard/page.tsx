@@ -89,7 +89,7 @@ export default function MemberDashboardPage() {
             </h2>
             <p className="text-xs text-white/50">{banners[activeBanner].sub}</p>
             <Link
-              href="/rewards"
+              href="/promos"
               className="mt-3.5 inline-flex h-[34px] items-center rounded-[10px] border border-white/20 bg-white/10 px-4 text-xs font-bold text-white"
             >
               Lihat Promo
@@ -157,9 +157,9 @@ export default function MemberDashboardPage() {
         {/* 4-col shortcuts */}
         <div className="grid grid-cols-4 gap-2 px-4 pb-5 pt-4">
           {[
-            { label: "Promo", Icon: Tag, href: "/rewards" as const, accent: false },
+            { label: "Promo", Icon: Tag, href: "/promos" as const, accent: false },
             { label: "Riwayat", Icon: History, href: "/history" as const, accent: false },
-            { label: "Outlet", Icon: MapPin, href: "/member-card" as const, accent: false },
+            { label: "Outlet", Icon: MapPin, href: "/outlets" as const, accent: false },
             { label: "Poin", Icon: Star, href: "/history" as const, accent: true },
           ].map(({ label, Icon, href, accent }) => (
             <Link key={label} href={href} className="flex flex-col items-center gap-1.5">
@@ -187,7 +187,7 @@ export default function MemberDashboardPage() {
         <div>
           <div className="mb-2.5 flex items-center justify-between">
             <h3 className="text-sm font-bold text-polks-text">Promo Hari Ini</h3>
-            <Link href="/rewards" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
+            <Link href="/promos" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
               Semua <ChevronRight size={13} />
             </Link>
           </div>

@@ -18,13 +18,19 @@ body {
 
 .polks-phone {
   min-height: 100vh;
+  width: 100%;
 }
 
-@media (max-width: 479px) {
+/* Desktop/tablet: tampilkan sebagai frame ponsel di tengah backdrop */
+@media (min-width: 480px) {
+  body {
+    background-color: #dee3e7;
+  }
   .polks-phone {
-    max-width: 390px;
+    max-width: 430px;
     margin-inline: auto;
-    box-shadow: 0 24px 70px rgb(23 33 42 / 0.14);
+    min-height: 100dvh;
+    box-shadow: 0 24px 70px rgb(23 33 42 / 0.18);
   }
 }
 
