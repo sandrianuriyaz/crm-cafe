@@ -37,7 +37,7 @@ export default function VoucherSuccessPage() {
   }
 
   return (
-    <main className="flex min-h-screen justify-center bg-polks-bg font-body text-polks-text">
+    <main className="flex min-h-screen justify-center bg-polks-bg font-body text-polks-text md:bg-transparent">
       <div className="polks-phone min-h-screen w-full bg-polks-bg">
         {/* Success header */}
         <div className="flex flex-col items-center bg-polks-brand px-5 pb-8 pt-10 text-center">
@@ -128,7 +128,7 @@ export default function VoucherSuccessPage() {
 
           {/* Actions */}
           <Link
-            href="/history"
+            href="/redeem-history"
             className="flex h-[50px] w-full items-center justify-center rounded-[14px] bg-polks-brand text-sm font-bold text-white"
           >
             Lihat Riwayat Penukaran

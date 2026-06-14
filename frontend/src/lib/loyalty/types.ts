@@ -37,6 +37,30 @@ export type Paginated<T> = {
   items: T[];
 };
 
+// Promo — GET /promos & /promos/:id
+export type Promo = {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Voucher milik member — GET /vouchers
+export type Voucher = {
+  id: string;
+  code: string;
+  status: "ACTIVE" | "USED" | "EXPIRED";
+  expiredAt: string | null;
+  usedAt?: string | null;
+  createdAt: string;
+  reward: { name: string; imageUrl: string | null };
+};
+
 // Entri ledger poin — GET /member/point-histories
 export type PointHistory = {
   id: string;
