@@ -21,20 +21,20 @@ type NavItem = {
 // Menu sesuai Figma. `enabled:false` = belum ada backend (non-aktif sementara).
 const NAV: NavItem[] = [
   { label: "Overview", href: "/admin", Icon: LayoutDashboard, enabled: true },
-  { label: "Group", href: "/admin/group", Icon: Layers, enabled: false },
-  { label: "Outlets", href: "/admin/outlets", Icon: Store, enabled: false },
+  { label: "Group", href: "/admin/group", Icon: Layers, enabled: true},
+  { label: "Outlets", href: "/admin/outlets", Icon: Store, enabled: true},
   { label: "Members", href: "/admin/members", Icon: Users, enabled: true },
-  { label: "Promotions", href: "/admin/promos", Icon: Tag, enabled: false },
-  { label: "Rewards", href: "/admin/rewards", Icon: Gift, enabled: false },
-  { label: "Vouchers", href: "/admin/vouchers", Icon: Ticket, enabled: false },
+  { label: "Promotions", href: "/admin/promos", Icon: Tag, enabled: true},
+  { label: "Rewards", href: "/admin/rewards", Icon: Gift, enabled: true},
+  { label: "Vouchers", href: "/admin/vouchers", Icon: Ticket, enabled: true},
   { label: "POS Transactions", href: "/admin/transactions", Icon: Zap, enabled: true },
-  { label: "Webhook Inbox", href: "/admin/webhook", Icon: Webhook, enabled: false },
-  { label: "Idempotency", href: "/admin/idempotency", Icon: ShieldCheck, enabled: false },
-  { label: "POS Sync", href: "/admin/pos-sync", Icon: RefreshCw, enabled: false },
-  { label: "Redeem History", href: "/admin/redeem-history", Icon: History, enabled: false },
+  { label: "Webhook Inbox", href: "/admin/webhook", Icon: Webhook, enabled: true},
+  { label: "Idempotency", href: "/admin/idempotency", Icon: ShieldCheck, enabled: true},
+  { label: "POS Sync", href: "/admin/pos-sync", Icon: RefreshCw, enabled: true},
+  { label: "Redeem History", href: "/admin/redeem-history", Icon: History, enabled: true},
   { label: "Loyalty Config", href: "/admin/config", Icon: Settings, enabled: true },
-  { label: "Broadcast", href: "/admin/broadcast", Icon: Radio, enabled: false },
-  { label: "Settings", href: "/admin/settings", Icon: Settings, enabled: false },
+  { label: "Broadcast", href: "/admin/broadcast", Icon: Radio, enabled: true},
+  { label: "Settings", href: "/admin/settings", Icon: Settings, enabled: true},
 ];
 
 function isActive(pathname: string, href: string): boolean {
