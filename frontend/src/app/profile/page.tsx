@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronRight,
@@ -36,15 +37,15 @@ const menuSections = [
   {
     title: "Akun",
     items: [
-      { label: "Informasi Akun", Icon: User },
-      { label: "Lokasi Outlet", Icon: Store },
-      { label: "Notifikasi", Icon: Bell },
-      { label: "Keamanan", Icon: Shield },
+      { label: "Informasi Akun", Icon: User, href: "/profile/account" },
+      { label: "Lokasi Outlet", Icon: Store, href: "/outlets" },
+      { label: "Notifikasi", Icon: Bell, href: "/notifications" },
+      { label: "Keamanan", Icon: Shield, href: "/security" },
     ],
   },
   {
     title: "Bantuan",
-    items: [{ label: "Pusat Bantuan", Icon: HelpCircle }],
+    items: [{ label: "Pusat Bantuan", Icon: HelpCircle, href: "/help" }],
   },
 ];
 
@@ -174,11 +175,12 @@ export default function ProfilePage() {
               {section.title}
             </p>
             <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
-              {section.items.map(({ label, Icon }, i) => (
-                <div
+              {section.items.map(({ label, Icon, href }, i) => (
+                <Link
                   key={label}
+                  href={href}
                   className={
-                    "flex items-center justify-between px-4 py-3.5 " +
+                    "flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-polks-bg " +
                     (i > 0 ? "border-t border-polks-surface" : "")
                   }
                 >
@@ -189,7 +191,7 @@ export default function ProfilePage() {
                     <span className="text-[13px] font-semibold text-polks-text">{label}</span>
                   </div>
                   <ChevronRight size={16} color="#C0CBD3" />
-                </div>
+                </Link>
               ))}
             </div>
           </div>
