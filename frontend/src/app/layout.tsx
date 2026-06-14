@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { inter } from "@/lib/fonts";
+import { montserrat } from "@/lib/fonts";
 import { AuthProvider } from "@/lib/auth";
+import { SplashGate } from "@/components/layout/splash-gate";
 
 export const metadata: Metadata = {
   title: "POLKS Group — Member",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2B1712",
+  themeColor: "#25343F",
 };
 
 export default function RootLayout({
@@ -20,9 +21,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" className={montserrat.variable}>
       <body className="font-body bg-background text-on-background antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <SplashGate>{children}</SplashGate>
+        </AuthProvider>
       </body>
     </html>
   );

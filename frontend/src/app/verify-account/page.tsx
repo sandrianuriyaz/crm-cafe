@@ -40,49 +40,39 @@ export default function VerifyAccountPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background font-body text-on-background">
-      {/* Decorative background blobs */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-[20%] -left-[10%] h-[50%] w-[50%] rounded-full bg-primary-fixed opacity-30 blur-[120px]" />
-        <div className="absolute bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-secondary-fixed opacity-40 blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 w-full max-w-[420px] px-md md:px-0">
-        {/* Back link */}
-        <div className="mb-lg flex items-center">
+    <main className="flex min-h-screen justify-center bg-polks-bg font-body text-polks-text">
+      <div className="polks-phone min-h-screen w-full bg-polks-bg px-5 py-6">
+        <div className="mb-5 flex items-center">
           <button
             type="button"
             onClick={() => router.back()}
-            className="group flex items-center text-on-surface-variant transition-colors hover:text-primary"
+            className="group flex items-center text-sm font-semibold text-polks-muted transition-colors hover:text-polks-brand"
           >
             <Icon
               name="arrow_back"
-              className="mr-sm size-5 transition-transform group-hover:-translate-x-1"
+              className="mr-2 size-5 transition-transform group-hover:-translate-x-1"
             />
-            <span className="font-body-semibold text-body-semibold">Back</span>
+            Kembali
           </button>
         </div>
 
-        {/* Main Card */}
-        <div className="flex flex-col overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm">
-          {/* Header */}
-          <div className="relative flex flex-col items-center border-b border-outline-variant/20 px-lg pt-lg pb-md text-center">
-            <div className="absolute top-0 left-0 h-1 w-full bg-primary" />
-            <div className="mb-md flex size-16 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface-container-low shadow-sm">
-              <Icon name="verified_user" fill className="size-8 text-primary" />
+        <div className="flex flex-col overflow-hidden rounded-[24px] border border-polks-border bg-white shadow-sm">
+          <div className="relative flex flex-col items-center border-b border-polks-border px-5 pb-5 pt-6 text-center">
+            <div className="absolute left-0 top-0 h-1 w-full bg-polks-smile" />
+            <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-polks-surface">
+              <Icon name="verified_user" fill className="size-8 text-polks-brand" />
             </div>
-            <h1 className="mb-xs font-app-name text-app-name tracking-tight text-primary">
-              Verify Your Account
+            <h1 className="mb-1 text-xl font-black text-polks-text">
+              Verifikasi Akun
             </h1>
-            <p className="font-caption text-caption text-on-surface-variant">
-              Enter the code sent to your phone.
+            <p className="text-xs text-polks-muted">
+              Masukkan kode OTP yang dikirim ke nomor kamu.
             </p>
           </div>
 
-          {/* Form */}
-          <div className="p-lg">
+          <div className="p-5">
             <form onSubmit={onSubmit} className="flex flex-col gap-lg">
-              <div className="grid grid-cols-6 gap-sm">
+              <div className="grid grid-cols-6 gap-2">
                 {otp.map((value, index) => (
                   <input
                     key={index}
@@ -97,8 +87,8 @@ export default function VerifyAccountPage() {
                     maxLength={1}
                     aria-label={`Digit OTP ${index + 1}`}
                     className={cn(
-                      "ds-input h-14 min-w-0 rounded-lg border border-outline-variant/50 bg-surface-container-lowest text-center font-card-title text-card-title font-bold text-on-surface outline-none transition-all",
-                      value && "border-primary",
+                      "ds-input h-14 min-w-0 rounded-xl border border-polks-border bg-white text-center text-base font-bold text-polks-text outline-none transition-all",
+                      value && "border-polks-smile",
                     )}
                   />
                 ))}
@@ -107,17 +97,17 @@ export default function VerifyAccountPage() {
               <div className="text-center">
                 <button
                   type="button"
-                  className="font-body-semibold text-body-semibold text-primary transition-colors hover:text-primary-fixed-dim"
+                  className="text-sm font-semibold text-polks-smile"
                 >
                   Resend OTP
                 </button>
-                <p className="mt-xs font-caption text-caption text-on-surface-variant">
+                <p className="mt-1 text-xs text-polks-muted">
                   Wait 0:59
                 </p>
               </div>
 
-              <Button type="submit" disabled={!filled} className="w-full">
-                Verify
+              <Button type="submit" disabled={!filled} className="w-full bg-polks-smile text-white hover:bg-polks-smile/90">
+                Verifikasi
                 <Icon name="check_circle" />
               </Button>
             </form>
@@ -125,9 +115,9 @@ export default function VerifyAccountPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-xl flex items-center justify-center gap-md font-caption text-caption text-outline">
-          <Link href="/login" className="transition-colors hover:text-on-surface-variant">
-            Back to Login
+        <div className="mt-8 flex items-center justify-center text-xs font-semibold text-polks-muted">
+          <Link href="/login" className="transition-colors hover:text-polks-brand">
+            Kembali ke Login
           </Link>
         </div>
       </div>

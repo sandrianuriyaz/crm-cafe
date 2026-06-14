@@ -15,7 +15,7 @@ export const Input = React.forwardRef<HTMLInputElement, Props>(
       {(label || action) && (
         <div className="flex items-center justify-between">
           {label && (
-            <label htmlFor={id} className="font-body-semibold text-body-semibold text-on-surface">
+            <label htmlFor={id} className="font-body-semibold text-body-semibold text-polks-text">
               {label}
             </label>
           )}
@@ -24,13 +24,13 @@ export const Input = React.forwardRef<HTMLInputElement, Props>(
       )}
       <div className="relative">
         {iconName && (
-          <Icon name={iconName} className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-outline" />
+          <Icon name={iconName} className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-polks-muted" />
         )}
         <input
           ref={ref}
           id={id}
           className={cn(
-            "ds-input h-12 w-full rounded-lg border border-outline-variant/50 bg-surface-container-lowest font-body text-body text-on-surface placeholder:text-outline transition-all",
+            "ds-input h-12 w-full rounded-xl border border-polks-border bg-white font-body text-body text-polks-text placeholder:text-polks-muted transition-all",
             iconName ? "pl-10" : "pl-3",
             trailing ? "pr-10" : "pr-3",
             className,

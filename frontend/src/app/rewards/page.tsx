@@ -88,27 +88,26 @@ export default function RewardCatalogPage() {
 
   return (
     <CustomerShell>
-      <div className="space-y-lg">
-        {/* Header + Balance card */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+      <div className="space-y-5 px-5 pb-28 pt-5">
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="font-page-title text-page-title text-on-surface">
+            <h1 className="text-[22px] font-black text-polks-text">
               Reward Catalog
             </h1>
-            <p className="font-body text-body text-on-surface-variant mt-xs">
-              Explore and redeem your points.
+            <p className="mt-1 text-sm text-polks-muted">
+              Tukarkan poin dengan reward POLKS.
             </p>
           </div>
 
-          <div className="bg-primary text-on-primary rounded-xl p-md shadow-sm border border-outline-variant/20 flex items-center gap-md min-w-[200px]">
-            <div className="bg-primary-fixed text-on-primary-fixed p-sm rounded-full flex items-center justify-center">
-              <Icon name="stars" className="size-5" />
+          <div className="flex items-center gap-3 rounded-2xl border border-polks-border bg-white p-4">
+            <div className="flex size-11 items-center justify-center rounded-full bg-polks-point-soft">
+              <Icon name="stars" fill className="size-5 text-polks-point" />
             </div>
             <div>
-              <div className="font-caption text-caption text-primary-fixed-dim">
-                Available Balance
+              <div className="text-xs text-polks-muted">
+                Saldo Poin
               </div>
-              <div className="font-card-title text-card-title font-bold">
+              <div className="text-base font-bold text-polks-text">
                 {(user?.pointBalance ?? 0).toLocaleString("id-ID")} pts
               </div>
             </div>
@@ -116,7 +115,7 @@ export default function RewardCatalogPage() {
         </div>
 
         {/* Category chips */}
-        <div className="flex gap-sm overflow-x-auto pb-xs">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {categories.map((c) => (
             <Chip
               key={c.value}
@@ -130,36 +129,36 @@ export default function RewardCatalogPage() {
 
         {/* States */}
         {loading ? (
-          <div className="grid grid-cols-2 gap-lg">
+          <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-surface rounded-xl border border-outline-variant overflow-hidden flex flex-col h-full animate-pulse"
+                className="flex h-full animate-pulse flex-col overflow-hidden rounded-2xl border border-polks-border bg-white"
               >
-                <div className="h-40 bg-surface-container-high" />
-                <div className="p-md">
-                  <div className="h-4 w-2/3 rounded bg-surface-container-high" />
+                <div className="h-36 bg-polks-surface" />
+                <div className="p-4">
+                  <div className="h-4 w-2/3 rounded bg-polks-surface" />
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="rounded-xl border border-outline-variant bg-surface p-lg flex flex-col items-center text-center gap-md">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-white p-5 text-center">
             <Icon name="error" className="size-10 text-error" />
-            <p className="font-body text-body text-on-surface-variant">{error}</p>
+            <p className="text-sm text-polks-muted">{error}</p>
             <Button variant="outline" onClick={loadRewards}>
               <Icon name="refresh" />
               Coba lagi
             </Button>
           </div>
         ) : rewards.length === 0 ? (
-          <div className="rounded-xl border border-outline-variant bg-surface p-lg text-center">
-            <p className="font-body text-body text-on-surface-variant">
+          <div className="rounded-2xl border border-polks-border bg-white p-5 text-center">
+            <p className="text-sm text-polks-muted">
               Belum ada reward yang tersedia.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-lg">
+          <div className="grid grid-cols-2 gap-3">
             {rewards.map((reward) => {
               const soldOut = reward.stock <= 0;
               return (
@@ -196,17 +195,17 @@ export default function RewardCatalogPage() {
             className="absolute inset-0 bg-black/40"
             onClick={() => (redeeming ? null : setConfirming(null))}
           />
-          <div className="relative z-10 w-full max-w-[420px] rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-lg shadow-lg">
-            <h2 className="font-card-title text-card-title text-on-surface">
+          <div className="relative z-10 w-full max-w-[390px] rounded-t-[24px] border border-polks-border bg-white p-5 shadow-lg md:rounded-[24px]">
+            <h2 className="text-base font-bold text-polks-text">
               Tukar reward?
             </h2>
-            <p className="mt-xs font-body text-body text-on-surface-variant">
+            <p className="mt-2 text-sm leading-6 text-polks-muted">
               Kamu akan menukar{" "}
-              <span className="font-body-semibold text-on-surface">
+              <span className="font-semibold text-polks-text">
                 {confirming.name}
               </span>{" "}
               seharga{" "}
-              <span className="font-body-semibold text-primary">
+              <span className="font-semibold text-polks-smile">
                 {confirming.pointCost.toLocaleString("id-ID")} pts
               </span>
               . Saldo kamu saat ini{" "}
@@ -214,13 +213,13 @@ export default function RewardCatalogPage() {
             </p>
 
             {redeemError ? (
-              <div className="mt-md flex items-center gap-sm rounded-lg bg-error-container px-md py-sm text-on-error-container">
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-error-container px-4 py-3 text-on-error-container">
                 <Icon name="error" className="size-5 shrink-0" />
                 <span className="font-body text-body">{redeemError}</span>
               </div>
             ) : null}
 
-            <div className="mt-lg flex gap-sm">
+            <div className="mt-5 flex gap-3">
               <Button
                 variant="outline"
                 className="flex-1"

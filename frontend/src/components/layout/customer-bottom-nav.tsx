@@ -6,33 +6,51 @@ import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", icon: "home", label: "Home" },
-  { href: "/member-card", icon: "account_balance_wallet", label: "Wallet" },
-  { href: "/rewards", icon: "stars", label: "Rewards" },
-  { href: "/profile", icon: "person", label: "Profile" },
+  { href: "/dashboard", icon: "home", label: "Home", match: ["/dashboard"] },
+  { href: "/dashboard#promo", icon: "sell", label: "Promo", match: [] },
+  { href: "/member-card", icon: "qr_code_2", label: "Card", match: ["/member-card"] },
+  { href: "/rewards", icon: "redeem", label: "Rewards", match: ["/rewards", "/voucher-success"] },
+  { href: "/profile", icon: "person", label: "Profile", match: ["/profile"] },
 ] as const;
 
 export function CustomerBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] z-50 flex justify-around items-center px-4 py-2 bg-on-secondary-fixed rounded-full shadow-lg">
+    <nav className="fixed bottom-5 left-1/2 z-50 flex h-[78px] w-[350px] max-w-[calc(100%-40px)] -translate-x-1/2 items-center justify-around rounded-full bg-polks-brand px-4 shadow-[0_16px_34px_rgba(37,52,63,0.34)] md:hidden">
       {NAV_ITEMS.map((item) => {
-        const isActive =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isActive = item.match.some(
+          (href) => pathname === href || pathname.startsWith(`${href}/`),
+        );
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center p-2 scale-95 active:scale-90 transition-transform",
+              "relative flex w-[58px] flex-col items-center justify-center text-center transition-transform active:scale-95",
               isActive
-                ? "text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full"
-                : "text-secondary-fixed-dim hover:text-primary-fixed transition-all"
+                ? "-translate-y-6 text-white"
+                : "translate-y-1 text-white/42 hover:text-white/75",
             )}
           >
-            <Icon name={item.icon} fill={isActive} />
-            <span className="font-label-xs text-label-xs mt-1">{item.label}</span>
+            <span
+              className={cn(
+                "flex items-center justify-center transition-all",
+                isActive
+                  ? "size-[74px] rounded-full border-[6px] border-polks-bg bg-polks-smile text-white shadow-[0_12px_24px_rgba(255,107,74,0.35)]"
+                  : "size-8 text-white/42",
+              )}
+            >
+              <Icon name={item.icon} fill={isActive} className={isActive ? "size-7" : "size-6"} />
+            </span>
+            <span
+              className={cn(
+                "mt-1 text-[11px] font-bold leading-3",
+                isActive ? "text-white" : "text-white/42",
+              )}
+            >
+              {item.label}
+            </span>
           </Link>
         );
       })}

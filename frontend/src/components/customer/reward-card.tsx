@@ -20,28 +20,30 @@ export function RewardCard({
   return (
     <div
       className={cn(
-        "bg-surface rounded-xl border border-outline-variant overflow-hidden group hover:border-primary transition-colors flex flex-col",
+        "overflow-hidden rounded-2xl border border-polks-border bg-white transition-colors hover:border-polks-smile flex flex-col",
         className
       )}
     >
-      <div className="h-40 bg-surface-container-high relative overflow-hidden flex items-center justify-center">
+      <div className="relative flex h-36 items-center justify-center overflow-hidden bg-polks-surface">
         {imageSrc ? (
           <img alt={title} src={imageSrc} className="w-full h-full object-cover" />
         ) : (
-          <Icon name="local_mall" className="size-16 text-on-surface-variant opacity-40" />
+          <div className="flex size-16 items-center justify-center rounded-2xl bg-polks-point-soft">
+            <Icon name="redeem" className="size-8 text-polks-point" />
+          </div>
         )}
         {availability ? (
-          <div className="absolute top-sm left-sm bg-surface-container-lowest text-on-surface-variant font-label-xs text-label-xs px-sm py-xs rounded-full shadow-sm">
+          <div className="absolute left-2 top-2 rounded-full bg-white px-2 py-1 text-[10px] font-bold text-polks-muted shadow-sm">
             {availability}
           </div>
         ) : null}
-        <div className="absolute top-sm right-sm bg-surface-container-lowest text-primary font-label-xs text-label-xs px-sm py-xs rounded-full shadow-sm flex items-center gap-xs">
-          <Icon name="paid" className="size-3.5" />
+        <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-polks-point-soft px-2 py-1 text-[10px] font-bold text-amber-800 shadow-sm">
+          <Icon name="stars" fill className="size-3.5 text-polks-point" />
           {points.toLocaleString("id-ID")} pts
         </div>
       </div>
-      <div className="p-md flex-1 flex flex-col justify-between">
-        <h3 className="font-card-title text-card-title text-on-surface">{title}</h3>
+      <div className="flex flex-1 flex-col justify-between p-4">
+        <h3 className="text-[13px] font-bold leading-5 text-polks-text">{title}</h3>
       </div>
     </div>
   );

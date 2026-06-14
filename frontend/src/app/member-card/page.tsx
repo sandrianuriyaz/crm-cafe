@@ -34,62 +34,57 @@ export default function MemberCardPage() {
   }, [loadQr]);
 
   return (
-    <CustomerShell maxWidth="max-w-md">
-      <div className="flex flex-col items-center">
-        {/* Page heading */}
-        <div className="w-full mb-lg">
-          <h1 className="font-page-title text-page-title text-on-surface">
-            Member Card
-          </h1>
-          <p className="font-body text-body text-on-surface-variant mt-xs">
-            Show this QR to cashier
+    <CustomerShell>
+      <div className="flex flex-col items-center px-5 pb-28 pt-5">
+        <div className="mb-5 w-full">
+          <h1 className="text-[22px] font-black text-polks-text">Member Card</h1>
+          <p className="mt-1 text-sm text-polks-muted">
+            Tunjukkan QR ini ke kasir
           </p>
         </div>
 
         {/* Digital Card */}
-        <div className="w-full bg-deep-navy text-on-primary rounded-xl p-lg shadow-sm flex flex-col items-center mb-lg relative overflow-hidden">
-          {/* Decorative accent */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-primary-fixed-dim" />
+        <div className="relative mb-5 flex w-full flex-col items-center overflow-hidden rounded-[24px] bg-polks-brand p-5 text-white shadow-[0_16px_42px_rgba(37,52,63,0.28)]">
+          <div className="absolute left-0 top-0 h-2 w-full bg-polks-point" />
+          <div className="absolute -right-10 -top-10 size-32 rounded-full bg-white/5" />
 
-          <div className="w-full flex justify-between items-start mb-xl">
+          <div className="mb-8 flex w-full items-start justify-between">
             <div>
-              <h2 className="font-card-title text-card-title text-on-primary">
+              <h2 className="text-base font-bold text-white">
                 {name}
               </h2>
-              <p className="font-caption text-caption text-primary-fixed-dim">
+              <p className="text-xs text-white/55">
                 {member.tier}
               </p>
             </div>
             <div className="text-right">
-              <span className="font-card-title text-card-title text-primary-fixed">
+              <span className="text-base font-bold text-polks-point">
                 {points.toLocaleString("id-ID")}
               </span>
-              <span className="font-caption text-caption text-primary-fixed-dim ml-1">
+              <span className="ml-1 text-xs text-white/55">
                 pts
               </span>
             </div>
           </div>
 
-          {/* QR Code Area — gambar asli dari /member/qr */}
-          <div className="w-full max-w-[240px] aspect-square bg-surface-container-lowest rounded-lg flex items-center justify-center mb-md relative overflow-hidden">
+          <div className="relative mb-4 flex aspect-square w-full max-w-[250px] items-center justify-center overflow-hidden rounded-2xl bg-white">
             {loadingQr ? (
-              <span className="font-caption text-caption text-on-surface-variant">
+              <span className="text-xs font-medium text-polks-muted">
                 Memuat QR…
               </span>
             ) : qrImage ? (
               <img
                 src={qrImage}
                 alt={`QR member ${memberId}`}
-                className="size-full object-contain p-2"
+                className="size-full object-contain p-3"
               />
             ) : (
-              <Icon name="qr_code_2" className="size-40 text-on-surface" />
+              <Icon name="qr_code_2" className="size-40 text-polks-text" />
             )}
-            {/* Decorative scan-line overlay hanya saat QR tampil */}
             {qrImage ? (
               <>
                 <div
-                  className="absolute left-0 w-full h-1 bg-primary/50 blur-sm"
+                  className="absolute left-0 h-1 w-full bg-polks-smile/60 blur-sm"
                   style={{ animation: "membercard-scan 2s ease-in-out infinite" }}
                 />
                 <style>{`@keyframes membercard-scan {
@@ -101,22 +96,21 @@ export default function MemberCardPage() {
             ) : null}
           </div>
 
-          <p className="font-body-semibold text-body-semibold text-primary-fixed-dim mb-xl text-center">
-            Show this QR to cashier
+          <p className="mb-6 text-center text-sm font-semibold text-white/65">
+            Scan QR untuk transaksi POS
           </p>
 
           <div className="text-center">
-            <p className="font-caption text-caption text-primary-fixed-dim mb-1">
+            <p className="mb-1 text-xs text-white/45">
               Member ID
             </p>
-            <p className="font-body text-body text-on-primary tracking-widest">
+            <p className="text-sm font-semibold tracking-widest text-white">
               {memberId}
             </p>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="w-full flex gap-md">
+        <div className="flex w-full gap-3">
           <Button
             variant="outline"
             className="flex-1"
@@ -134,8 +128,8 @@ export default function MemberCardPage() {
           </Button>
         </div>
 
-        <p className="flex items-center justify-center gap-2 pt-lg font-caption text-caption text-on-surface-variant">
-          <Icon name="verified" className="size-4 text-primary" />
+        <p className="flex items-center justify-center gap-2 pt-5 text-center text-xs font-medium text-polks-muted">
+          <Icon name="verified" className="size-4 text-polks-smile" />
           {member.validAt}
         </p>
       </div>

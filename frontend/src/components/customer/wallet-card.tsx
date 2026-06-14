@@ -42,56 +42,74 @@ export function WalletCard({ points, tier, memberId, className }: WalletCardProp
     <>
       <div
         className={cn(
-          "bg-deep-navy rounded-3xl p-6 relative overflow-hidden shadow-2xl",
+          "overflow-hidden rounded-[24px] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.28)]",
           className
         )}
       >
-        {/* Decorative subtle circle */}
-        <div className="absolute -top-16 -right-16 w-64 h-64 bg-white opacity-5 rounded-full blur-2xl" />
-        <div className="flex justify-between items-start relative z-10">
-          <div>
-            <p className="font-caption text-caption text-secondary-fixed-dim mb-1 uppercase tracking-wider">
-              Available Balance
-            </p>
-            <h3 className="text-[36px] leading-[40px] font-bold text-gold tracking-tight mb-4 flex items-center gap-2">
-              {points.toLocaleString("id-ID")}{" "}
-              <span className="text-[18px] font-medium text-soft-gold opacity-80 mt-2">pts</span>
-            </h3>
-            <div className="inline-flex items-center bg-soft-gold/10 px-3 py-1.5 rounded-full border border-soft-gold/20">
-              <Icon name="stars" fill className="text-[16px] text-gold mr-2 size-4" />
-              <span className="font-caption text-caption text-soft-gold">{tier}</span>
+        <div className="relative overflow-hidden bg-gradient-to-br from-polks-brand to-[#17212A] px-[18px] py-4">
+          <div className="absolute -right-5 -top-5 size-24 rounded-full bg-white/5" />
+          <div className="relative flex items-center justify-between">
+            <span className="inline-flex items-center gap-1 rounded-full border border-polks-point/35 bg-polks-point/15 px-2.5 py-1 text-[9px] font-extrabold uppercase text-polks-point">
+              <Icon name="stars" fill className="size-3" />
+              {tier.replace(" Tier Member", "")}
+            </span>
+            <button
+              type="button"
+              onClick={() => qrImage && setShowLarge(true)}
+              aria-label="Tampilkan QR member ukuran besar"
+              className="rounded-[10px] border-2 border-white/25 bg-white p-1.5 shadow-lg transition-transform hover:scale-105 disabled:cursor-default disabled:hover:scale-100"
+              disabled={!qrImage}
+            >
+              {qrImage ? (
+                <img src={qrImage} alt="QR member" className="size-11 rounded" />
+              ) : (
+                <Icon name="qr_code_2" className="size-11 text-polks-text" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="h-[3px] bg-polks-point/70" />
+
+        <div className="px-[18px] pb-[18px] pt-4">
+          <p className="mb-1 text-[10px] text-polks-muted">Saldo Poin Resmi</p>
+          <div className="mb-1 flex items-end gap-2">
+            <span className="text-[34px] font-bold leading-none text-polks-text">
+              {points.toLocaleString("id-ID")}
+            </span>
+            <span className="mb-1 text-[13px] font-medium text-polks-muted">pts</span>
+          </div>
+          <p className="mb-3 text-[10px] text-polks-muted">{memberId}</p>
+
+          <div className="mb-3">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[10px] text-polks-muted">
+                750 pts lagi ke Platinum Member
+              </span>
+              <Icon name="workspace_premium" className="size-3.5 text-polks-point" />
+            </div>
+            <div className="h-[5px] overflow-hidden rounded-full bg-polks-surface">
+              <div
+                className="h-full rounded-full bg-polks-point"
+                style={{ width: `${Math.min(100, (points / 2000) * 100)}%` }}
+              />
             </div>
           </div>
-          {/* Mini QR Preview — klik untuk tampil besar */}
-          <button
-            type="button"
-            onClick={() => qrImage && setShowLarge(true)}
-            aria-label="Tampilkan QR member ukuran besar"
-            className="bg-white p-2 rounded-xl flex items-center justify-center shadow-lg border border-white/20 transition-transform hover:scale-105 disabled:cursor-default disabled:hover:scale-100"
-            disabled={!qrImage}
-          >
-            {qrImage ? (
-              <img src={qrImage} alt="QR member" className="size-10 rounded" />
-            ) : (
-              <Icon name="qr_code_2" className="text-[40px] text-on-background size-10" />
-            )}
-          </button>
-        </div>
-        <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-center relative z-10">
-          <div>
-            <p className="font-caption text-caption text-secondary-fixed-dim mb-0.5">Member ID</p>
-            <p className="font-body-semibold text-body-semibold text-white tracking-widest">
-              {memberId}
-            </p>
+
+          <div className="flex items-center justify-between border-t border-polks-surface pt-3">
+            <div className="flex items-center gap-1.5">
+              <Icon name="location_on" className="size-3 text-[#C0CBD3]" />
+              <span className="text-[10px] text-[#8A959D]">Semua outlet POLKS</span>
+            </div>
+            <button
+              type="button"
+              onClick={copyId}
+              className="inline-flex items-center gap-1 rounded-lg bg-polks-surface px-2.5 py-1 text-[11px] font-semibold text-polks-brand"
+            >
+              Salin ID
+              <Icon name="content_copy" className="size-3" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={copyId}
-            aria-label="Salin Member ID"
-            className="text-white hover:text-gold transition-colors"
-          >
-            <Icon name="content_copy" className="size-6" />
-          </button>
         </div>
       </div>
 

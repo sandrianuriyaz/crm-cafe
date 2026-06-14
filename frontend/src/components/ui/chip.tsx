@@ -15,7 +15,7 @@ export function Chip({ active = false, onClick, children, className }: Props) {
       onClick={onClick}
       className={cn(
         "h-9 rounded-full px-4 font-body-semibold text-body-semibold transition-colors whitespace-nowrap",
-        active ? "bg-primary text-on-primary" : "bg-surface-container text-on-surface-variant",
+        active ? "bg-polks-brand text-white" : "bg-white text-polks-muted border border-polks-border",
         className,
       )}
     >

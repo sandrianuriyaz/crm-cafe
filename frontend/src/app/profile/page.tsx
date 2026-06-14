@@ -97,78 +97,73 @@ export default function ProfilePage() {
   ];
 
   return (
-    <CustomerShell maxWidth="max-w-md">
-      <div className="flex flex-col gap-lg">
-        {/* Heading */}
+    <CustomerShell>
+      <div className="flex flex-col gap-5 px-5 pb-28 pt-5">
         <div>
-          <h1 className="font-page-title text-page-title text-on-surface">
-            Profile
+          <h1 className="text-[22px] font-black text-polks-text">
+            Profil
           </h1>
-          <p className="font-body text-body text-on-surface-variant mt-xs">
-            Your membership details
+          <p className="mt-1 text-sm text-polks-muted">
+            Detail membership POLKS
           </p>
         </div>
 
         {error ? (
-          <div className="rounded-xl border border-outline-variant bg-surface p-lg flex flex-col items-center text-center gap-md">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-white p-5 text-center">
             <Icon name="error" className="size-10 text-error" />
-            <p className="font-body text-body text-on-surface-variant">{error}</p>
+            <p className="text-sm text-polks-muted">{error}</p>
           </div>
         ) : (
           <>
-            {/* Identity card */}
-            <div className="bg-surface rounded-xl border border-outline-variant p-lg flex items-center gap-md">
-              <div className="size-16 shrink-0 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-card-title text-card-title font-bold">
+            <div className="flex items-center gap-4 rounded-2xl border border-polks-border bg-white p-5">
+              <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-polks-brand text-base font-bold text-white">
                 {loading ? "" : initialsOf(name)}
               </div>
               <div className="min-w-0">
-                <h2 className="font-card-title text-card-title text-on-surface truncate">
+                <h2 className="truncate text-base font-bold text-polks-text">
                   {name}
                 </h2>
-                <p className="font-body text-body text-on-surface-variant truncate">
+                <p className="truncate text-sm text-polks-muted">
                   {email}
                 </p>
               </div>
             </div>
 
-            {/* Points balance */}
-            <div className="bg-primary text-on-primary rounded-xl p-md shadow-sm border border-outline-variant/20 flex items-center gap-md">
-              <div className="bg-primary-fixed text-on-primary-fixed p-sm rounded-full flex items-center justify-center">
-                <Icon name="stars" className="size-5" />
+            <div className="flex items-center gap-3 rounded-2xl bg-polks-brand p-4 text-white shadow-[0_12px_32px_rgba(37,52,63,0.22)]">
+              <div className="flex size-11 items-center justify-center rounded-full bg-polks-point-soft">
+                <Icon name="stars" fill className="size-5 text-polks-point" />
               </div>
               <div>
-                <div className="font-caption text-caption text-primary-fixed-dim">
-                  Available Balance
+                <div className="text-xs text-white/55">
+                  Saldo Poin
                 </div>
-                <div className="font-card-title text-card-title font-bold">
+                <div className="text-base font-bold text-white">
                   {points.toLocaleString("id-ID")} pts
                 </div>
               </div>
             </div>
 
-            {/* Info list */}
-            <div className="bg-surface rounded-xl border border-outline-variant divide-y divide-outline-variant/60 overflow-hidden">
+            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
               {infoRows.map((row) => (
                 <div
                   key={row.label}
-                  className="flex items-center gap-md px-md py-sm"
+                  className="flex items-center gap-3 border-b border-polks-border px-4 py-3 last:border-b-0"
                 >
                   <Icon
                     name={row.icon}
-                    className="size-5 text-on-surface-variant shrink-0"
+                    className="size-5 shrink-0 text-polks-muted"
                   />
-                  <span className="font-body text-body text-on-surface-variant flex-1">
+                  <span className="flex-1 text-sm text-polks-muted">
                     {row.label}
                   </span>
-                  <span className="font-body-semibold text-body-semibold text-on-surface text-right">
+                  <span className="text-right text-sm font-semibold text-polks-text">
                     {loading ? "…" : row.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Quick links */}
-            <div className="flex gap-md">
+            <div className="flex gap-3">
               <Button asChild variant="outline" className="flex-1">
                 <Link href="/member-card">
                   <Icon name="account_balance_wallet" className="size-5" />
@@ -183,8 +178,7 @@ export default function ProfilePage() {
               </Button>
             </div>
 
-            {/* Logout */}
-            <Button variant="destructive" onClick={handleLogout}>
+            <Button variant="destructive" onClick={handleLogout} className="rounded-xl">
               <Icon name="logout" className="size-5" />
               Keluar
             </Button>
