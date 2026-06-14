@@ -48,7 +48,7 @@ export function SplashGate({ children }: { children: React.ReactNode }) {
               width={80}
               height={80}
               priority
-              className="size-20 object-contain"
+              className="size-20 object-contain brightness-0 invert"
             />
             <Image
               src="/polks/logo.png"

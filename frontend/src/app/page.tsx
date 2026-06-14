@@ -20,6 +20,7 @@ import {
   Home,
   LogIn,
 } from "lucide-react";
+import { LoginRequiredModal } from "@/components/customer/login-required-modal";
 
 const banners = [
   { id: 1, title: "Diskon Kopi Susu 20%", sub: "Berlaku di semua outlet · s/d 30 Jun 2026", tag: "Promo Aktif" },
@@ -76,6 +77,8 @@ const navItems = [
 
 export default function GuestHomePage() {
   const [activeBanner, setActiveBanner] = useState(0);
+  const [modalReason, setModalReason] = useState<string | null>(null);
+  const gate = (reason: string) => () => setModalReason(reason);
 
   return (
     <div className="polks-phone relative w-full overflow-x-hidden bg-polks-bg font-body text-polks-text">
@@ -89,13 +92,14 @@ export default function GuestHomePage() {
           className="h-8 w-auto object-contain"
           priority
         />
-        <Link
-          href="/login"
+        <button
+          type="button"
+          onClick={gate("Login untuk membuka member card & QR kamu.")}
           className="inline-flex h-[34px] items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3.5 text-xs font-semibold text-white"
         >
           <QrCode size={14} />
           QR Member
-        </Link>
+        </button>
       </div>
 
       {/* Promo banner */}
@@ -145,20 +149,28 @@ export default function GuestHomePage() {
 
         {/* 2-col CTA */}
         <div className="grid grid-cols-2 gap-2.5 px-3.5 pt-3.5">
-          <Link href="/login" className="rounded-2xl bg-polks-brand p-4 text-left">
+          <button
+            type="button"
+            onClick={gate("Login untuk melihat semua promo POLKS.")}
+            className="rounded-2xl bg-polks-brand p-4 text-left"
+          >
             <div className="mb-2.5 flex size-[38px] items-center justify-center rounded-xl bg-white/[0.12]">
               <Tag size={18} color="#ffffff" strokeWidth={2} />
             </div>
             <p className="text-[13px] font-bold text-white">Promo</p>
             <p className="text-[11px] text-white/45">Lihat penawaran</p>
-          </Link>
-          <Link href="/login" className="rounded-2xl bg-polks-bg p-4 text-left">
+          </button>
+          <button
+            type="button"
+            onClick={gate("Login untuk menukar poin dengan reward.")}
+            className="rounded-2xl bg-polks-bg p-4 text-left"
+          >
             <div className="mb-2.5 flex size-[38px] items-center justify-center rounded-xl bg-polks-surface">
               <Gift size={18} color="#17212A" strokeWidth={2} />
             </div>
             <p className="text-[13px] font-bold text-polks-text">Reward</p>
             <p className="text-[11px] text-[#8A959D]">Tukar poin</p>
-          </Link>
+          </button>
         </div>
 
         {/* 4-col shortcuts */}
@@ -223,11 +235,12 @@ export default function GuestHomePage() {
           </div>
           <div className="flex flex-col">
             {rewards.map((r, i) => (
-              <Link
+              <button
                 key={r.id}
-                href="/login"
+                type="button"
+                onClick={gate("Login untuk menukar poin dengan reward.")}
                 className={
-                  "flex items-center justify-between py-3 " +
+                  "flex w-full items-center justify-between py-3 text-left " +
                   (i < rewards.length - 1 ? "border-b border-polks-surface" : "")
                 }
               >
@@ -243,7 +256,7 @@ export default function GuestHomePage() {
                   </div>
                 </div>
                 <ChevronRight size={16} color="#C0CBD3" />
-              </Link>
+              </button>
             ))}
           </div>
         </div>
@@ -371,6 +384,12 @@ export default function GuestHomePage() {
           );
         })}
       </nav>
+
+      <LoginRequiredModal
+        open={modalReason !== null}
+        onClose={() => setModalReason(null)}
+        reason={modalReason ?? undefined}
+      />
     </div>
   );
 }
