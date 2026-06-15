@@ -16,6 +16,14 @@ const envSchema = z.object({
   POIN_PER_RUPIAH: z.coerce.number().int().positive().default(1000),
   // Konversi tukar poin: 1 poin = POIN_NILAI_RUPIAH rupiah (dipakai Fase 2).
   POIN_NILAI_RUPIAH: z.coerce.number().int().positive().default(1000),
+
+  // ── OTP login (Twilio WhatsApp/SMS) ───────────────────────────────────
+  // Opsional saat boot; divalidasi saat benar-benar mengirim OTP. Tanpa ini
+  // endpoint /auth/otp/request akan menolak dengan error konfigurasi.
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_WHATSAPP_FROM: z.string().optional(), // mis. +14155238886
+  TWILIO_SMS_FROM: z.string().optional(), // mis. +14155238886
 });
 
 export type Env = z.infer<typeof envSchema>;

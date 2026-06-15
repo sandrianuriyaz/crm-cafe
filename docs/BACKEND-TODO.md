@@ -19,25 +19,30 @@ integrasi UI → API. Dikelompokkan per prioritas. Base URL: `/api/v1`.
   - Admin: `GET/POST/PATCH/DELETE /admin/promos`
 - **Admin**: `GET /admin/members`, `GET /admin/members/:id`, `POST /admin/members/:id/adjust-points`, `GET /admin/transactions`
 - **Webhook POS**: `POST /webhooks/pos/transactions`
+- **Auth OTP**: `POST /auth/otp/request`, `POST /auth/otp/verify` (Twilio WA/SMS) — ✅ selesai 2026-06-15, lihat di bawah.
 
 ---
 
-## 🔴 WAJIB — Auth OTP (WhatsApp / SMS)
+## ✅ SELESAI — Auth OTP (WhatsApp / SMS via Twilio)
 
-Halaman `/login`, `/register`, `/verify-account` sudah pakai alur OTP, tapi belum
-ada backend-nya. **Sementara** frontend menambal dengan login email/password akun
-seed (lihat `verify-account/page.tsx`, blok "Dev bridge").
+> Implementasi 2026-06-15. Spec: `docs/superpowers/specs/2026-06-15-auth-otp-design.md`.
 
-- `POST /auth/otp/request`
-  - body: `{ "phone": "08xxxx", "channel": "whatsapp" | "sms" }`
-  - aksi: generate kode 6 digit (TTL ~5 menit), kirim via WA/SMS
-  - response: `{ "success": true }` (jangan bocorkan kode)
-- `POST /auth/otp/verify`
-  - body: `{ "phone": "08xxxx", "code": "123456" }`
-  - aksi: validasi kode; kalau nomor baru → buat User+Member otomatis
-  - response: `{ "access_token": "...", "user": { id, role, name, memberCode, pointBalance } }`
+- `POST /auth/otp/request` — body `{ "phone": "08xxxx", "channel": "whatsapp" | "sms" }`.
+  Generate kode 6 digit (TTL 5 menit, di-hash bcrypt), kirim via Twilio.
+  Cooldown resend 30 dtk + maks 5 req/jam/nomor. Response `{ "success": true }`.
+- `POST /auth/otp/verify` — body `{ "phone": "08xxxx", "code": "123456" }`.
+  Validasi kode (maks 5 percobaan/kode); nomor baru → buat `User`+`Member` otomatis
+  (klaim member POS by phone bila ada). Response
+  `{ "access_token": "...", "user": { id, role, name, memberCode, pointBalance } }`.
 
-Setelah ini ada, hapus dev-bridge di frontend dan arahkan tombol "Verifikasi" ke `/auth/otp/verify`.
+Catatan:
+- Skema `User.email` & `User.passwordHash` kini **nullable** (user OTP tak punya
+  keduanya). Login email/password menolak user tanpa `passwordHash`.
+- Butuh env `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`,
+  `TWILIO_SMS_FROM` (lihat `.env.example`). Tanpa ini, `request` menolak saat kirim.
+- **Sisa pekerjaan frontend** (di luar backend): hapus dev-bridge di
+  `verify-account/page.tsx` & arahkan tombol "Verifikasi" ke `/auth/otp/verify`,
+  serta kirim `phone`+`channel` ke `/auth/otp/request` dari halaman login/register.
 
 ---
 

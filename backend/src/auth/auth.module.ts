@@ -4,6 +4,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { OtpService } from './otp/otp.service';
+import { OTP_SENDER, TwilioOtpSender } from './otp/otp-sender';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
@@ -22,7 +24,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    OtpService,
+    JwtStrategy,
+    { provide: OTP_SENDER, useClass: TwilioOtpSender },
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

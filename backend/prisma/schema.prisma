@@ -26,9 +26,10 @@ enum Role {
 model User {
   id           String   @id @default(cuid())
   name         String
-  email        String   @unique
+  // Nullable: user yang daftar lewat OTP (phone) tidak punya email/password.
+  email        String?  @unique
   phone        String?  @unique
-  passwordHash String
+  passwordHash String?
   role         Role     @default(CUSTOMER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -36,6 +37,23 @@ model User {
   member Member?
 
   @@map("users")
+}
+
+// Kode OTP login/registrasi via WhatsApp/SMS. Kode plain tidak disimpan
+// (hanya bcrypt hash). Satu nomor bisa punya banyak baris historis; yang aktif =
+// consumedAt null & expiresAt > now. Lihat OtpService.
+model OtpCode {
+  id         String    @id @default(cuid())
+  phone      String // kanonik 08xxxxxxxxxx
+  codeHash   String
+  channel    String // whatsapp | sms
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([phone])
+  @@map("otp_codes")
 }
 
 // Tier keanggotaan (opsional, dipakai nanti untuk benefit per level poin).
