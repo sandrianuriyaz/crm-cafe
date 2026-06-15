@@ -26,7 +26,8 @@ type AuthContextValue = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   // Login/registrasi via OTP: verifikasi kode lalu simpan token + user.
-  loginWithOtp: (phone: string, code: string) => Promise<void>;
+  // Mengembalikan user agar pemanggil bisa cek apakah profil sudah lengkap.
+  loginWithOtp: (phone: string, code: string) => Promise<AuthUser>;
   register: (input: {
     name: string;
     email: string;
@@ -91,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setToken(res.access_token);
     setUser(res.user);
+    return res.user;
   }, []);
 
   const register = useCallback(

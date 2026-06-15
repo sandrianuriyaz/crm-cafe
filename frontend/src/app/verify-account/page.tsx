@@ -85,9 +85,10 @@ export default function VerifyAccountPage() {
     setVerifying(true);
     setError(null);
     try {
-      await loginWithOtp(phone, otp.join(""));
+      const u = await loginWithOtp(phone, otp.join(""));
       clearOtpSession();
-      router.push("/dashboard");
+      // User baru (belum punya nama) → lengkapi profil dulu.
+      router.push(u.name && u.name.trim() ? "/dashboard" : "/complete-profile");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Verifikasi gagal.");
       setOtp(Array(OTP_LENGTH).fill(""));

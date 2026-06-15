@@ -95,6 +95,11 @@ Semua route admin di bawah perlu role `ADMIN`.
 
 - ✅ **Edit profil** (SELESAI 2026-06-15): `PATCH /member/profile` `{ name?, phone? }` —
   phone disinkron ke `User.phone` (login OTP). Wiring halaman *Informasi Akun* menyusul.
+  - 🟡 **Lengkapi profil (onboarding)**: halaman `/complete-profile` muncul setelah
+    register OTP (user baru belum punya nama). Form mengirim `name` (tersimpan) +
+    opsional `email`, `birthDate`, `gender` — **3 field terakhir belum dipersist**
+    (saat ini di-strip backend). Tolong tambah field `email`/`birthDate`/`gender`
+    di `Member` + `PATCH /member/profile` bila ingin disimpan.
 - **Kategori reward**: tambah `category`/`type` + `outlet` + `validUntil` di model `Reward` — chip kategori & "All Outlets" di `/rewards` & `/rewards/[id]` masih statis.
 - **Promo lengkap**: tambah `outlet`, `tag`, status `limited`/`upcoming` di `Promo` — sekarang cuma `ACTIVE`/`INACTIVE`.
 - **Notifikasi**: simpan preferensi member + pengiriman push/WA — `/notifications` masih UI-only.
