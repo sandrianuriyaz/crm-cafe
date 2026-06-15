@@ -8,10 +8,16 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   // rawBody: true → req.rawBody (Buffer) tersedia untuk verifikasi HMAC webhook POS
   const app = await NestFactory.create(AppModule, { rawBody: true });
+  const config = app.get(ConfigService);
 
   // CORS — izinkan frontend (Next.js) memanggil API. Pakai Bearer token (bukan
-  // cookie), origin:true memantulkan origin pemanggil. Batasi di production.
-  app.enableCors({ origin: true });
+  // cookie). Production: set CORS_ORIGIN (pisah koma); kosong = izinkan semua (dev).
+  const corsOrigin = config.get<string>('CORS_ORIGIN');
+  app.enableCors({
+    origin: corsOrigin
+      ? corsOrigin.split(',').map((o) => o.trim())
+      : true,
+  });
 
   // Validasi DTO global + buang field tak dikenal
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -26,18 +32,18 @@ async function bootstrap() {
   });
 
   // Swagger
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('CRM Cafe API')
     .setDescription('Loyalty & promo terintegrasi POS')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  const doc = SwaggerModule.createDocument(app, config);
+  const doc = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, doc);
 
-  const port = app.get(ConfigService).get<number>('PORT') ?? 3000;
-  await app.listen(port);
-  console.log(`🚀 API: http://localhost:${port}/api/v1`);
-  console.log(`📚 Docs: http://localhost:${port}/docs`);
+  // 0.0.0.0 supaya bisa diakses dari luar container (host deploy).
+  const port = config.get<number>('PORT') ?? 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 API listening on port ${port} (prefix /api/v1)`);
 }
 bootstrap();

@@ -5,9 +5,14 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
   DIRECT_URL: z.string().url(),
-  REDIS_URL: z.string().url(),
+  // Opsional: belum dipakai di kode. Disediakan untuk fitur antrian/cache nanti.
+  REDIS_URL: z.string().url().optional(),
   JWT_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: z.string().default('7d'),
+
+  // Origin frontend yang diizinkan CORS (pisah koma). Kosong = izinkan semua
+  // (cocok untuk dev). Production: isi domain frontend, mis. https://app.polks.id
+  CORS_ORIGIN: z.string().optional(),
 
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.
