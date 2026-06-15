@@ -195,6 +195,45 @@ model PosSyncLog {
   @@map("pos_sync_logs")
 }
 
+// ── Outlet ──────────────────────────────────────────────────────────────────
+
+enum OutletStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Lokasi outlet POLKS. storeId memetakan ke POS store_id (untuk statistik &
+// sinkronisasi per-outlet). GET /outlets publik hanya menampilkan ACTIVE.
+model Outlet {
+  id        String       @id @default(cuid())
+  name      String
+  city      String?
+  address   String?
+  hours     String?
+  phone     String?
+  status    OutletStatus @default(ACTIVE)
+  storeId   String?      @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("outlets")
+}
+
+// Konfigurasi loyalty global (singleton, id tetap "singleton"). rupiahPerPoint
+// dipakai webhook untuk menghitung earning poin (fallback env POIN_PER_RUPIAH).
+model LoyaltyConfig {
+  id                     String   @id @default("singleton")
+  rupiahPerPoint         Int      @default(1000)
+  pointsPerUnit          Int      @default(1)
+  pointExpiryMonths      Int?
+  tierThresholds         Json     @default("[]")
+  webhookUrl             String?
+  requireIdempotencyKeys Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
+
+  @@map("loyalty_config")
+}
+
 // ── Promo ───────────────────────────────────────────────────────────────────
 
 enum PromoStatus {

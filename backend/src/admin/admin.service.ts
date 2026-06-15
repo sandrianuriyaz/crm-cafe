@@ -280,6 +280,65 @@ export class AdminService {
     return { total, skip, take, items };
   }
 
+  // ── Dashboard stats ─────────────────────────────────────────────────────
+  async stats() {
+    const [totalMembers, totalTransactions, earn, redeemed, activeOutlets] =
+      await Promise.all([
+        this.prisma.member.count(),
+        this.prisma.transaction.count(),
+        this.prisma.pointHistory.aggregate({
+          _sum: { points: true },
+          where: { type: 'earn' },
+        }),
+        this.prisma.redeem.aggregate({ _sum: { pointsSpent: true } }),
+        this.prisma.outlet.count({ where: { status: 'ACTIVE' } }),
+      ]);
+
+    return {
+      totalMembers,
+      totalTransactions,
+      pointsIssued: earn._sum.points ?? 0,
+      pointsRedeemed: redeemed._sum.pointsSpent ?? 0,
+      activeOutlets,
+      pointsFlow: await this.pointsFlow(),
+    };
+  }
+
+  // Arus poin 6 bulan terakhir: { month:"YYYY-MM", issued, redeemed }.
+  private async pointsFlow() {
+    const issued = await this.prisma.$queryRaw<
+      { month: string; total: bigint }[]
+    >`SELECT to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month,
+             COALESCE(SUM(points), 0)::bigint AS total
+        FROM point_histories
+       WHERE type = 'earn'
+         AND "createdAt" >= date_trunc('month', now()) - interval '5 months'
+       GROUP BY 1`;
+    const redeemed = await this.prisma.$queryRaw<
+      { month: string; total: bigint }[]
+    >`SELECT to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month,
+             COALESCE(SUM("pointsSpent"), 0)::bigint AS total
+        FROM redeems
+       WHERE "createdAt" >= date_trunc('month', now()) - interval '5 months'
+       GROUP BY 1`;
+
+    const issuedMap = new Map(issued.map((r) => [r.month, Number(r.total)]));
+    const redeemedMap = new Map(redeemed.map((r) => [r.month, Number(r.total)]));
+
+    const now = new Date();
+    const flow: { month: string; issued: number; redeemed: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      flow.push({
+        month,
+        issued: issuedMap.get(month) ?? 0,
+        redeemed: redeemedMap.get(month) ?? 0,
+      });
+    }
+    return flow;
+  }
+
   // ── Ringkasan sinkronisasi POS per storeId ──────────────────────────────
   // Catatan: "per outlet" sebenarnya butuh model Outlet (Batch B). Sementara
   // dikelompokkan per storeId dari transaksi.

@@ -51,18 +51,17 @@ Catatan:
 
 Semua route admin di bawah perlu role `ADMIN`.
 
-### Loyalty Config — `/admin/config`
-- `GET /admin/loyalty-config` → `{ rupiahPerPoint, pointsPerUnit, pointExpiry, tierThresholds[], webhookUrl, requireIdempotencyKeys }`
-- `PATCH /admin/loyalty-config`
+### ✅ Loyalty Config — `/admin/config` — SELESAI 2026-06-15
+- `GET/PATCH /admin/loyalty-config` (singleton `LoyaltyConfig`).
+- `rupiahPerPoint` dipakai di perhitungan earning webhook (fallback env `POIN_PER_RUPIAH`).
 
-### Overview / Dashboard stats — `/admin`
+### ✅ Overview / Dashboard stats — `/admin` — SELESAI 2026-06-15
 - `GET /admin/stats` → `{ totalMembers, totalTransactions, pointsIssued, pointsRedeemed, activeOutlets, pointsFlow[] }`
-- Sekarang frontend menghitung kasar dari `count` members & transaksi.
+- `pointsFlow` = 6 bulan terakhir `{ month, issued, redeemed }`.
 
-### Outlets — `/admin/outlets` & customer `/outlets`
-- Model **Outlet** `{ id, name, city, address, hours, phone, status }`
-- `GET /outlets` (publik/member), `GET/POST/PATCH/DELETE /admin/outlets`
-- Sekarang outlet masih hardcoded di frontend.
+### ✅ Outlets — `/admin/outlets` & customer `/outlets` — SELESAI 2026-06-15
+- Model `Outlet { name, city, address, hours, phone, status, storeId? }` (`storeId` map ke POS).
+- `GET /outlets` (publik, ACTIVE), `GET/POST/PATCH/DELETE /admin/outlets` (ADMIN).
 
 ### ✅ Vouchers (admin) — `/admin/vouchers` — SELESAI 2026-06-15
 - `GET /admin/vouchers` (+ filter `status`) → `{ id, code, memberName, reward, status, expiredAt, usedAt, createdAt }`

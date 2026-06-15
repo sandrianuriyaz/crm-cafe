@@ -49,13 +49,17 @@ export class WebhooksService {
     }
 
     try {
+      // Rate earning dari LoyaltyConfig (fallback env). Dibaca sekali di luar
+      // $transaction agar tidak menambah beban di dalam transaksi.
+      const rupiahPerPoint = await this.getRupiahPerPoint();
+
       const result = await this.prisma.$transaction(async (tx) => {
         // ── Checklist 4: upsert pelanggan ──────────────────────────────────
         const member = await this.upsertMember(tx, dto);
 
         // ── Checklist 6: hitung poin (member saja; walk-in anonim → 0) ─────
         const pointsAwarded = member
-          ? this.calculatePoints(dto.transaction.grand_total)
+          ? this.calculatePoints(dto.transaction.grand_total, rupiahPerPoint)
           : 0;
 
         // ── Checklist 5: catat transaksi + item (parsed) + raw payload ─────
@@ -158,11 +162,21 @@ export class WebhooksService {
     }
   }
 
-  // §8: poin = floor(grand_total / POIN_PER_RUPIAH). Earning dari grand_total (§11 #3).
-  private calculatePoints(grandTotal: number): number {
-    const per = this.config.get<number>('POIN_PER_RUPIAH') ?? 1000;
-    if (grandTotal <= 0) return 0;
-    return Math.floor(grandTotal / per);
+  // §8: poin = floor(grand_total / rupiahPerPoint). Earning dari grand_total (§11 #3).
+  private calculatePoints(grandTotal: number, rupiahPerPoint: number): number {
+    if (grandTotal <= 0 || rupiahPerPoint <= 0) return 0;
+    return Math.floor(grandTotal / rupiahPerPoint);
+  }
+
+  // Rate earning: LoyaltyConfig.rupiahPerPoint bila ada, jika tidak env POIN_PER_RUPIAH.
+  private async getRupiahPerPoint(): Promise<number> {
+    const cfg = await this.prisma.loyaltyConfig.findUnique({
+      where: { id: 'singleton' },
+      select: { rupiahPerPoint: true },
+    });
+    return (
+      cfg?.rupiahPerPoint ?? this.config.get<number>('POIN_PER_RUPIAH') ?? 1000
+    );
   }
 
   // Opsi A (CRM yang punya id): customer.id = memberCode terbitan CRM yang

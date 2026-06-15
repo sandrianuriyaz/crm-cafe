@@ -49,3 +49,52 @@ describe('AdminService.markVoucherUsed', () => {
     );
   });
 });
+
+describe('AdminService.stats', () => {
+  let service: AdminService;
+  let prisma: any;
+
+  beforeEach(async () => {
+    prisma = {
+      member: { count: jest.fn().mockResolvedValue(12) },
+      transaction: { count: jest.fn().mockResolvedValue(34) },
+      pointHistory: {
+        aggregate: jest.fn().mockResolvedValue({ _sum: { points: 500 } }),
+      },
+      redeem: {
+        aggregate: jest.fn().mockResolvedValue({ _sum: { pointsSpent: 120 } }),
+      },
+      outlet: { count: jest.fn().mockResolvedValue(3) },
+      $queryRaw: jest.fn().mockResolvedValue([]),
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [AdminService, { provide: PrismaService, useValue: prisma }],
+    }).compile();
+    service = module.get(AdminService);
+  });
+
+  it('aggregates totals and returns a 6-month points flow', async () => {
+    const res = await service.stats();
+    expect(res).toEqual(
+      expect.objectContaining({
+        totalMembers: 12,
+        totalTransactions: 34,
+        pointsIssued: 500,
+        pointsRedeemed: 120,
+        activeOutlets: 3,
+      }),
+    );
+    expect(res.pointsFlow).toHaveLength(6);
+    expect(res.pointsFlow[0]).toEqual(
+      expect.objectContaining({ issued: 0, redeemed: 0 }),
+    );
+  });
+
+  it('defaults points to 0 when aggregates are empty', async () => {
+    prisma.pointHistory.aggregate.mockResolvedValue({ _sum: { points: null } });
+    prisma.redeem.aggregate.mockResolvedValue({ _sum: { pointsSpent: null } });
+    const res = await service.stats();
+    expect(res.pointsIssued).toBe(0);
+    expect(res.pointsRedeemed).toBe(0);
+  });
+});

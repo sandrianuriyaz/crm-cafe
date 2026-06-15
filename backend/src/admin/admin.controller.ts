@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AdminService } from './admin.service';
+import { LoyaltyConfigService } from './loyalty-config.service';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { ListMembersQueryDto } from './dto/list-members-query.dto';
 import { ListQueryDto } from '../member/dto/list-query.dto';
@@ -21,6 +22,7 @@ import {
   ListVouchersQueryDto,
   ListWebhooksQueryDto,
 } from './dto/list-webhooks-query.dto';
+import { UpdateLoyaltyConfigDto } from './dto/update-loyalty-config.dto';
 
 // Semua route admin. Wajib login + role ADMIN.
 @ApiTags('admin')
@@ -29,7 +31,28 @@ import {
 @Roles(Role.ADMIN)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly admin: AdminService) {}
+  constructor(
+    private readonly admin: AdminService,
+    private readonly loyaltyConfig: LoyaltyConfigService,
+  ) {}
+
+  @Get('stats')
+  @ApiOperation({ summary: '[Admin] Statistik dashboard' })
+  stats() {
+    return this.admin.stats();
+  }
+
+  @Get('loyalty-config')
+  @ApiOperation({ summary: '[Admin] Ambil konfigurasi loyalty' })
+  getLoyaltyConfig() {
+    return this.loyaltyConfig.get();
+  }
+
+  @Patch('loyalty-config')
+  @ApiOperation({ summary: '[Admin] Ubah konfigurasi loyalty' })
+  updateLoyaltyConfig(@Body() dto: UpdateLoyaltyConfigDto) {
+    return this.loyaltyConfig.update(dto);
+  }
 
   @Get('members')
   @ApiOperation({ summary: '[Admin] Daftar member (cari + paginated)' })

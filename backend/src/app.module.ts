@@ -9,6 +9,7 @@ import { MemberModule } from './member/member.module';
 import { RewardsModule } from './rewards/rewards.module';
 import { PromosModule } from './promos/promos.module';
 import { AdminModule } from './admin/admin.module';
+import { OutletsModule } from './outlets/outlets.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AdminModule } from './admin/admin.module';
     RewardsModule,
     PromosModule,
     AdminModule,
+    OutletsModule,
   ],
   controllers: [HealthController],
   providers: [],
