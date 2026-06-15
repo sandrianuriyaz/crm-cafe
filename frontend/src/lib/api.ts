@@ -32,6 +32,17 @@ type ApiOptions = {
   auth?: boolean; // sertakan Bearer token
 };
 
+export type OtpChannel = "whatsapp" | "sms";
+
+// Minta kode OTP dikirim ke nomor lewat WhatsApp/SMS. Tidak butuh token.
+export function requestOtp(phone: string, channel: OtpChannel) {
+  return api<{ success: true }>("/auth/otp/request", {
+    method: "POST",
+    auth: false,
+    body: { phone, channel },
+  });
+}
+
 export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const { method = "GET", body, auth = true } = opts;
 

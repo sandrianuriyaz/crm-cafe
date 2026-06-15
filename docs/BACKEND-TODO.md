@@ -40,9 +40,10 @@ Catatan:
   keduanya). Login email/password menolak user tanpa `passwordHash`.
 - Butuh env `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`,
   `TWILIO_SMS_FROM` (lihat `.env.example`). Tanpa ini, `request` menolak saat kirim.
-- **Sisa pekerjaan frontend** (di luar backend): hapus dev-bridge di
-  `verify-account/page.tsx` & arahkan tombol "Verifikasi" ke `/auth/otp/verify`,
-  serta kirim `phone`+`channel` ke `/auth/otp/request` dari halaman login/register.
+- **Frontend sudah tersambung** (2026-06-15): dev-bridge dihapus; login/register
+  punya input nomor → `/auth/otp/request`, `verify-account` → `/auth/otp/verify`.
+  Channel SMS sementara dinonaktifkan di UI (nomor SMS Twilio belum ada). Spec:
+  `docs/superpowers/specs/2026-06-15-frontend-otp-wiring-design.md`.
 
 ---
 

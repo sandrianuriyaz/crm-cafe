@@ -1,29 +1,40 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Smartphone, Clock, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { requestOtp, type OtpChannel } from "@/lib/api";
+import { clearOtpSession, maskPhone, readOtpSession } from "@/lib/otp-session";
 
 const OTP_LENGTH = 6;
-const PHONE = "+62 812 **** 7890";
-
-// ── Jembatan login DEV (sementara) ──────────────────────────────────────────
-// Backend OTP belum ada, jadi verifikasi memakai akun seed agar token tersimpan
-// & sesi bertahan antar halaman. Ganti dengan OTP asli saat backend siap.
-const DEV_EMAIL = process.env.NEXT_PUBLIC_DEV_EMAIL ?? "sandria@polks.test";
-const DEV_PASSWORD = process.env.NEXT_PUBLIC_DEV_PASSWORD ?? "password123";
 
 export default function VerifyAccountPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { loginWithOtp } = useAuth();
+  const [phone, setPhone] = useState<string | null>(null);
+  const [channel, setChannel] = useState<OtpChannel>("whatsapp");
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [countdown, setCountdown] = useState(0);
   const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const complete = otp.every((d) => d !== "");
+
+  // Ambil nomor + channel yang disimpan halaman login/register. Kalau tak ada
+  // (mis. buka /verify-account langsung), balik ke login.
+  useEffect(() => {
+    const session = readOtpSession();
+    if (!session) {
+      router.replace("/login");
+      return;
+    }
+    setPhone(session.phone);
+    setChannel(session.channel);
+  }, [router]);
 
   function handleChange(i: number, value: string) {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -32,6 +43,7 @@ export default function VerifyAccountPage() {
       next[i] = digit;
       return next;
     });
+    if (error) setError(null);
     if (digit && i < OTP_LENGTH - 1) inputsRef.current[i + 1]?.focus();
   }
 
@@ -39,8 +51,7 @@ export default function VerifyAccountPage() {
     if (e.key === "Backspace" && !otp[i] && i > 0) inputsRef.current[i - 1]?.focus();
   }
 
-  function handleResend() {
-    setOtp(Array(OTP_LENGTH).fill(""));
+  function startCountdown() {
     setCountdown(30);
     const t = setInterval(() => {
       setCountdown((p) => {
@@ -53,16 +64,36 @@ export default function VerifyAccountPage() {
     }, 1000);
   }
 
-  async function onVerify() {
-    if (!complete || verifying) return;
-    setVerifying(true);
-    // Dev bridge: dapatkan token via akun seed agar sesi bertahan antar halaman.
+  async function handleResend() {
+    if (!phone || resending || countdown > 0) return;
+    setResending(true);
+    setError(null);
     try {
-      await login(DEV_EMAIL, DEV_PASSWORD);
-    } catch {
-      // Abaikan bila backend mati — tetap lanjut ke dashboard (mode UI).
+      await requestOtp(phone, channel);
+      setOtp(Array(OTP_LENGTH).fill(""));
+      inputsRef.current[0]?.focus();
+      startCountdown();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal mengirim ulang OTP.");
+    } finally {
+      setResending(false);
     }
-    router.push("/dashboard");
+  }
+
+  async function onVerify() {
+    if (!complete || verifying || !phone) return;
+    setVerifying(true);
+    setError(null);
+    try {
+      await loginWithOtp(phone, otp.join(""));
+      clearOtpSession();
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verifikasi gagal.");
+      setOtp(Array(OTP_LENGTH).fill(""));
+      inputsRef.current[0]?.focus();
+      setVerifying(false);
+    }
   }
 
   return (
@@ -92,11 +123,14 @@ export default function VerifyAccountPage() {
               Verifikasi Akun
             </h1>
             <p className="mt-2 text-[13px] leading-relaxed text-polks-muted">
-              Kami mengirim kode 6 digit ke
+              Kami mengirim kode 6 digit via{" "}
+              {channel === "whatsapp" ? "WhatsApp" : "SMS"} ke
             </p>
             <div className="mt-1 flex items-center gap-2">
               <Smartphone size={14} color="#25343F" />
-              <span className="text-sm font-semibold text-polks-text">{PHONE}</span>
+              <span className="text-sm font-semibold text-polks-text">
+                {phone ? maskPhone(phone) : "…"}
+              </span>
             </div>
           </div>
         </div>
@@ -141,6 +175,12 @@ export default function VerifyAccountPage() {
             </p>
           </div>
 
+          {error && (
+            <p className="text-center text-[12px] font-medium text-red-600">
+              {error}
+            </p>
+          )}
+
           <button
             type="button"
             disabled={!complete || verifying}
@@ -159,9 +199,10 @@ export default function VerifyAccountPage() {
               <button
                 type="button"
                 onClick={handleResend}
-                className="text-[13px] font-semibold text-polks-brand"
+                disabled={resending}
+                className="text-[13px] font-semibold text-polks-brand disabled:opacity-50"
               >
-                Kirim ulang OTP
+                {resending ? "Mengirim…" : "Kirim ulang OTP"}
               </button>
             )}
           </div>
