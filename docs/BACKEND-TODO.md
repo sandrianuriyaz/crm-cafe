@@ -64,22 +64,22 @@ Semua route admin di bawah perlu role `ADMIN`.
 - `GET /outlets` (publik/member), `GET/POST/PATCH/DELETE /admin/outlets`
 - Sekarang outlet masih hardcoded di frontend.
 
-### Vouchers (admin) — `/admin/vouchers`
-- `GET /admin/vouchers` → semua voucher lintas member `{ code, memberName, reward, status, expiredAt, usedAt }`
-- `PATCH /admin/vouchers/:id` → tandai `USED`
+### ✅ Vouchers (admin) — `/admin/vouchers` — SELESAI 2026-06-15
+- `GET /admin/vouchers` (+ filter `status`) → `{ id, code, memberName, reward, status, expiredAt, usedAt, createdAt }`
+- `PATCH /admin/vouchers/:id` → tandai `USED` (hanya dari status ACTIVE)
 
-### Redeem History (admin) — `/admin/redeem-history`
+### ✅ Redeem History (admin) — `/admin/redeem-history` — SELESAI 2026-06-15
 - `GET /admin/redeems` → riwayat penukaran semua member (paginated)
 
-### Webhook Inbox — `/admin/webhook`
-- `GET /admin/webhooks` → log event POS masuk (model `pos_sync_logs` sudah ada), filter status/tanggal
+### ✅ Webhook Inbox — `/admin/webhook` — SELESAI 2026-06-15
+- `GET /admin/webhooks` → log `PosSyncLog`, filter `status`/`from`/`to`
 
-### Idempotency — `/admin/idempotency`
-- `GET /admin/idempotency-keys` → daftar key + status (untuk audit anti-duplikat)
+### ✅ Idempotency — `/admin/idempotency` — SELESAI 2026-06-15
+- `GET /admin/idempotency-keys` → daftar dari tabel `Transaction` (kunci dedup)
 
-### POS Sync — `/admin/pos-sync`
-- `GET /admin/pos-sync` → status sinkronisasi per outlet
-- (opsional) `POST /admin/pos-sync/retry`
+### 🟡 POS Sync — `/admin/pos-sync` — SEBAGIAN 2026-06-15
+- `GET /admin/pos-sync` → ringkasan per `storeId` (groupBy transaksi). Per-outlet
+  penuh menunggu model `Outlet`. Endpoint retry dilewati (webhook bersifat push).
 
 ### Broadcast — `/admin/broadcast`
 - `POST /admin/broadcast` → `{ title, message, target }` kirim notif/promo ke member
@@ -94,7 +94,8 @@ Semua route admin di bawah perlu role `ADMIN`.
 
 ## 🟡 Penyempurnaan (opsional, dipakai UI)
 
-- **Edit profil**: `PATCH /member/profile` `{ name?, phone? }` — halaman *Informasi Akun* (`/profile/account`) sekarang read-only.
+- ✅ **Edit profil** (SELESAI 2026-06-15): `PATCH /member/profile` `{ name?, phone? }` —
+  phone disinkron ke `User.phone` (login OTP). Wiring halaman *Informasi Akun* menyusul.
 - **Kategori reward**: tambah `category`/`type` + `outlet` + `validUntil` di model `Reward` — chip kategori & "All Outlets" di `/rewards` & `/rewards/[id]` masih statis.
 - **Promo lengkap**: tambah `outlet`, `tag`, status `limited`/`upcoming` di `Promo` — sekarang cuma `ACTIVE`/`INACTIVE`.
 - **Notifikasi**: simpan preferensi member + pengiriman push/WA — `/notifications` masih UI-only.

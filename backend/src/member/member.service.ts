@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class MemberService {
@@ -35,6 +41,46 @@ export class MemberService {
   async getPoints(userId: string) {
     const m = await this.getMemberOrThrow(userId);
     return { pointBalance: m.pointBalance };
+  }
+
+  // Edit profil member sendiri. Phone diubah di Member & User sekaligus supaya
+  // login OTP (yang memakai User.phone) tetap cocok. Nomor bentrok → 409.
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const m = await this.getMemberOrThrow(userId);
+    const name = dto.name?.trim();
+    const phone = dto.phone?.trim();
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.member.update({
+          where: { id: m.id },
+          data: {
+            ...(name !== undefined ? { name } : {}),
+            ...(phone !== undefined ? { phone: phone || null } : {}),
+          },
+        });
+        // Sinkronkan phone (dan nama) ke akun login bila ada.
+        if (m.userId && (phone !== undefined || name !== undefined)) {
+          await tx.user.update({
+            where: { id: m.userId },
+            data: {
+              ...(name !== undefined ? { name } : {}),
+              ...(phone !== undefined ? { phone: phone || null } : {}),
+            },
+          });
+        }
+      });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        throw new ConflictException('Nomor HP sudah dipakai akun lain');
+      }
+      throw err;
+    }
+
+    return this.getProfile(userId);
   }
 
   // QR member: payload yang dipindai POS untuk mengenali pelanggan.

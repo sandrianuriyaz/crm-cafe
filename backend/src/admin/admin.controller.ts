@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -16,6 +17,10 @@ import { AdminService } from './admin.service';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { ListMembersQueryDto } from './dto/list-members-query.dto';
 import { ListQueryDto } from '../member/dto/list-query.dto';
+import {
+  ListVouchersQueryDto,
+  ListWebhooksQueryDto,
+} from './dto/list-webhooks-query.dto';
 
 // Semua route admin. Wajib login + role ADMIN.
 @ApiTags('admin')
@@ -48,5 +53,41 @@ export class AdminController {
   @ApiOperation({ summary: '[Admin] Semua transaksi POS (audit)' })
   transactions(@Query() q: ListQueryDto) {
     return this.admin.listTransactions(q.skip, q.take);
+  }
+
+  @Get('vouchers')
+  @ApiOperation({ summary: '[Admin] Semua voucher lintas member' })
+  vouchers(@Query() q: ListVouchersQueryDto) {
+    return this.admin.listVouchers(q);
+  }
+
+  @Patch('vouchers/:id')
+  @ApiOperation({ summary: '[Admin] Tandai voucher USED' })
+  markVoucherUsed(@Param('id') id: string) {
+    return this.admin.markVoucherUsed(id);
+  }
+
+  @Get('redeems')
+  @ApiOperation({ summary: '[Admin] Riwayat penukaran semua member' })
+  redeems(@Query() q: ListQueryDto) {
+    return this.admin.listRedeems(q.skip, q.take);
+  }
+
+  @Get('webhooks')
+  @ApiOperation({ summary: '[Admin] Log event POS masuk (filter status/tanggal)' })
+  webhooks(@Query() q: ListWebhooksQueryDto) {
+    return this.admin.listWebhooks(q);
+  }
+
+  @Get('idempotency-keys')
+  @ApiOperation({ summary: '[Admin] Audit idempotency key (anti-duplikat)' })
+  idempotencyKeys(@Query() q: ListQueryDto) {
+    return this.admin.listIdempotencyKeys(q.skip, q.take);
+  }
+
+  @Get('pos-sync')
+  @ApiOperation({ summary: '[Admin] Ringkasan sinkronisasi POS per store' })
+  posSync() {
+    return this.admin.posSyncSummary();
   }
 }

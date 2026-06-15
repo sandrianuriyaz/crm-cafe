@@ -1,9 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { MemberService } from './member.service';
 import { ListQueryDto } from './dto/list-query.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 // Semua route butuh login (Bearer token). Data selalu milik user yang login.
 @ApiTags('member')
@@ -17,6 +18,15 @@ export class MemberController {
   @ApiOperation({ summary: 'Profil member (nama, email, kode, saldo, tier)' })
   profile(@CurrentUser('id') userId: string) {
     return this.member.getProfile(userId);
+  }
+
+  @Patch('profile')
+  @ApiOperation({ summary: 'Edit profil member (nama / nomor HP)' })
+  updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.member.updateProfile(userId, dto);
   }
 
   @Get('points')
