@@ -148,8 +148,8 @@ export default function RegisterPage() {
         <div className="mt-auto px-6 pb-8 pt-6">
           <p className="text-center text-[11px] leading-relaxed text-[#C0CBD3]">
             Dengan mendaftar, kamu menyetujui{" "}
-            <span className="font-semibold text-polks-muted">Syarat &amp; Ketentuan</span> dan{" "}
-            <span className="font-semibold text-polks-muted">Kebijakan Privasi</span> POLKS.
+            <Link href="/terms" className="font-semibold text-polks-muted underline-offset-2 hover:underline">Syarat &amp; Ketentuan</Link> dan{" "}
+            <Link href="/privacy" className="font-semibold text-polks-muted underline-offset-2 hover:underline">Kebijakan Privasi</Link> POLKS.
           </p>
         </div>
       </div>
