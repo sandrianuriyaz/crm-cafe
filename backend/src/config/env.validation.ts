@@ -18,8 +18,12 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().default('http://localhost:3001'),
   // Nomor WhatsApp bisnis tujuan wa.me (E.164 tanpa +). Default dari nomor Twilio.
   WHATSAPP_BUSINESS_NUMBER: z.string().optional(),
-  // Validasi X-Twilio-Signature inbound webhook. 'true' = aktif (production).
+  // Validasi X-Twilio-Signature inbound webhook AKTIF secara default. Set
+  // 'false' HANYA untuk dev/local (tanpa tunnel publik) untuk melewatinya.
   WHATSAPP_VERIFY_SIGNATURE: z.string().optional(),
+  // Override base URL publik untuk verifikasi signature bila header proxy
+  // tak bisa diandalkan, mis. https://api.polks.id
+  PUBLIC_WEBHOOK_BASE_URL: z.string().url().optional(),
 
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.

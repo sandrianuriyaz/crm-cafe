@@ -1,6 +1,7 @@
-import { Body, Controller, Header, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Header, Logger, Post, UseGuards } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { WaLoginService } from './wa-login.service';
+import { TwilioSignatureGuard } from './guards/twilio-signature.guard';
 
 // Body form-urlencoded dari Twilio (subset field yang dipakai).
 interface TwilioInboundBody {
@@ -21,6 +22,7 @@ export class WhatsappInboundController {
   constructor(private readonly waLogin: WaLoginService) {}
 
   @Post('inbound')
+  @UseGuards(TwilioSignatureGuard) // wajib: cegah pemalsuan `From` (akun takeover)
   @ApiExcludeEndpoint()
   @Header('Content-Type', 'text/xml')
   async inbound(@Body() body: TwilioInboundBody): Promise<string> {
