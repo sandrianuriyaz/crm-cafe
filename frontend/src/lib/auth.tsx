@@ -21,19 +21,10 @@ export type AuthUser = {
 
 type AuthResponse = { access_token: string; user: AuthUser };
 
-export type WaExchangeResult =
-  | { status: "pending" | "expired" | "consumed" | "invalid" }
-  | { status: "ok"; access_token: string; user: AuthUser };
-
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  // Login/registrasi via OTP: verifikasi kode lalu simpan token + user.
-  // Mengembalikan user agar pemanggil bisa cek apakah profil sudah lengkap.
-  loginWithOtp: (phone: string, code: string) => Promise<AuthUser>;
-  // Tukar token magic-link WhatsApp jadi sesi. Bila status 'ok' → simpan sesi.
-  loginWithWaToken: (token: string) => Promise<WaExchangeResult>;
   register: (input: {
     name: string;
     email: string;
@@ -90,30 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
   }, []);
 
-  const loginWithOtp = useCallback(async (phone: string, code: string) => {
-    const res = await api<AuthResponse>("/auth/otp/verify", {
-      method: "POST",
-      auth: false,
-      body: { phone, code },
-    });
-    setToken(res.access_token);
-    setUser(res.user);
-    return res.user;
-  }, []);
-
-  const loginWithWaToken = useCallback(async (token: string) => {
-    const res = await api<WaExchangeResult>("/auth/wa-link/exchange", {
-      method: "POST",
-      auth: false,
-      body: { token },
-    });
-    if (res.status === "ok") {
-      setToken(res.access_token);
-      setUser(res.user);
-    }
-    return res;
-  }, []);
-
   const register = useCallback(
     async (input: {
       name: string;
@@ -163,16 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        loginWithOtp,
-        loginWithWaToken,
-        register,
-        logout,
-        refreshProfile,
-      }}
+      value={{ user, loading, login, register, logout, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

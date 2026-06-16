@@ -13,11 +13,8 @@ import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { OtpService } from './otp/otp.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { RequestOtpDto } from './dto/request-otp.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './strategies/jwt.strategy';
@@ -28,7 +25,6 @@ import type { GoogleProfile } from './strategies/google.strategy';
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
-    private readonly otp: OtpService,
     private readonly config: ConfigService,
   ) {}
 
@@ -43,20 +39,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Login, balas access_token (JWT)' })
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
-  }
-
-  @Post('otp/request')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Kirim kode OTP 6 digit via WhatsApp/SMS' })
-  requestOtp(@Body() dto: RequestOtpDto) {
-    return this.otp.request(dto);
-  }
-
-  @Post('otp/verify')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Verifikasi OTP, balas access_token (buat akun bila baru)' })
-  verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.otp.verify(dto);
   }
 
   @Get('google')

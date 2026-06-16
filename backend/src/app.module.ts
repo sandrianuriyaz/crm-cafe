@@ -10,7 +10,6 @@ import { RewardsModule } from './rewards/rewards.module';
 import { PromosModule } from './promos/promos.module';
 import { AdminModule } from './admin/admin.module';
 import { OutletsModule } from './outlets/outlets.module';
-import { WaLoginModule } from './wa-login/wa-login.module';
 
 @Module({
   imports: [
@@ -26,7 +25,6 @@ import { WaLoginModule } from './wa-login/wa-login.module';
     PromosModule,
     AdminModule,
     OutletsModule,
-    WaLoginModule,
   ],
   controllers: [HealthController],
   providers: [],

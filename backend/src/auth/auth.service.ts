@@ -128,68 +128,6 @@ export class AuthService {
     });
   }
 
-  // Login/registrasi via nomor HP (dipakai alur OTP setelah kode terverifikasi).
-  // Cari user dengan phone ini; kalau belum ada, buat User+Member otomatis
-  // (klaim member POS yang belum punya akun bila nomornya cocok).
-  async loginByPhone(phone: string) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { phone },
-      include: { member: true },
-    });
-    if (existingUser) {
-      return this.buildAuthResponse(
-        existingUser.id,
-        existingUser.email ?? '',
-        existingUser.role,
-        {
-          name: existingUser.name,
-          memberCode: existingUser.member?.memberCode ?? null,
-          pointBalance: existingUser.member?.pointBalance ?? null,
-        },
-      );
-    }
-
-    const { user, member } = await this.prisma.$transaction(async (tx) => {
-      const existingMember = await tx.member.findUnique({ where: { phone } });
-      const name = existingMember?.name ?? phone;
-
-      const user = await tx.user.create({
-        data: { name, phone, role: Role.CUSTOMER },
-      });
-
-      let member;
-      if (existingMember && !existingMember.userId) {
-        // Klaim member POS yang belum punya akun → poin lama kebawa.
-        member = await tx.member.update({
-          where: { id: existingMember.id },
-          data: { userId: user.id, name: existingMember.name ?? name },
-        });
-      } else if (!existingMember) {
-        member = await tx.member.create({
-          data: {
-            memberCode: generateMemberCode(),
-            name,
-            phone,
-            userId: user.id,
-          },
-        });
-      } else {
-        // phone sudah dipakai member milik user lain → buat member tanpa phone.
-        member = await tx.member.create({
-          data: { memberCode: generateMemberCode(), name, userId: user.id },
-        });
-      }
-
-      return { user, member };
-    });
-
-    return this.buildAuthResponse(user.id, user.email ?? '', user.role, {
-      name: user.name,
-      memberCode: member.memberCode,
-      pointBalance: member.pointBalance,
-    });
-  }
-
   // Login/registrasi via Google OAuth. Identitas = email. Akun baru → buat
   // User (passwordHash null) + Member. Email yang sudah ada (mis. daftar
   // email+password) → langsung login (ditautkan by email).

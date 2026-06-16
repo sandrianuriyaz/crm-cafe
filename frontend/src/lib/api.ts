@@ -32,27 +32,6 @@ type ApiOptions = {
   auth?: boolean; // sertakan Bearer token
 };
 
-export type OtpChannel = "whatsapp" | "sms";
-
-// Minta kode OTP dikirim ke nomor lewat WhatsApp/SMS. Tidak butuh token.
-export function requestOtp(phone: string, channel: OtpChannel) {
-  return api<{ success: true }>("/auth/otp/request", {
-    method: "POST",
-    auth: false,
-    body: { phone, channel },
-  });
-}
-
-export type WaLinkRequest = { token: string; waUrl: string };
-
-// Mulai login WhatsApp magic-link: backend balas token + link wa.me (teks terisi).
-export function requestWaLink() {
-  return api<WaLinkRequest>("/auth/wa-link/request", {
-    method: "POST",
-    auth: false,
-  });
-}
-
 export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const { method = "GET", body, auth = true } = opts;
 
