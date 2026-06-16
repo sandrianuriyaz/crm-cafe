@@ -34,6 +34,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       done(new Error('Email Google tidak tersedia'));
       return;
     }
+    // Tolak email yang belum diverifikasi Google — kalau tidak, identitas bisa
+    // diklaim tanpa benar-benar memiliki email itu (potensi account takeover).
+    const json = profile._json as { email_verified?: boolean } | undefined;
+    if (json?.email_verified !== true) {
+      done(new Error('Email Google belum terverifikasi'));
+      return;
+    }
     const user: GoogleProfile = { email, name: profile.displayName || email };
     done(null, user);
   }
