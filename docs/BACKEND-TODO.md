@@ -47,6 +47,23 @@ Catatan:
 
 ---
 
+## 🔴 WAJIB — Google OAuth (login/register baru)
+
+> Keputusan 2026-06-15: login & register **kembali ke email + password** (sudah jalan
+> via `/auth/login` & `/auth/register`) **+ tombol "Lanjut dengan Google"**. Integrasi
+> WhatsApp/OTP **tidak jadi dipakai** di alur login (file OTP frontend ditinggalkan).
+
+Frontend sudah siapkan tombol Google + halaman callback, tinggal backend:
+- `GET /auth/google` → mulai OAuth (passport-google-oauth20), redirect ke Google.
+- `GET /auth/google/callback` → setelah Google verify: buat/temukan `User` (by email,
+  `passwordHash` null), terbitkan JWT, lalu **redirect ke frontend**:
+  `${FRONTEND_URL}/auth/callback?token=<jwt>` (atau `?error=...` bila gagal).
+- Butuh env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `FRONTEND_URL`.
+- Frontend yang sudah siap: tombol di `/login` & `/register` → redirect ke `${API}/auth/google`;
+  halaman `/auth/callback` menyimpan token lalu ke `/dashboard`.
+
+---
+
 ## 🟠 Modul Admin (halaman sudah jadi, masih placeholder)
 
 Semua route admin di bawah perlu role `ADMIN`.
