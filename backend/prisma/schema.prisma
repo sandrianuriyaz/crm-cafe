@@ -195,6 +195,21 @@ model PosSyncLog {
   @@map("pos_sync_logs")
 }
 
+// Permintaan login magic-link via WhatsApp. token dikirim user dalam pesan WA;
+// inbound webhook menandai claimed + phone, lalu app menukar token jadi sesi.
+model WaLoginRequest {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  phone      String?
+  claimedAt  DateTime?
+  consumedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([phone])
+  @@map("wa_login_requests")
+}
+
 // ── Outlet ──────────────────────────────────────────────────────────────────
 
 enum OutletStatus {

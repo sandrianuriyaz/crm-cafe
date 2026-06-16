@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Smartphone } from "lucide-react";
-import { requestOtp } from "@/lib/api";
-import { saveOtpSession } from "@/lib/otp-session";
+import { requestWaLink } from "@/lib/api";
+import { saveWaSession } from "@/lib/wa-session";
 
 function WhatsAppIcon() {
   return (
@@ -20,7 +20,6 @@ export default function PhoneOtpActions({
   mode: "login" | "register";
 }) {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,55 +28,21 @@ export default function PhoneOtpActions({
   const smsLabel = mode === "register" ? "Daftar dengan SMS" : "Lanjut dengan SMS";
 
   async function onWhatsApp() {
-    const trimmed = phone.trim();
-    if (!trimmed) {
-      setError("Masukkan nomor HP terlebih dahulu.");
-      return;
-    }
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
-      await requestOtp(trimmed, "whatsapp");
-      saveOtpSession(trimmed, "whatsapp");
-      router.push("/verify-account");
+      const { token, waUrl } = await requestWaLink();
+      saveWaSession(token, waUrl);
+      router.push("/wa-login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal mengirim OTP.");
+      setError(err instanceof Error ? err.message : "Gagal memulai login WhatsApp.");
       setLoading(false);
     }
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Input nomor HP */}
-      <div>
-        <label
-          htmlFor="phone"
-          className="mb-2 block text-[13px] font-semibold text-polks-text"
-        >
-          Nomor HP
-        </label>
-        <input
-          id="phone"
-          type="tel"
-          inputMode="numeric"
-          autoComplete="tel"
-          placeholder="0812 3456 7890"
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            if (error) setError(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !loading) onWhatsApp();
-          }}
-          disabled={loading}
-          className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-polks-bg px-4 text-[15px] font-medium text-polks-text outline-none transition-colors focus:border-polks-brand disabled:opacity-60"
-        />
-        {error && (
-          <p className="mt-2 text-[12px] font-medium text-red-600">{error}</p>
-        )}
-      </div>
-
       {/* WhatsApp (aktif) */}
       <button
         type="button"
@@ -86,7 +51,7 @@ export default function PhoneOtpActions({
         className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#25D366] text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(37,211,102,0.35)] disabled:opacity-60"
       >
         <WhatsAppIcon />
-        {loading ? "Mengirim kode…" : waLabel}
+        {loading ? "Menyiapkan…" : waLabel}
       </button>
 
       {/* SMS (sementara dinonaktifkan — backend belum punya nomor SMS) */}
@@ -100,10 +65,12 @@ export default function PhoneOtpActions({
           <Smartphone size={18} color="#66737D" />
           {smsLabel}
         </button>
-        <span className="mt-1.5 text-[11px] text-[#C0CBD3]">
-          SMS segera hadir
-        </span>
+        <span className="mt-1.5 text-[11px] text-[#C0CBD3]">SMS segera hadir</span>
       </div>
+
+      {error && (
+        <p className="text-center text-[12px] font-medium text-red-600">{error}</p>
+      )}
     </div>
   );
 }

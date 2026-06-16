@@ -28,7 +28,7 @@ async function bootstrap() {
   // Prefix versi API. Webhook POS dikecualikan agar path persis sesuai kontrak
   // §4: POST /webhooks/pos/transactions (tanpa /api/v1).
   app.setGlobalPrefix('api/v1', {
-    exclude: ['webhooks/pos/transactions'],
+    exclude: ['webhooks/pos/transactions', 'webhooks/whatsapp/inbound'],
   });
 
   // Swagger

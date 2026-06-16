@@ -14,6 +14,13 @@ const envSchema = z.object({
   // (cocok untuk dev). Production: isi domain frontend, mis. https://app.polks.id
   CORS_ORIGIN: z.string().optional(),
 
+  // URL dasar frontend, untuk bangun link balasan login WhatsApp.
+  FRONTEND_URL: z.string().url().default('http://localhost:3001'),
+  // Nomor WhatsApp bisnis tujuan wa.me (E.164 tanpa +). Default dari nomor Twilio.
+  WHATSAPP_BUSINESS_NUMBER: z.string().optional(),
+  // Validasi X-Twilio-Signature inbound webhook. 'true' = aktif (production).
+  WHATSAPP_VERIFY_SIGNATURE: z.string().optional(),
+
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.
   CRM_WEBHOOK_SECRET: z.string().min(16),
