@@ -1,66 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Settings, Save, AlertCircle } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
+import { api } from "@/lib/api";
 
-type Field = { label: string; key: string; value: string; unit?: string; hint?: string };
-
-const sections: { title: string; fields: Field[] }[] = [
-  {
-    title: "Point Rules",
-    fields: [
-      { label: "Earning Rate", key: "earn_rate", value: "1", unit: "pt / Rp1.000", hint: "Poin per Rp1.000 belanja" },
-      { label: "Min Transaction", key: "min_trx", value: "10000", unit: "Rp", hint: "Belanja minimum untuk dapat poin" },
-      { label: "Point Rounding", key: "rounding", value: "floor", hint: "Pembulatan poin (floor / ceil / round)" },
-      { label: "Point Expiry", key: "expiry_months", value: "12", unit: "bulan", hint: "Poin kedaluwarsa setelah X bulan" },
-    ],
-  },
-  {
-    title: "Redemption Rules",
-    fields: [
-      { label: "Redeem Rate", key: "redeem_rate", value: "100", unit: "pts = Rp10.000", hint: "Nilai poin saat ditukar" },
-      { label: "Min Redeem", key: "min_redeem", value: "500", unit: "pts", hint: "Poin minimum untuk menukar" },
-      { label: "Max Redeem/Trx", key: "max_redeem", value: "2000", unit: "pts", hint: "Maks poin per penukaran" },
-      { label: "Redeem Channels", key: "channels", value: "all", hint: "all / pos_only / app_only" },
-    ],
-  },
-  {
-    title: "Tier Rules",
-    fields: [
-      { label: "Silver Threshold", key: "silver_pts", value: "0", unit: "pts", hint: "Poin minimum Silver" },
-      { label: "Gold Threshold", key: "gold_pts", value: "1000", unit: "pts", hint: "Poin minimum Gold" },
-      { label: "Platinum Threshold", key: "plat_pts", value: "5000", unit: "pts", hint: "Poin minimum Platinum" },
-      { label: "Tier Evaluation", key: "tier_eval", value: "rolling_12m", hint: "rolling_12m / yearly" },
-    ],
-  },
-  {
-    title: "Webhook Config",
-    fields: [
-      { label: "Webhook URL", key: "webhook_url", value: "https://crm.polks.id/webhook/pos", hint: "Endpoint penerima event POS" },
-      { label: "HMAC Secret", key: "hmac_secret", value: "••••••••••••••••", hint: "Secret penandatangan HMAC-SHA256" },
-      { label: "Idempotency TTL", key: "idempotency", value: "24", unit: "jam", hint: "Lama key idempotency disimpan" },
-      { label: "Max Retry", key: "max_retry", value: "3", hint: "Jumlah retry sinkronisasi POS" },
-    ],
-  },
-];
+type LoyaltyConfig = {
+  rupiahPerPoint: number;
+  pointsPerUnit: number;
+  pointExpiryMonths: number | null;
+  tierThresholds: unknown;
+  webhookUrl: string | null;
+  requireIdempotencyKeys: boolean;
+  updatedAt?: string;
+};
 
 export default function AdminLoyaltyConfigPage() {
-  const [values, setValues] = useState<Record<string, string>>(
-    Object.fromEntries(sections.flatMap((s) => s.fields.map((f) => [f.key, f.value]))),
-  );
+  const [cfg, setCfg] = useState<LoyaltyConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSave() {
-    // TODO: PATCH /admin/loyalty-config saat endpoint tersedia.
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    api<LoyaltyConfig>("/admin/loyalty-config")
+      .then(setCfg)
+      .catch(() => setError("Gagal memuat konfigurasi."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function patch<K extends keyof LoyaltyConfig>(key: K, value: LoyaltyConfig[K]) {
+    setCfg((c) => (c ? { ...c, [key]: value } : c));
+    setSaved(false);
   }
+
+  async function handleSave() {
+    if (!cfg || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await api<LoyaltyConfig>("/admin/loyalty-config", {
+        method: "PATCH",
+        body: {
+          rupiahPerPoint: Number(cfg.rupiahPerPoint),
+          pointsPerUnit: Number(cfg.pointsPerUnit),
+          pointExpiryMonths:
+            cfg.pointExpiryMonths === null ? null : Number(cfg.pointExpiryMonths),
+          webhookUrl: cfg.webhookUrl || null,
+          requireIdempotencyKeys: cfg.requireIdempotencyKeys,
+        },
+      });
+      setCfg(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan konfigurasi.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputClass =
+    "h-10 w-full rounded-[10px] border-[1.5px] border-polks-border bg-polks-bg px-3 text-[13px] text-polks-text outline-none focus:border-polks-brand focus:bg-white";
 
   return (
     <AdminShell title="Loyalty Config">
       <div className="flex flex-col gap-5">
-        {/* Warning */}
         <div className="flex items-start gap-3 rounded-xl border border-[rgba(246,184,75,0.4)] bg-polks-point-soft px-4 py-3">
           <AlertCircle size={16} className="mt-0.5 shrink-0 text-[#92400E]" />
           <p className="text-xs leading-relaxed text-[#92400E]">
@@ -68,49 +73,142 @@ export default function AdminLoyaltyConfigPage() {
           </p>
         </div>
 
-        {sections.map((section) => (
-          <div key={section.title} className="overflow-hidden rounded-2xl border border-polks-border bg-white">
-            <div className="flex items-center gap-2 border-b border-polks-surface px-5 py-3.5">
-              <Settings size={14} className="text-polks-brand" />
-              <h3 className="text-[13px] font-bold text-polks-text">{section.title}</h3>
-            </div>
-            <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
-              {section.fields.map((field) => (
-                <div key={field.key}>
-                  <label className="mb-1.5 block text-xs font-semibold text-polks-text">
-                    {field.label}
-                    {field.unit ? <span className="ml-1 font-normal text-[#8A959D]">({field.unit})</span> : null}
-                  </label>
+        {loading ? (
+          <p className="py-10 text-center text-sm text-polks-muted">Memuat konfigurasi…</p>
+        ) : !cfg ? (
+          <p className="py-10 text-center text-sm text-polks-error">
+            {error ?? "Konfigurasi tidak tersedia."}
+          </p>
+        ) : (
+          <>
+            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+              <div className="flex items-center gap-2 border-b border-polks-surface px-5 py-3.5">
+                <Settings size={14} className="text-polks-brand" />
+                <h3 className="text-[13px] font-bold text-polks-text">Aturan Poin</h3>
+              </div>
+              <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
+                <Field
+                  label="Rupiah per Poin"
+                  hint="1 poin diberikan tiap belanja sebesar Rp ini"
+                  unit="Rp"
+                >
                   <input
-                    value={values[field.key] ?? field.value}
-                    onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
-                    className="h-10 w-full rounded-[10px] border-[1.5px] border-polks-border bg-polks-bg px-3 text-[13px] text-polks-text outline-none focus:border-polks-brand focus:bg-white"
+                    type="number"
+                    min={1}
+                    value={cfg.rupiahPerPoint}
+                    onChange={(e) => patch("rupiahPerPoint", Number(e.target.value))}
+                    className={inputClass}
                   />
-                  {field.hint ? <p className="mt-1 text-[10px] text-[#8A959D]">{field.hint}</p> : null}
-                </div>
-              ))}
+                </Field>
+                <Field label="Poin per Unit" hint="Pengali poin per kelipatan">
+                  <input
+                    type="number"
+                    min={1}
+                    value={cfg.pointsPerUnit}
+                    onChange={(e) => patch("pointsPerUnit", Number(e.target.value))}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field
+                  label="Masa Berlaku Poin"
+                  hint="Kosongkan jika poin tidak kedaluwarsa"
+                  unit="bulan"
+                >
+                  <input
+                    type="number"
+                    min={1}
+                    value={cfg.pointExpiryMonths ?? ""}
+                    onChange={(e) =>
+                      patch(
+                        "pointExpiryMonths",
+                        e.target.value === "" ? null : Number(e.target.value),
+                      )
+                    }
+                    placeholder="Tidak kedaluwarsa"
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
             </div>
-          </div>
-        ))}
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleSave}
-            className={
-              "flex h-[42px] items-center gap-2 rounded-xl px-7 text-[13px] font-bold text-white transition-colors " +
-              (saved ? "bg-polks-success" : "bg-polks-brand")
-            }
-          >
-            <Save size={15} />
-            {saved ? "Tersimpan!" : "Simpan Konfigurasi"}
-          </button>
-        </div>
+            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+              <div className="flex items-center gap-2 border-b border-polks-surface px-5 py-3.5">
+                <Settings size={14} className="text-polks-brand" />
+                <h3 className="text-[13px] font-bold text-polks-text">Integrasi POS</h3>
+              </div>
+              <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
+                <Field label="Webhook URL" hint="Endpoint penerima event POS">
+                  <input
+                    type="text"
+                    value={cfg.webhookUrl ?? ""}
+                    onChange={(e) => patch("webhookUrl", e.target.value)}
+                    placeholder="https://…"
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Wajib Idempotency Key" hint="Tolak event tanpa kunci dedup">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      patch("requireIdempotencyKeys", !cfg.requireIdempotencyKeys)
+                    }
+                    className={
+                      "flex h-10 items-center rounded-[10px] border-[1.5px] px-3 text-[13px] font-semibold " +
+                      (cfg.requireIdempotencyKeys
+                        ? "border-polks-brand bg-polks-brand text-white"
+                        : "border-polks-border bg-polks-bg text-polks-muted")
+                    }
+                  >
+                    {cfg.requireIdempotencyKeys ? "Aktif" : "Nonaktif"}
+                  </button>
+                </Field>
+              </div>
+            </div>
 
-        <p className="text-center text-[11px] text-polks-muted">
-          Catatan: penyimpanan masih lokal — akan terhubung saat endpoint <code>/admin/loyalty-config</code> tersedia.
-        </p>
+            {error ? (
+              <p className="text-center text-[13px] text-polks-error">{error}</p>
+            ) : null}
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className={
+                  "flex h-[42px] items-center gap-2 rounded-xl px-7 text-[13px] font-bold text-white transition-colors disabled:opacity-60 " +
+                  (saved ? "bg-polks-success" : "bg-polks-brand")
+                }
+              >
+                <Save size={15} />
+                {saving ? "Menyimpan…" : saved ? "Tersimpan!" : "Simpan Konfigurasi"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </AdminShell>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  unit,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  unit?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold text-polks-text">
+        {label}
+        {unit ? <span className="ml-1 font-normal text-[#8A959D]">({unit})</span> : null}
+      </label>
+      {children}
+      {hint ? <p className="mt-1 text-[10px] text-[#8A959D]">{hint}</p> : null}
+    </div>
   );
 }

@@ -1,34 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Webhook, ShieldCheck, AlertCircle, CheckCircle2, Search } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { MetricCard, AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { api } from "@/lib/api";
+import { type Paginated } from "@/lib/loyalty/types";
 
-const events = [
-  { id: "WHK-001", event: "transaction.completed", outlet: "Cafe A", member: "Sandria", hmac: "verified", pts: 55, status: "success", idem: "unique", time: "12 Jun 14:22:01" },
-  { id: "WHK-002", event: "transaction.completed", outlet: "Cafe B", member: "Budi Santoso", hmac: "verified", pts: 38, status: "success", idem: "unique", time: "12 Jun 10:05:33" },
-  { id: "WHK-003", event: "transaction.completed", outlet: "Cafe C", member: "Rina Dewi", hmac: "failed", pts: 0, status: "error", idem: "unique", time: "11 Jun 16:48:12" },
-  { id: "WHK-004", event: "member.registered", outlet: "—", member: "Dewi Lestari", hmac: "verified", pts: 0, status: "success", idem: "unique", time: "12 Jun 08:21:45" },
-  { id: "WHK-005", event: "transaction.completed", outlet: "Cafe A", member: "Sandria", hmac: "verified", pts: 0, status: "skipped", idem: "duplicate", time: "12 Jun 14:22:02" },
-];
+type WebhookEvent = {
+  id: string;
+  eventId: string | null;
+  idempotencyKey: string;
+  status: string;
+  errorMessage: string | null;
+  createdAt: string;
+};
 
-const STATUS = { success: "success", error: "error", skipped: "warning" } as const;
+const STATUS_META: Record<
+  string,
+  { label: string; type: "success" | "warning" | "error" | "neutral" | "info" }
+> = {
+  received: { label: "Received", type: "info" },
+  processed: { label: "Processed", type: "success" },
+  duplicate: { label: "Duplicate", type: "warning" },
+  invalid_signature: { label: "Invalid Signature", type: "error" },
+  error: { label: "Error", type: "error" },
+};
+
+function statusMeta(status: string) {
+  return STATUS_META[status] ?? { label: status, type: "neutral" as const };
+}
 
 export default function AdminWebhookPage() {
+  const [data, setData] = useState<Paginated<WebhookEvent> | null>(null);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const filtered = events.filter(
-    (e) => e.event.includes(search) || e.member.toLowerCase().includes(search.toLowerCase()) || e.id.includes(search),
+
+  useEffect(() => {
+    api<Paginated<WebhookEvent>>("/admin/webhooks")
+      .then(setData)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const items = data?.items ?? [];
+  const q = search.toLowerCase();
+  const filtered = items.filter(
+    (e) =>
+      (e.eventId ?? "").toLowerCase().includes(q) ||
+      e.idempotencyKey.toLowerCase().includes(q) ||
+      e.status.toLowerCase().includes(q),
   );
+
+  const total = data?.total ?? items.length;
+  const processedCount = items.filter((e) => e.status === "processed").length;
+  const duplicateCount = items.filter((e) => e.status === "duplicate").length;
+  const errorCount = items.filter((e) => e.status === "error" || e.status === "invalid_signature").length;
 
   return (
     <AdminShell title="Webhook Inbox">
       <div className="flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <MetricCard label="Total Events" value={events.length} Icon={Webhook} accent />
-          <MetricCard label="HMAC Verified" value={events.filter((e) => e.hmac === "verified").length} Icon={ShieldCheck} />
-          <MetricCard label="Failed" value={events.filter((e) => e.status === "error").length} Icon={AlertCircle} />
-          <MetricCard label="Duplicates" value={events.filter((e) => e.idem === "duplicate").length} Icon={CheckCircle2} />
+          <MetricCard label="Total Events" value={total} Icon={Webhook} accent />
+          <MetricCard label="Processed" value={processedCount} Icon={ShieldCheck} />
+          <MetricCard label="Failed" value={errorCount} Icon={AlertCircle} />
+          <MetricCard label="Duplicates" value={duplicateCount} Icon={CheckCircle2} />
         </div>
 
         <div className="relative flex items-center">
@@ -36,25 +72,34 @@ export default function AdminWebhookPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari event / member..."
+            placeholder="Cari event / key / status..."
             className="h-10 w-full max-w-[280px] rounded-xl border-[1.5px] border-polks-border bg-white pl-9 pr-3 text-sm text-polks-text outline-none focus:border-polks-brand"
           />
         </div>
 
         <SectionHeader title={`${filtered.length} Event`} />
         <AdminTable
-          columns={["Event", "Outlet", "Member", "HMAC", "Poin", "Status", "Waktu"]}
-          rows={filtered.map((e) => [
-            <span key="e" className="font-mono text-[11px] font-semibold text-polks-brand">{e.event}</span>,
-            e.outlet,
-            e.member,
-            <AdminBadge key="h" label={e.hmac === "verified" ? "Verified" : "Failed"} type={e.hmac === "verified" ? "success" : "error"} />,
-            <span key="p" className="font-semibold text-polks-success">{e.pts ? `+${e.pts}` : "—"}</span>,
-            <AdminBadge key="s" label={e.status} type={STATUS[e.status as keyof typeof STATUS]} />,
-            <span key="t" className="text-[11px] text-polks-muted">{e.time}</span>,
-          ])}
+          columns={["Event ID", "Idempotency Key", "Status", "Error", "Waktu"]}
+          empty={loading ? "Memuat…" : "Belum ada event webhook."}
+          rows={filtered.map((e) => {
+            const meta = statusMeta(e.status);
+            return [
+              <span key="e" className="font-mono text-[11px] font-semibold text-polks-brand">
+                {e.eventId ?? "—"}
+              </span>,
+              <span key="k" className="block max-w-[200px] truncate font-mono text-[11px] text-polks-muted">
+                {e.idempotencyKey}
+              </span>,
+              <AdminBadge key="s" label={meta.label} type={meta.type} />,
+              <span key="err" className="text-[11px] text-polks-muted">
+                {e.errorMessage ?? "—"}
+              </span>,
+              <span key="t" className="text-[11px] text-polks-muted">
+                {new Date(e.createdAt).toLocaleString("id-ID")}
+              </span>,
+            ];
+          })}
         />
-        <p className="text-center text-[11px] text-polks-muted">Data contoh — menunggu endpoint <code>/admin/webhooks</code> (model <code>pos_sync_logs</code>).</p>
       </div>
     </AdminShell>
   );

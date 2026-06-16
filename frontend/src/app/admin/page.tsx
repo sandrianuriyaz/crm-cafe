@@ -36,11 +36,13 @@ export default function AdminOverviewPage() {
   const [members, setMembers] = useState<Paginated<AdminMember> | null>(null);
   const [txns, setTxns] = useState<Paginated<AdminTxn> | null>(null);
   const [rewardCount, setRewardCount] = useState<number | null>(null);
+  const [outletCount, setOutletCount] = useState<number | null>(null);
 
   useEffect(() => {
     api<Paginated<AdminMember>>("/admin/members?take=5").then(setMembers).catch(() => {});
     api<Paginated<AdminTxn>>("/admin/transactions?take=5").then(setTxns).catch(() => {});
     api<unknown[]>("/rewards").then((r) => setRewardCount(r.length)).catch(() => {});
+    api<unknown[]>("/outlets").then((r) => setOutletCount(r.length)).catch(() => {});
   }, []);
 
   return (
@@ -49,7 +51,7 @@ export default function AdminOverviewPage() {
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           <MetricCard label="Total Members" value={members?.total ?? "—"} Icon={Users} accent sub="Member terdaftar" />
           <MetricCard label="POS Transactions" value={txns?.total ?? "—"} Icon={Zap} sub="Total transaksi masuk" />
-          <MetricCard label="Active Outlets" value={3} Icon={Store} sub="Outlet POLKS" />
+          <MetricCard label="Active Outlets" value={outletCount ?? "—"} Icon={Store} sub="Outlet POLKS" />
           <MetricCard label="Reward Aktif" value={rewardCount ?? "—"} Icon={Gift} sub="Katalog reward" />
         </div>
 
