@@ -47,20 +47,20 @@ Catatan:
 
 ---
 
-## 🔴 WAJIB — Google OAuth (login/register baru)
+## ✅ SELESAI — Google OAuth (login/register) — 2026-06-16
 
-> Keputusan 2026-06-15: login & register **kembali ke email + password** (sudah jalan
-> via `/auth/login` & `/auth/register`) **+ tombol "Lanjut dengan Google"**. Integrasi
-> WhatsApp/OTP **tidak jadi dipakai** di alur login (file OTP frontend ditinggalkan).
+> Keputusan: login & register pakai email + password **+ tombol "Lanjut dengan Google"**.
+> Integrasi WhatsApp/OTP tidak dipakai di alur login (file OTP/WA frontend ditinggalkan).
 
-Frontend sudah siapkan tombol Google + halaman callback, tinggal backend:
-- `GET /auth/google` → mulai OAuth (passport-google-oauth20), redirect ke Google.
-- `GET /auth/google/callback` → setelah Google verify: buat/temukan `User` (by email,
-  `passwordHash` null), terbitkan JWT, lalu **redirect ke frontend**:
-  `${FRONTEND_URL}/auth/callback?token=<jwt>` (atau `?error=...` bila gagal).
-- Butuh env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `FRONTEND_URL`.
-- Frontend yang sudah siap: tombol di `/login` & `/register` → redirect ke `${API}/auth/google`;
-  halaman `/auth/callback` menyimpan token lalu ke `/dashboard`.
+- ✅ `GET /auth/google` → mulai OAuth (passport-google-oauth20), redirect ke Google.
+- ✅ `GET /auth/google/callback` → `AuthService.loginByGoogle`: buat/temukan `User`
+  by email (`passwordHash` null) + `Member`, terbitkan JWT, **redirect ke frontend**:
+  `${FRONTEND_URL}/auth/callback?token=<jwt>` (atau `?error=google_login_failed`).
+- Env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `FRONTEND_URL`
+  (opsional saat boot; wajib agar OAuth jalan). Callback yang didaftarkan di Google
+  Console harus = `{API}/api/v1/auth/google/callback`.
+- Frontend sudah tersambung: tombol `/login` & `/register` → `${API}/auth/google`;
+  `/auth/callback` menyimpan token lalu ke `/dashboard`.
 
 ---
 

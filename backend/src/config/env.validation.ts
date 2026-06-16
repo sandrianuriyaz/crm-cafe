@@ -14,8 +14,15 @@ const envSchema = z.object({
   // (cocok untuk dev). Production: isi domain frontend, mis. https://app.polks.id
   CORS_ORIGIN: z.string().optional(),
 
-  // URL dasar frontend, untuk bangun link balasan login WhatsApp.
+  // URL dasar frontend, untuk bangun link balasan login WhatsApp + redirect
+  // callback Google OAuth (${FRONTEND_URL}/auth/callback?token=...).
   FRONTEND_URL: z.string().url().default('http://localhost:3001'),
+
+  // Google OAuth (login via akun Google). Opsional saat boot; wajib agar
+  // /auth/google benar-benar berfungsi.
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALLBACK_URL: z.string().url().optional(),
   // Nomor WhatsApp bisnis tujuan wa.me (E.164 tanpa +). Default dari nomor Twilio.
   WHATSAPP_BUSINESS_NUMBER: z.string().optional(),
   // Validasi X-Twilio-Signature inbound webhook AKTIF secara default. Set

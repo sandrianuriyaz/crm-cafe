@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { OtpService } from './otp/otp.service';
 import { OTP_SENDER, TwilioOtpSender } from './otp/otp-sender';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     AuthService,
     OtpService,
     JwtStrategy,
+    GoogleStrategy,
     { provide: OTP_SENDER, useClass: TwilioOtpSender },
   ],
   exports: [AuthService],

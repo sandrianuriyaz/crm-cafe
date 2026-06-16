@@ -190,6 +190,66 @@ export class AuthService {
     });
   }
 
+  // Login/registrasi via Google OAuth. Identitas = email. Akun baru → buat
+  // User (passwordHash null) + Member. Email yang sudah ada (mis. daftar
+  // email+password) → langsung login (ditautkan by email).
+  async loginByGoogle(profile: { email: string; name: string }) {
+    const email = profile.email.toLowerCase().trim();
+    const displayName = profile.name?.trim() || email;
+
+    const existing = await this.prisma.user.findUnique({
+      where: { email },
+      include: { member: true },
+    });
+    if (existing) {
+      return this.buildAuthResponse(existing.id, existing.email ?? '', existing.role, {
+        name: existing.name,
+        memberCode: existing.member?.memberCode ?? null,
+        pointBalance: existing.member?.pointBalance ?? null,
+      });
+    }
+
+    try {
+      const { user, member } = await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: { name: displayName, email, role: Role.CUSTOMER },
+        });
+        const member = await tx.member.create({
+          data: {
+            memberCode: generateMemberCode(),
+            name: displayName,
+            userId: user.id,
+          },
+        });
+        return { user, member };
+      });
+      return this.buildAuthResponse(user.id, user.email ?? '', user.role, {
+        name: user.name,
+        memberCode: member.memberCode,
+        pointBalance: member.pointBalance,
+      });
+    } catch (err) {
+      // Race: dua login pertama bersamaan untuk email sama → unique conflict.
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        const u = await this.prisma.user.findUnique({
+          where: { email },
+          include: { member: true },
+        });
+        if (u) {
+          return this.buildAuthResponse(u.id, u.email ?? '', u.role, {
+            name: u.name,
+            memberCode: u.member?.memberCode ?? null,
+            pointBalance: u.member?.pointBalance ?? null,
+          });
+        }
+      }
+      throw err;
+    }
+  }
+
   async buildAuthResponse(
     userId: string,
     email: string,
