@@ -359,22 +359,24 @@ export default function GuestHomePage() {
             <Link
               key={label}
               href={href}
-              className={
-                "flex flex-col items-center gap-0.5 " +
-                (active
-                  ? "-mt-8 size-[52px] justify-center rounded-full bg-white shadow-[0_4px_16px_rgba(37,52,63,0.25)]"
-                  : "")
-              }
+              className="flex flex-1 flex-col items-center gap-1"
             >
-              <Icon
-                size={active ? 20 : 18}
-                color={active ? "#25343F" : "rgba(255,255,255,0.5)"}
-                strokeWidth={active ? 2 : 1.6}
-              />
+              <span
+                className={
+                  "flex size-9 items-center justify-center rounded-full " +
+                  (active ? "bg-white/15" : "")
+                }
+              >
+                <Icon
+                  size={20}
+                  color={active ? "#ffffff" : "rgba(255,255,255,0.5)"}
+                  strokeWidth={active ? 2.4 : 1.8}
+                />
+              </span>
               <span
                 className={
                   active
-                    ? "text-[8px] font-bold text-polks-brand"
+                    ? "text-[9px] font-bold text-white"
                     : "text-[9px] font-medium text-white/40"
                 }
               >

@@ -27,23 +27,24 @@ export function CustomerBottomNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={cn(
-              "flex flex-col items-center gap-0.5 transition-transform active:scale-95",
-              active &&
-                "size-[52px] -translate-y-7 justify-center rounded-full border-[5px] border-polks-bg bg-white shadow-[0_6px_16px_rgba(37,52,63,0.28)]",
-            )}
+            className="flex flex-1 flex-col items-center gap-1 transition-transform active:scale-95"
           >
-            <Icon
-              size={active ? 20 : 18}
-              className={active ? "text-polks-brand" : "text-white/50"}
-              strokeWidth={active ? 2.4 : 1.8}
-            />
             <span
               className={cn(
-                "leading-none",
-                active
-                  ? "text-[8px] font-bold text-polks-brand"
-                  : "text-[9px] font-medium text-white/45",
+                "flex size-9 items-center justify-center rounded-full transition-colors",
+                active && "bg-white/15",
+              )}
+            >
+              <Icon
+                size={20}
+                className={active ? "text-white" : "text-white/45"}
+                strokeWidth={active ? 2.4 : 1.8}
+              />
+            </span>
+            <span
+              className={cn(
+                "text-[9px] leading-none",
+                active ? "font-bold text-white" : "font-medium text-white/45",
               )}
             >
               {item.label}
