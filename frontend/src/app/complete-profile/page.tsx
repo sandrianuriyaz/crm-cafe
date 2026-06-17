@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { User, Mail, Calendar, UserRound } from "lucide-react";
+import { User, Phone } from "lucide-react";
 import { api, ApiError, getToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -11,13 +11,11 @@ export default function CompleteProfilePage() {
   const router = useRouter();
   const { user, refreshProfile } = useAuth();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [gender, setGender] = useState("");
+  const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Harus sudah login (punya token). Prefill nama kalau sudah ada.
+  // Harus sudah login (punya token). Prefill nama dari akun Google.
   useEffect(() => {
     if (typeof window !== "undefined" && !getToken()) {
       router.replace("/login");
@@ -32,18 +30,16 @@ export default function CompleteProfilePage() {
       setError("Nama lengkap minimal 2 karakter.");
       return;
     }
+    if (phone.trim().length < 8) {
+      setError("Masukkan nomor HP yang valid.");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
-      // Backend menyimpan name (+phone). Field lain dikirim untuk dukungan ke depan.
       await api("/member/profile", {
         method: "PATCH",
-        body: {
-          name: name.trim(),
-          ...(email.trim() ? { email: email.trim() } : {}),
-          ...(birthDate ? { birthDate } : {}),
-          ...(gender ? { gender } : {}),
-        },
+        body: { name: name.trim(), phone: phone.trim() },
       });
       await refreshProfile();
       router.replace("/dashboard");
@@ -80,15 +76,15 @@ export default function CompleteProfilePage() {
         {/* Heading */}
         <div className="mb-6 px-6 text-center">
           <h1 className="text-[24px] font-bold tracking-[-0.01em] text-polks-text">
-            Lengkapi Profil
+            Satu Langkah Lagi
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-[#8A959D]">
-            Sedikit lagi! Isi data dirimu untuk mulai mengumpulkan poin.
+            Lengkapi profilmu — masukkan nomor HP untuk mengaktifkan poin & member card.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={onSubmit} className="flex flex-col gap-3 px-6">
+        <form onSubmit={onSubmit} className="flex flex-col gap-3.5 px-6">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="name" className="text-xs font-semibold text-[#374151]">
               Nama Lengkap
@@ -108,55 +104,26 @@ export default function CompleteProfilePage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs font-semibold text-[#374151]">
-              Email <span className="font-normal text-[#9CA3AF]">(opsional)</span>
+            <label htmlFor="phone" className="text-xs font-semibold text-[#374151]">
+              Nomor HP
             </label>
             <div className="relative flex items-center">
-              <Mail size={18} className="absolute left-4 text-[#9CA3AF]" />
+              <Phone size={18} className="absolute left-4 text-[#9CA3AF]" />
               <input
-                id="email"
-                type="email"
-                placeholder="hello@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                required
+                placeholder="08xxxxxxxxxx"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className={field}
               />
             </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="birth" className="text-xs font-semibold text-[#374151]">
-              Tanggal Lahir <span className="font-normal text-[#9CA3AF]">(opsional)</span>
-            </label>
-            <div className="relative flex items-center">
-              <Calendar size={18} className="absolute left-4 text-[#9CA3AF]" />
-              <input
-                id="birth"
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className={field}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="gender" className="text-xs font-semibold text-[#374151]">
-              Jenis Kelamin <span className="font-normal text-[#9CA3AF]">(opsional)</span>
-            </label>
-            <div className="relative flex items-center">
-              <UserRound size={18} className="absolute left-4 text-[#9CA3AF]" />
-              <select
-                id="gender"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className={field + " appearance-none"}
-              >
-                <option value="">Pilih…</option>
-                <option value="male">Laki-laki</option>
-                <option value="female">Perempuan</option>
-              </select>
-            </div>
+            <p className="text-[11px] text-[#9CA3AF]">
+              Dipakai untuk verifikasi member & pencatatan poin di kasir.
+            </p>
           </div>
 
           {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}
@@ -167,13 +134,6 @@ export default function CompleteProfilePage() {
             className="mt-2 flex h-14 w-full items-center justify-center rounded-2xl bg-polks-brand text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(37,52,63,0.25)] disabled:opacity-60"
           >
             {saving ? "Menyimpan…" : "Simpan & Lanjut"}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.replace("/dashboard")}
-            className="pt-1 text-center text-[13px] font-medium text-polks-muted"
-          >
-            Lewati dulu
           </button>
         </form>
 

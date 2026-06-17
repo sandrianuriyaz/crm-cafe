@@ -20,7 +20,7 @@ const config: Config = {
         "polks-point-soft": "#FFF3D1",
         "polks-bg": "#F6F8FA",
         "polks-surface": "#EEF2F4",
-        "polks-border": "#DDE3E7",
+        "polks-border": "#E6EAED",
         "polks-text": "#17212A",
         "polks-muted": "#66737D",
         "polks-success": "#38A169",

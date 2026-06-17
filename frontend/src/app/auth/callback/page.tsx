@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { setToken } from "@/lib/api";
+import { api, setToken } from "@/lib/api";
 
 // Tujuan redirect backend setelah OAuth Google berhasil:
 //   {FRONTEND}/auth/callback?token=<jwt>   (atau ?error=... bila gagal)
+// Alur ideal: akun (email) dibuat backend → di sini cek profil; kalau nomor HP
+// belum ada (user baru) → arahkan ke /complete-profile, selain itu → /dashboard.
 export default function AuthCallbackPage() {
   const router = useRouter();
   const [failed, setFailed] = useState(false);
@@ -20,8 +22,14 @@ export default function AuthCallbackPage() {
       return () => clearTimeout(t);
     }
     setToken(token);
-    // Full reload supaya AuthProvider membaca token & memuat profil dari awal.
-    window.location.replace("/dashboard");
+    // Cek kelengkapan profil (punya nomor HP?) lalu arahkan.
+    api<{ phone: string | null }>("/member/profile")
+      .then((p) => {
+        window.location.replace(p?.phone ? "/dashboard" : "/complete-profile");
+      })
+      .catch(() => {
+        window.location.replace("/complete-profile");
+      });
   }, [router]);
 
   return (

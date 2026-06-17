@@ -60,7 +60,10 @@ Catatan:
   (opsional saat boot; wajib agar OAuth jalan). Callback yang didaftarkan di Google
   Console harus = `{API}/api/v1/auth/google/callback`.
 - Frontend sudah tersambung: tombol `/login` & `/register` → `${API}/auth/google`;
-  `/auth/callback` menyimpan token lalu ke `/dashboard`.
+  `/auth/callback` menyimpan token, lalu **cek profil**: kalau **nomor HP kosong**
+  (user Google baru) → arahkan ke `/complete-profile` untuk isi HP; kalau sudah ada
+  → `/dashboard`. Penyimpanan via `PATCH /member/profile { name, phone }` (sudah ada).
+  → Agar alur ini jalan, profil Member dari user Google baru sebaiknya `phone: null`.
 
 ---
 

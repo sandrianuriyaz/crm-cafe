@@ -145,7 +145,7 @@ export default function MemberDashboardPage() {
             <p className="text-[13px] font-bold text-white">Member Card</p>
             <p className="text-[11px] text-white/45">Scan di kasir</p>
           </Link>
-          <Link href="/rewards" className="rounded-2xl bg-polks-bg p-4 text-left">
+          <Link href="/rewards" className="rounded-2xl border border-polks-border bg-white p-4 text-left">
             <div className="mb-2.5 flex size-[38px] items-center justify-center rounded-xl bg-polks-surface">
               <Gift size={18} color="#17212A" strokeWidth={2} />
             </div>
@@ -166,7 +166,7 @@ export default function MemberDashboardPage() {
               <div
                 className={
                   "flex size-[52px] items-center justify-center rounded-2xl " +
-                  (accent ? "bg-polks-brand" : "bg-polks-bg")
+                  (accent ? "bg-polks-brand" : "bg-polks-surface")
                 }
               >
                 <Icon
@@ -195,7 +195,7 @@ export default function MemberDashboardPage() {
             {promos.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center justify-between rounded-[14px] bg-white px-3.5 py-3"
+                className="flex items-center justify-between rounded-2xl border border-polks-border bg-white px-3.5 py-3"
               >
                 <div>
                   <p className="mb-0.5 text-[13px] font-semibold text-polks-text">{p.title}</p>
@@ -228,7 +228,7 @@ export default function MemberDashboardPage() {
               <Link
                 key={r?.id ?? i}
                 href="/rewards"
-                className="flex-1 rounded-[14px] bg-white p-3.5 text-left"
+                className="flex-1 rounded-2xl border border-polks-border bg-white p-3.5 text-left"
               >
                 <div className="mb-2.5 flex size-9 items-center justify-center rounded-[10px] bg-polks-bg">
                   <Gift size={16} color="#25343F" />
@@ -254,7 +254,7 @@ export default function MemberDashboardPage() {
         </div>
 
         {/* Info poin */}
-        <div className="flex items-center gap-2.5 rounded-[14px] bg-white px-3.5 py-3">
+        <div className="flex items-center gap-2.5 rounded-2xl border border-polks-border bg-white px-3.5 py-3">
           <Zap size={14} color="#25343F" className="shrink-0" />
           <p className="text-[11px] leading-relaxed text-polks-muted">
             Poin diperbarui otomatis setelah kasir selesai scan QR melalui POS.
