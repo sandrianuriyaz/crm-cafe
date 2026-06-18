@@ -27,11 +27,11 @@ describe('LoyaltyConfigService', () => {
   });
 
   it('update() upserts with the given fields', async () => {
-    await service.update({ rupiahPerPoint: 500 });
+    await service.update({ rateBronze: 500 });
     expect(prisma.loyaltyConfig.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'singleton' },
-        update: expect.objectContaining({ rupiahPerPoint: 500 }),
+        update: expect.objectContaining({ rateBronze: 500 }),
       }),
     );
   });

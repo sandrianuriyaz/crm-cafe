@@ -6,10 +6,6 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { api } from "@/lib/api";
 
 type LoyaltyConfig = {
-  rupiahPerPoint: number;
-  pointsPerUnit: number;
-  pointExpiryMonths: number | null;
-  tierThresholds: unknown;
   webhookUrl: string | null;
   requireIdempotencyKeys: boolean;
   tierSilverMin: number;
@@ -49,10 +45,6 @@ export default function AdminLoyaltyConfigPage() {
       const updated = await api<LoyaltyConfig>("/admin/loyalty-config", {
         method: "PATCH",
         body: {
-          rupiahPerPoint: Number(cfg.rupiahPerPoint),
-          pointsPerUnit: Number(cfg.pointsPerUnit),
-          pointExpiryMonths:
-            cfg.pointExpiryMonths === null ? null : Number(cfg.pointExpiryMonths),
           webhookUrl: cfg.webhookUrl || null,
           requireIdempotencyKeys: cfg.requireIdempotencyKeys,
           tierSilverMin: Number(cfg.tierSilverMin),
@@ -95,56 +87,6 @@ export default function AdminLoyaltyConfigPage() {
           </p>
         ) : (
           <>
-            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
-              <div className="flex items-center gap-2 border-b border-polks-surface px-5 py-3.5">
-                <Settings size={14} className="text-polks-brand" />
-                <h3 className="text-[13px] font-bold text-polks-text">Aturan Poin</h3>
-              </div>
-              <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
-                <Field
-                  label="Rupiah per Poin"
-                  hint="1 poin diberikan tiap belanja sebesar Rp ini"
-                  unit="Rp"
-                >
-                  <input
-                    type="number"
-                    min={1}
-                    value={cfg.rupiahPerPoint}
-                    onChange={(e) => patch("rupiahPerPoint", Number(e.target.value))}
-                    className={inputClass}
-                  />
-                </Field>
-                <Field label="Poin per Unit" hint="Pengali poin per kelipatan">
-                  <input
-                    type="number"
-                    min={1}
-                    value={cfg.pointsPerUnit}
-                    onChange={(e) => patch("pointsPerUnit", Number(e.target.value))}
-                    className={inputClass}
-                  />
-                </Field>
-                <Field
-                  label="Masa Berlaku Poin"
-                  hint="Kosongkan jika poin tidak kedaluwarsa"
-                  unit="bulan"
-                >
-                  <input
-                    type="number"
-                    min={1}
-                    value={cfg.pointExpiryMonths ?? ""}
-                    onChange={(e) =>
-                      patch(
-                        "pointExpiryMonths",
-                        e.target.value === "" ? null : Number(e.target.value),
-                      )
-                    }
-                    placeholder="Tidak kedaluwarsa"
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-            </div>
-
             <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
               <div className="flex items-center gap-2 border-b border-polks-surface px-5 py-3.5">
                 <Settings size={14} className="text-polks-brand" />
