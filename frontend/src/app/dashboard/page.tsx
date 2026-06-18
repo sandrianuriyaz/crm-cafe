@@ -48,6 +48,7 @@ export default function MemberDashboardPage() {
   const { user } = useAuth();
   const [activeBanner, setActiveBanner] = useState(0);
   const [recs, setRecs] = useState<Reward[]>([]);
+  const [unread, setUnread] = useState(0);
 
   const name = user?.name || "Member";
   const points = user?.pointBalance ?? 0;
@@ -57,6 +58,9 @@ export default function MemberDashboardPage() {
     api<Reward[]>("/rewards")
       .then((d) => setRecs(d.slice(0, 2)))
       .catch(() => setRecs([]));
+    api<{ count: number }>("/member/notifications/unread-count")
+      .then((r) => setUnread(r.count))
+      .catch(() => setUnread(0));
   }, []);
 
   return (
@@ -71,10 +75,12 @@ export default function MemberDashboardPage() {
           className="h-8 w-auto object-contain"
           priority
         />
-        <button type="button" aria-label="Notifikasi" className="relative">
+        <Link href="/inbox" aria-label="Notifikasi" className="relative">
           <Bell size={20} color="rgba(255,255,255,0.65)" />
-          <span className="absolute -right-0.5 -top-0.5 size-[7px] rounded-full border-[1.5px] border-polks-brand bg-white/40" />
-        </button>
+          {unread > 0 ? (
+            <span className="absolute -right-0.5 -top-0.5 size-[8px] rounded-full border-[1.5px] border-polks-brand bg-white" />
+          ) : null}
+        </Link>
       </div>
 
       {/* Promo banner */}
