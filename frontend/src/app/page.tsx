@@ -8,10 +8,8 @@ import {
   Tag,
   Gift,
   Store,
-  Info,
   CheckCircle2,
   ChevronRight,
-  MapPin,
   ShoppingBag,
   Smartphone,
   ScanLine,
@@ -26,11 +24,6 @@ const banners = [
   { id: 1, title: "Diskon Kopi Susu 20%", sub: "Berlaku di semua outlet · s/d 30 Jun 2026", tag: "Promo Aktif" },
   { id: 2, title: "Buy 1 Get 1 Latte", sub: "Cafe A only · s/d 20 Jun 2026", tag: "Terbatas" },
   { id: 3, title: "Weekend Coffee Deal", sub: "Semua outlet · 21–22 Jun 2026", tag: "Segera" },
-];
-
-const promos = [
-  { id: 1, title: "Diskon Kopi Susu 20%", period: "1–30 Jun 2026", outlet: "All Outlets", status: "active" as const },
-  { id: 2, title: "Buy 1 Get 1 Latte", period: "15–20 Jun 2026", outlet: "Cafe A only", status: "limited" as const },
 ];
 
 const rewards = [
@@ -147,84 +140,10 @@ export default function GuestHomePage() {
           </Link>
         </div>
 
-        {/* 2-col CTA */}
-        <div className="grid grid-cols-2 gap-2.5 px-3.5 pt-3.5">
-          <button
-            type="button"
-            onClick={gate("Login untuk melihat semua promo POLKS.")}
-            className="rounded-2xl bg-polks-brand p-4 text-left"
-          >
-            <div className="mb-2.5 flex size-[38px] items-center justify-center rounded-xl bg-white/[0.12]">
-              <Tag size={18} color="#ffffff" strokeWidth={2} />
-            </div>
-            <p className="text-[13px] font-bold text-white">Promo</p>
-            <p className="text-[11px] text-white/45">Lihat penawaran</p>
-          </button>
-          <button
-            type="button"
-            onClick={gate("Login untuk menukar poin dengan reward.")}
-            className="rounded-2xl bg-polks-bg p-4 text-left"
-          >
-            <div className="mb-2.5 flex size-[38px] items-center justify-center rounded-xl bg-polks-surface">
-              <Gift size={18} color="#17212A" strokeWidth={2} />
-            </div>
-            <p className="text-[13px] font-bold text-polks-text">Reward</p>
-            <p className="text-[11px] text-[#8A959D]">Tukar poin</p>
-          </button>
-        </div>
-
-        {/* 4-col shortcuts */}
-        <div className="grid grid-cols-4 gap-1.5 px-3.5 pb-[18px] pt-3.5">
-          {[
-            { label: "Outlet", Icon: Store, href: "/login" as const },
-            { label: "Daftar", Icon: QrCode, href: "/register" as const },
-            { label: "Info", Icon: Info, href: "/login" as const },
-            { label: "Tentang", Icon: CheckCircle2, href: "/login" as const },
-          ].map(({ label, Icon, href }) => (
-            <Link key={label} href={href} className="flex flex-col items-center gap-1.5">
-              <div className="flex size-[50px] items-center justify-center rounded-2xl bg-polks-surface">
-                <Icon size={20} color="#25343F" strokeWidth={1.8} />
-              </div>
-              <span className="text-[10px] font-semibold text-polks-muted">{label}</span>
-            </Link>
-          ))}
-        </div>
       </div>
 
       {/* Content sections */}
       <div className="bg-polks-bg pt-3">
-        {/* Promo Aktif */}
-        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
-          <div className="mb-3.5 flex items-center justify-between">
-            <h3 className="text-[15px] font-bold text-polks-text">Promo Aktif</h3>
-            <Link href="/login" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
-              Lihat Semua <ChevronRight size={13} />
-            </Link>
-          </div>
-          <div className="flex flex-col">
-            {promos.map((p, i) => (
-              <div
-                key={p.id}
-                className={
-                  "flex items-center justify-between py-3 " +
-                  (i < promos.length - 1 ? "border-b border-polks-surface" : "")
-                }
-              >
-                <div className="flex-1 pr-3">
-                  <p className="mb-0.5 text-[13px] font-semibold text-polks-text">{p.title}</p>
-                  <div className="flex items-center gap-1.5 text-[11px] text-[#8A959D]">
-                    <MapPin size={9} color="#8A959D" />
-                    {p.outlet}
-                    <span className="text-[#C0CBD3]">·</span>
-                    {p.period}
-                  </div>
-                </div>
-                <StatusPill status={p.status} />
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Reward Catalog */}
         <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           <div className="mb-3.5 flex items-center justify-between">
