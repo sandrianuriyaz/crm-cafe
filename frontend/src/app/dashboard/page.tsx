@@ -8,35 +8,26 @@ import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { TIER_META } from "@/lib/loyalty/tier";
-import { type Reward } from "@/lib/loyalty/types";
-
-const promos = [
-  { id: 1, title: "Diskon Kopi Susu 20%", period: "1–30 Jun 2026", outlet: "All Outlets", status: "active" as const },
-  { id: 2, title: "Buy 1 Get 1 Latte", period: "15–20 Jun 2026", outlet: "Cafe A only", status: "limited" as const },
-];
+import { type Promo, type Reward } from "@/lib/loyalty/types";
 
 const quickLinks = [
   { label: "Riwayat", Icon: History, href: "/history" as const },
   { label: "Outlet", Icon: MapPin, href: "/outlets" as const },
 ];
 
-function StatusPill({ status }: { status: "active" | "limited" }) {
-  const dark = status === "active";
-  return (
-    <span
-      className={
-        "inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[10px] font-bold " +
-        (dark ? "bg-polks-brand text-white" : "bg-[#F3F4F6] text-[#374151]")
-      }
-    >
-      {dark ? "Active" : "Limited"}
-    </span>
-  );
+function formatPeriod(startAt: string | null, endAt: string | null): string {
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  if (startAt && endAt) return `${fmt(startAt)} – ${fmt(endAt)}`;
+  if (endAt) return `s/d ${fmt(endAt)}`;
+  if (startAt) return `mulai ${fmt(startAt)}`;
+  return "Berlaku terus";
 }
 
 export default function MemberDashboardPage() {
   const { user } = useAuth();
   const [recs, setRecs] = useState<Reward[]>([]);
+  const [promos, setPromos] = useState<Promo[]>([]);
   const [unread, setUnread] = useState(0);
 
   const name = user?.name || "Member";
@@ -47,6 +38,9 @@ export default function MemberDashboardPage() {
     api<Reward[]>("/rewards")
       .then((d) => setRecs(d.slice(0, 2)))
       .catch(() => setRecs([]));
+    api<Promo[]>("/promos")
+      .then((d) => setPromos(d.slice(0, 2)))
+      .catch(() => setPromos([]));
     api<{ count: number }>("/member/notifications/unread-count")
       .then((r) => setUnread(r.count))
       .catch(() => setUnread(0));
@@ -155,30 +149,34 @@ export default function MemberDashboardPage() {
           </div>
         </div>
 
-        {/* Promo — sekunder, ringkas */}
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-polks-text">Promo</h3>
-            <Link href="/promos" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
-              Semua <ChevronRight size={13} />
-            </Link>
-          </div>
-          <div className="flex flex-col gap-2">
-            {promos.map((p) => (
-              <Link
-                key={p.id}
-                href="/promos"
-                className="flex items-center justify-between rounded-2xl border border-polks-border bg-white px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="mb-0.5 truncate text-[13px] font-semibold text-polks-text">{p.title}</p>
-                  <p className="text-[11px] text-[#8A959D]">{p.outlet} · {p.period}</p>
-                </div>
-                <StatusPill status={p.status} />
+        {/* Promo — sekunder, ringkas (data asli) */}
+        {promos.length > 0 ? (
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-polks-text">Promo</h3>
+              <Link href="/promos" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
+                Semua <ChevronRight size={13} />
               </Link>
-            ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              {promos.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/promos/${p.id}`}
+                  className="flex items-center justify-between rounded-2xl border border-polks-border bg-white px-4 py-3"
+                >
+                  <div className="min-w-0 pr-3">
+                    <p className="mb-0.5 truncate text-[13px] font-semibold text-polks-text">{p.title}</p>
+                    <p className="text-[11px] text-[#8A959D]">{formatPeriod(p.startAt, p.endAt)}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-polks-brand px-2.5 py-1 text-[10px] font-bold text-white">
+                    Aktif
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </CustomerShell>
   );
