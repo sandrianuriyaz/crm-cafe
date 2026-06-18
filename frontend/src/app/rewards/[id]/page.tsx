@@ -19,11 +19,9 @@ import { TIER_META } from "@/lib/loyalty/tier";
 import { LAST_REDEEM_KEY, type RedeemResult, type Reward } from "@/lib/loyalty/types";
 
 const terms = [
-  "Reward hanya bisa ditukar oleh member aktif POLKS.",
-  "Tidak dapat diuangkan atau dipindahtangankan.",
-  "Berlaku satu kali penggunaan.",
+  "Hanya untuk member aktif POLKS · sekali pakai.",
   "Tunjukkan voucher ke kasir sebelum transaksi.",
-  "POLKS berhak membatalkan reward yang tidak sesuai syarat.",
+  "Tidak dapat diuangkan atau dipindahtangankan.",
 ];
 
 export default function RewardDetailPage() {
@@ -152,7 +150,6 @@ export default function RewardDetailPage() {
             <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
               {[
                 { Icon: MapPin, label: "Outlet", value: "All Outlets" },
-                { Icon: Star, label: "Poin dibutuhkan", value: `${reward.pointCost.toLocaleString("id-ID")} pts` },
                 { Icon: Calendar, label: "Sisa stok", value: `${reward.stock}` },
               ].map(({ Icon, label, value }, i) => (
                 <div
