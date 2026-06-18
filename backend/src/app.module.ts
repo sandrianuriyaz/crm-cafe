@@ -11,6 +11,7 @@ import { PromosModule } from './promos/promos.module';
 import { AdminModule } from './admin/admin.module';
 import { OutletsModule } from './outlets/outlets.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PosModule } from './pos/pos.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AdminModule,
     OutletsModule,
     NotificationsModule,
+    PosModule,
   ],
   controllers: [HealthController],
   providers: [],
