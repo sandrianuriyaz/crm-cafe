@@ -24,13 +24,17 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (form.phone.trim().length < 8) {
+      setError("Masukkan nomor HP yang valid.");
+      return;
+    }
     setLoading(true);
     try {
       await register({
         name: form.name.trim(),
         email: form.email.trim(),
         password: form.password,
-        phone: form.phone.trim() || undefined,
+        phone: form.phone.trim(),
       });
       router.push("/dashboard");
     } catch (err) {
@@ -99,11 +103,11 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="phone" className="text-xs font-semibold text-[#374151]">
-              Nomor HP <span className="font-normal text-[#9CA3AF]">(opsional)</span>
+              Nomor HP
             </label>
             <div className="relative flex items-center">
               <Phone size={18} className="absolute left-4 text-[#9CA3AF]" />
-              <input id="phone" type="tel" autoComplete="tel" placeholder="08xxxxxxxxxx"
+              <input id="phone" type="tel" inputMode="numeric" autoComplete="tel" required minLength={8} placeholder="08xxxxxxxxxx"
                 value={form.phone} onChange={update("phone")} className={fieldClass} />
             </div>
           </div>

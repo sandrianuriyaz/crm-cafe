@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'Budi Santoso' })
@@ -16,10 +16,10 @@ export class RegisterDto {
   @MinLength(6)
   password!: string;
 
-  // Kalau diisi & cocok dengan Member dari POS yang belum punya akun,
-  // member itu diklaim (poin lama kebawa). Lihat AuthService.register.
-  @ApiPropertyOptional({ example: '+6281234567890' })
-  @IsOptional()
+  // Wajib. Kalau cocok dengan Member dari POS yang belum punya akun, member itu
+  // diklaim (poin lama kebawa). Lihat AuthService.register.
+  @ApiProperty({ example: '081234567890' })
   @IsString()
-  phone?: string;
+  @MinLength(8)
+  phone!: string;
 }
