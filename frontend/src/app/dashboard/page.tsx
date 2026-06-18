@@ -17,7 +17,7 @@ import {
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { getTier, TIER_META } from "@/lib/loyalty/tier";
+import { TIER_META } from "@/lib/loyalty/tier";
 import { type Reward } from "@/lib/loyalty/types";
 
 const banners = [
@@ -52,7 +52,7 @@ export default function MemberDashboardPage() {
 
   const name = user?.name || "Member";
   const points = user?.pointBalance ?? 0;
-  const tierMeta = TIER_META[getTier(points)];
+  const tierMeta = TIER_META[user?.tier ?? "bronze"];
 
   useEffect(() => {
     api<Reward[]>("/rewards")

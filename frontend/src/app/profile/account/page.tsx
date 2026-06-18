@@ -6,7 +6,7 @@ import { ArrowLeft, User, Mail, Phone, IdCard, Award, Calendar } from "lucide-re
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { getTier, TIER_META } from "@/lib/loyalty/tier";
+import { TIER_META } from "@/lib/loyalty/tier";
 
 type MemberProfile = {
   memberCode: string;
@@ -40,8 +40,7 @@ export default function AccountInfoPage() {
     };
   }, [router]);
 
-  const points = p?.pointBalance ?? user?.pointBalance ?? 0;
-  const tierMeta = TIER_META[getTier(points)];
+  const tierMeta = TIER_META[user?.tier ?? "bronze"];
 
   const rows = [
     { Icon: User, label: "Nama Lengkap", value: p?.name ?? user?.name ?? "—" },

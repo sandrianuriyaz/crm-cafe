@@ -6,11 +6,15 @@ import {
 import { Prisma } from '@prisma/client';
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
+import { TierService } from '../tier/tier.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class MemberService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tier: TierService,
+  ) {}
 
   // Ambil member milik user login. Admin / user tanpa member → 404.
   private async getMemberOrThrow(userId: string) {
@@ -26,6 +30,8 @@ export class MemberService {
 
   async getProfile(userId: string) {
     const m = await this.getMemberOrThrow(userId);
+    // Tier dihitung dari belanja bulan ini (bukan saldo poin).
+    const status = await this.tier.statusForMember(m.id);
     return {
       id: m.id,
       memberCode: m.memberCode,
@@ -33,7 +39,10 @@ export class MemberService {
       email: m.user?.email ?? null,
       phone: m.phone,
       pointBalance: m.pointBalance,
-      tier: m.tier ? { id: m.tier.id, name: m.tier.name } : null,
+      tier: status.tier,
+      monthlySpend: status.monthlySpend,
+      rupiahPerPoint: status.rupiahPerPoint,
+      nextTier: status.nextTier,
       createdAt: m.createdAt,
     };
   }

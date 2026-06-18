@@ -15,7 +15,7 @@ import { CustomerShell } from "@/components/layout/customer-shell";
 import { RedeemSheet } from "@/components/customer/redeem-sheet";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { getTier, TIER_META } from "@/lib/loyalty/tier";
+import { TIER_META } from "@/lib/loyalty/tier";
 import { LAST_REDEEM_KEY, type RedeemResult, type Reward } from "@/lib/loyalty/types";
 
 const terms = [
@@ -40,7 +40,7 @@ export default function RewardDetailPage() {
   const [redeemError, setRedeemError] = useState<string | null>(null);
 
   const points = user?.pointBalance ?? 0;
-  const tierMeta = TIER_META[getTier(points)];
+  const tierMeta = TIER_META[user?.tier ?? "bronze"];
 
   useEffect(() => {
     let alive = true;

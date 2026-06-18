@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { api, clearToken, getToken, setToken } from "./api";
+import { type Tier, type NextTier } from "./loyalty/tier";
 
 export type AuthUser = {
   id: string;
@@ -17,6 +18,20 @@ export type AuthUser = {
   name: string;
   memberCode: string | null;
   pointBalance: number | null;
+  // Tier dihitung backend dari belanja bulan ini (lihat /member/profile).
+  tier?: Tier;
+  monthlySpend?: number;
+  nextTier?: NextTier;
+};
+
+// Bentuk respons /member/profile yang dipakai untuk melengkapi AuthUser.
+type MemberProfile = {
+  name: string;
+  memberCode: string;
+  pointBalance: number;
+  tier?: Tier;
+  monthlySpend?: number;
+  nextTier?: NextTier;
 };
 
 type AuthResponse = { access_token: string; user: AuthUser };
@@ -52,15 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api<{ id: string; email: string; role: string }>("/auth/me")
       .then((me) =>
         // /auth/me hanya kirim id/email/role; lengkapi profil dari /member.
-        api<{ name: string; memberCode: string; pointBalance: number }>(
-          "/member/profile",
-        )
+        api<MemberProfile>("/member/profile")
           .then((p) =>
             setUser({
               ...me,
               name: p.name,
               memberCode: p.memberCode,
               pointBalance: p.pointBalance,
+              tier: p.tier,
+              monthlySpend: p.monthlySpend,
+              nextTier: p.nextTier,
             }),
           )
           .catch(() =>
@@ -108,11 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshProfile = useCallback(async () => {
     if (!getToken()) return;
     try {
-      const p = await api<{
-        name: string;
-        memberCode: string;
-        pointBalance: number;
-      }>("/member/profile");
+      const p = await api<MemberProfile>("/member/profile");
       setUser((prev) =>
         prev
           ? {
@@ -120,6 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: p.name,
               memberCode: p.memberCode,
               pointBalance: p.pointBalance,
+              tier: p.tier,
+              monthlySpend: p.monthlySpend,
+              nextTier: p.nextTier,
             }
           : prev,
       );

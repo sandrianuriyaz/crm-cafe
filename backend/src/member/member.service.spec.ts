@@ -3,6 +3,7 @@ import { ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { MemberService } from './member.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { TierService } from '../tier/tier.service';
 
 describe('MemberService.updateProfile', () => {
   let service: MemberService;
@@ -39,6 +40,17 @@ describe('MemberService.updateProfile', () => {
       providers: [
         MemberService,
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: TierService,
+          useValue: {
+            statusForMember: jest.fn().mockResolvedValue({
+              tier: 'bronze',
+              monthlySpend: 0,
+              rupiahPerPoint: 1000,
+              nextTier: null,
+            }),
+          },
+        },
       ],
     }).compile();
     service = module.get(MemberService);

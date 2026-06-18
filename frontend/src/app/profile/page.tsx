@@ -16,7 +16,7 @@ import {
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { getTier, getNextTier, TIER_META } from "@/lib/loyalty/tier";
+import { TIER_META, formatRupiah } from "@/lib/loyalty/tier";
 
 type MemberProfile = {
   id: string;
@@ -78,10 +78,10 @@ export default function ProfilePage() {
   const phone = profile?.phone || "—";
   const points = profile?.pointBalance ?? user?.pointBalance ?? 0;
   const memberId = profile?.memberCode || user?.memberCode || "—";
-  const tier = getTier(points);
-  const tierMeta = TIER_META[tier];
-  const next = getNextTier(points);
-  const progress = next ? Math.min(100, (points / next.target) * 100) : 100;
+  const tierMeta = TIER_META[user?.tier ?? "bronze"];
+  const next = user?.nextTier ?? null;
+  const spend = user?.monthlySpend ?? 0;
+  const progress = next ? Math.min(100, (spend / next.min) * 100) : 100;
 
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
           <div className="mt-4">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[10px] text-white/40">
-                {next.need.toLocaleString("id-ID")} pts lagi menuju {next.label}
+                Belanja {formatRupiah(next.remaining)} lagi bulan ini menuju {TIER_META[next.name].label}
               </span>
             </div>
             <div className="h-[5px] rounded-full bg-white/10">

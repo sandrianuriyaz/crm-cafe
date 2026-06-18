@@ -12,6 +12,13 @@ type LoyaltyConfig = {
   tierThresholds: unknown;
   webhookUrl: string | null;
   requireIdempotencyKeys: boolean;
+  tierSilverMin: number;
+  tierGoldMin: number;
+  tierPlatinumMin: number;
+  rateBronze: number;
+  rateSilver: number;
+  rateGold: number;
+  ratePlatinum: number;
   updatedAt?: string;
 };
 
@@ -48,6 +55,13 @@ export default function AdminLoyaltyConfigPage() {
             cfg.pointExpiryMonths === null ? null : Number(cfg.pointExpiryMonths),
           webhookUrl: cfg.webhookUrl || null,
           requireIdempotencyKeys: cfg.requireIdempotencyKeys,
+          tierSilverMin: Number(cfg.tierSilverMin),
+          tierGoldMin: Number(cfg.tierGoldMin),
+          tierPlatinumMin: Number(cfg.tierPlatinumMin),
+          rateBronze: Number(cfg.rateBronze),
+          rateSilver: Number(cfg.rateSilver),
+          rateGold: Number(cfg.rateGold),
+          ratePlatinum: Number(cfg.ratePlatinum),
         },
       });
       setCfg(updated);
@@ -162,6 +176,52 @@ export default function AdminLoyaltyConfigPage() {
                     {cfg.requireIdempotencyKeys ? "Aktif" : "Nonaktif"}
                   </button>
                 </Field>
+              </div>
+            </div>
+
+            {/* Tier (berbasis belanja bulanan) */}
+            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+              <div className="flex items-center gap-2 border-b border-polks-surface px-5 py-3.5">
+                <Settings size={14} className="text-polks-brand" />
+                <h3 className="text-[13px] font-bold text-polks-text">Tier (belanja per bulan)</h3>
+              </div>
+              <div className="px-5 py-4">
+                <p className="mb-3 text-[11px] leading-relaxed text-polks-muted">
+                  Tier ditentukan dari total belanja member bulan berjalan (reset tiap
+                  bulan). Bronze = di bawah ambang Silver. Rate = Rupiah per 1 poin
+                  (makin kecil → makin banyak poin).
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Ambang Silver" unit="Rp/bln" hint="Belanja minimum jadi Silver">
+                    <input type="number" min={0} value={cfg.tierSilverMin}
+                      onChange={(e) => patch("tierSilverMin", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                  <Field label="Ambang Gold" unit="Rp/bln" hint="Belanja minimum jadi Gold">
+                    <input type="number" min={0} value={cfg.tierGoldMin}
+                      onChange={(e) => patch("tierGoldMin", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                  <Field label="Ambang Platinum" unit="Rp/bln" hint="Belanja minimum jadi Platinum">
+                    <input type="number" min={0} value={cfg.tierPlatinumMin}
+                      onChange={(e) => patch("tierPlatinumMin", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                  <div className="hidden sm:block" />
+                  <Field label="Rate Bronze" unit="Rp / poin">
+                    <input type="number" min={1} value={cfg.rateBronze}
+                      onChange={(e) => patch("rateBronze", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                  <Field label="Rate Silver" unit="Rp / poin">
+                    <input type="number" min={1} value={cfg.rateSilver}
+                      onChange={(e) => patch("rateSilver", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                  <Field label="Rate Gold" unit="Rp / poin">
+                    <input type="number" min={1} value={cfg.rateGold}
+                      onChange={(e) => patch("rateGold", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                  <Field label="Rate Platinum" unit="Rp / poin">
+                    <input type="number" min={1} value={cfg.ratePlatinum}
+                      onChange={(e) => patch("ratePlatinum", Number(e.target.value))} className={inputClass} />
+                  </Field>
+                </div>
               </div>
             </div>
 

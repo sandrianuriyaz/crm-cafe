@@ -1,27 +1,21 @@
-// Tier member berdasarkan saldo poin (mengikuti memberTier desain Figma).
-export type Tier = "silver" | "gold" | "platinum";
+// Tier member dihitung BACKEND dari total belanja bulan ini (bukan saldo poin).
+// Frontend tinggal menampilkan `user.tier` + `user.nextTier` dari /member/profile.
+export type Tier = "bronze" | "silver" | "gold" | "platinum";
 
-export function getTier(points: number): Tier {
-  if (points >= 5000) return "platinum";
-  if (points >= 1000) return "gold";
-  return "silver";
-}
-
-// Tier berikutnya + poin yang dibutuhkan + ambang target (untuk progress bar).
-export function getNextTier(
-  points: number,
-): { label: string; need: number; target: number } | null {
-  if (points < 1000) return { label: "Gold", need: 1000 - points, target: 1000 };
-  if (points < 5000) return { label: "Platinum", need: 5000 - points, target: 5000 };
-  return null;
-}
+// Tier berikutnya berbasis belanja (Rp) — bentuk dari backend `nextTier`.
+export type NextTier = { name: Tier; min: number; remaining: number } | null;
 
 // Warna badge tier (hex langsung agar persis desain).
 export const TIER_META: Record<
   Tier,
   { label: string; badgeBg: string; badgeText: string }
 > = {
+  bronze: { label: "Bronze", badgeBg: "rgba(176,141,87,0.18)", badgeText: "#A87B4B" },
   silver: { label: "Silver", badgeBg: "rgba(160,180,192,0.18)", badgeText: "#8A9BA5" },
   gold: { label: "Gold", badgeBg: "rgba(246,184,75,0.18)", badgeText: "#C99A2E" },
   platinum: { label: "Platinum", badgeBg: "rgba(178,148,255,0.18)", badgeText: "#9B7BE8" },
 };
+
+export function formatRupiah(n: number): string {
+  return "Rp" + n.toLocaleString("id-ID");
+}

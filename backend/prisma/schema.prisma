@@ -240,7 +240,18 @@ model LoyaltyConfig {
   tierThresholds         Json     @default("[]")
   webhookUrl             String?
   requireIdempotencyKeys Boolean  @default(true)
-  updatedAt              DateTime @updatedAt
+
+  // Tier berbasis belanja bulanan (Rp). Bronze = 0 (implisit).
+  tierSilverMin   Int @default(500000)
+  tierGoldMin     Int @default(1000000)
+  tierPlatinumMin Int @default(1500000)
+  // Rate earning per tier: Rp per 1 poin (makin kecil = makin banyak poin).
+  rateBronze   Int @default(1000)
+  rateSilver   Int @default(950)
+  rateGold     Int @default(900)
+  ratePlatinum Int @default(850)
+
+  updatedAt DateTime @updatedAt
 
   @@map("loyalty_config")
 }

@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { TierService } from '../tier/tier.service';
+import { rateForTier, tierForSpend } from '../common/tier.util';
 import { PosTransactionEventDto } from './dto/pos-transaction.dto';
 
 export interface WebhookResult {
@@ -19,7 +20,7 @@ export class WebhooksService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly config: ConfigService,
+    private readonly tier: TierService,
   ) {}
 
   // Orkestrasi: idempotency → upsert pelanggan → catat transaksi → award poin.
@@ -49,18 +50,23 @@ export class WebhooksService {
     }
 
     try {
-      // Rate earning dari LoyaltyConfig (fallback env). Dibaca sekali di luar
-      // $transaction agar tidak menambah beban di dalam transaksi.
-      const rupiahPerPoint = await this.getRupiahPerPoint();
+      // Konfigurasi tier dibaca sekali di luar $transaction (hanya settings).
+      const tierCfg = await this.tier.getConfig();
 
       const result = await this.prisma.$transaction(async (tx) => {
         // ── Checklist 4: upsert pelanggan ──────────────────────────────────
         const member = await this.upsertMember(tx, dto);
 
         // ── Checklist 6: hitung poin (member saja; walk-in anonim → 0) ─────
-        const pointsAwarded = member
-          ? this.calculatePoints(dto.transaction.grand_total, rupiahPerPoint)
-          : 0;
+        // Rate earning = rate tier member, dihitung dari belanja bulan ini
+        // TERMASUK transaksi yang sedang diproses.
+        let pointsAwarded = 0;
+        if (member) {
+          const priorSpend = await this.tier.monthlySpend(member.id, tx);
+          const spend = priorSpend + dto.transaction.grand_total;
+          const rate = rateForTier(tierForSpend(spend, tierCfg), tierCfg);
+          pointsAwarded = this.calculatePoints(dto.transaction.grand_total, rate);
+        }
 
         // ── Checklist 5: catat transaksi + item (parsed) + raw payload ─────
         const t = dto.transaction;
@@ -166,17 +172,6 @@ export class WebhooksService {
   private calculatePoints(grandTotal: number, rupiahPerPoint: number): number {
     if (grandTotal <= 0 || rupiahPerPoint <= 0) return 0;
     return Math.floor(grandTotal / rupiahPerPoint);
-  }
-
-  // Rate earning: LoyaltyConfig.rupiahPerPoint bila ada, jika tidak env POIN_PER_RUPIAH.
-  private async getRupiahPerPoint(): Promise<number> {
-    const cfg = await this.prisma.loyaltyConfig.findUnique({
-      where: { id: 'singleton' },
-      select: { rupiahPerPoint: true },
-    });
-    return (
-      cfg?.rupiahPerPoint ?? this.config.get<number>('POIN_PER_RUPIAH') ?? 1000
-    );
   }
 
   // Opsi A (CRM yang punya id): customer.id = memberCode terbitan CRM yang

@@ -17,7 +17,7 @@ import {
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { getTier, TIER_META } from "@/lib/loyalty/tier";
+import { TIER_META } from "@/lib/loyalty/tier";
 
 export default function MemberCardPage() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function MemberCardPage() {
   const name = user?.name || "Member";
   const memberId = user?.memberCode || "—";
   const points = user?.pointBalance ?? 0;
-  const tierMeta = TIER_META[getTier(points)];
+  const tierMeta = TIER_META[user?.tier ?? "bronze"];
 
   // QR asli dari backend (berisi memberCode — id milik CRM, dipindai POS).
   const [qrImage, setQrImage] = useState<string | null>(null);
