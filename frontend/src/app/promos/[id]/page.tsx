@@ -8,11 +8,9 @@ import { api, ApiError } from "@/lib/api";
 import { type Promo } from "@/lib/loyalty/types";
 
 const terms = [
-  "Promo berlaku sesuai periode yang tercantum.",
-  "Tidak dapat digabungkan dengan promo atau diskon lain.",
-  "Berlaku untuk pembelian langsung di kasir.",
+  "Berlaku sesuai periode · pembelian langsung di kasir.",
+  "Tidak dapat digabung dengan promo atau diskon lain.",
   "Poin tetap dihitung dari harga setelah diskon.",
-  "POLKS berhak membatalkan promo sewaktu-waktu.",
 ];
 
 function formatPeriod(startAt: string | null, endAt: string | null): string {
@@ -60,7 +58,7 @@ export default function PromoDetailPage() {
           Kembali ke Promo
         </button>
         <div className="mb-3 flex items-start justify-between">
-          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-polks-point">
+          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-white/40">
             Promo
           </span>
           <span className="rounded-full bg-polks-brand px-2 py-0.5 text-[10px] font-bold text-white ring-1 ring-white/20">
@@ -138,21 +136,12 @@ export default function PromoDetailPage() {
             </div>
 
             {/* Notice */}
-            <div className="flex items-start gap-3 rounded-2xl border border-[rgba(246,184,75,0.4)] bg-polks-point-soft px-4 py-3">
-              <Info size={14} color="#92400E" className="mt-0.5 shrink-0" />
-              <p className="text-xs leading-relaxed text-[#92400E]">
+            <div className="flex items-start gap-3 rounded-2xl border border-polks-border bg-white px-4 py-3">
+              <Info size={14} color="#25343F" className="mt-0.5 shrink-0" />
+              <p className="text-xs leading-relaxed text-polks-muted">
                 Tunjukkan member QR ke kasir saat bertransaksi di outlet untuk menikmati promo ini.
               </p>
             </div>
-
-            <button
-              type="button"
-              onClick={() => router.push("/promos")}
-              className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-polks-border bg-white text-sm font-semibold text-polks-brand"
-            >
-              <ArrowLeft size={16} />
-              Kembali ke Promo
-            </button>
           </>
         )}
       </div>
