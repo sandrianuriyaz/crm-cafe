@@ -9,8 +9,6 @@ import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { type Reward } from "@/lib/loyalty/types";
 
-const categories = ["Semua", "Voucher", "Minuman", "Makanan"];
-
 export default function RewardCatalogPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -18,7 +16,6 @@ export default function RewardCatalogPage() {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [active, setActive] = useState("Semua");
 
   const points = user?.pointBalance ?? 0;
 
@@ -79,26 +76,7 @@ export default function RewardCatalogPage() {
         </svg>
       </div>
 
-      <div className="flex flex-col gap-5 bg-polks-bg px-5 pb-28">
-        {/* Category chips */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {categories.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setActive(c)}
-              className={
-                "h-8 shrink-0 whitespace-nowrap rounded-full px-3.5 text-xs font-semibold transition-colors " +
-                (active === c
-                  ? "bg-polks-brand text-white"
-                  : "border-[1.5px] border-polks-border bg-white text-polks-muted")
-              }
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
+      <div className="flex flex-col gap-5 bg-polks-bg px-5 pb-28 pt-5">
         {loading ? (
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
