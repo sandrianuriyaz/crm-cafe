@@ -119,9 +119,9 @@ export default function VoucherSuccessPage() {
           </div>
 
           {/* Notice */}
-          <div className="flex items-center gap-3 rounded-2xl border border-[rgba(246,184,75,0.4)] bg-polks-point-soft px-4 py-3">
-            <ShoppingBag size={15} color="#92400E" className="shrink-0" />
-            <p className="text-xs font-semibold text-[#92400E]">
+          <div className="flex items-center gap-3 rounded-2xl border border-polks-border bg-white px-4 py-3">
+            <ShoppingBag size={15} color="#25343F" className="shrink-0" />
+            <p className="text-xs font-medium text-polks-muted">
               Tunjukkan voucher ke kasir sebelum transaksi dimulai.
             </p>
           </div>
