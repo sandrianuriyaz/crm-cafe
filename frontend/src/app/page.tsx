@@ -10,10 +10,7 @@ import {
   Store,
   CheckCircle2,
   ChevronRight,
-  ShoppingBag,
   Smartphone,
-  ScanLine,
-  Link2,
   Star,
   Home,
   LogIn,
@@ -38,12 +35,9 @@ const outlets = [
 ];
 
 const steps = [
-  { Icon: ShoppingBag, text: "Pesan di kasir / POS" },
-  { Icon: Smartphone, text: "Tunjukkan QR member" },
-  { Icon: ScanLine, text: "Kasir scan QR" },
-  { Icon: Link2, text: "POS kirim transaksi ke CRM" },
-  { Icon: Star, text: "POLKS tambahkan poin resmi" },
-  { Icon: Gift, text: "Tukar poin dengan reward" },
+  { Icon: Smartphone, text: "Tunjukkan QR member ke kasir" },
+  { Icon: Star, text: "Poin masuk otomatis tiap transaksi" },
+  { Icon: Gift, text: "Tukar poin jadi reward pilihan" },
 ];
 
 function StatusPill({ status }: { status: "active" | "limited" }) {
