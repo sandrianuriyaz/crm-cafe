@@ -101,7 +101,7 @@ export function RedeemSheet({
             type="button"
             disabled={redeeming || !canRedeem}
             onClick={onConfirm}
-            className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-polks-smile text-sm font-bold text-white disabled:opacity-50"
+            className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-polks-brand text-sm font-bold text-white disabled:opacity-50"
           >
             <Gift size={16} />
             {redeeming ? "Memproses…" : !canRedeem ? "Poin tidak cukup" : "Konfirmasi Penukaran"}

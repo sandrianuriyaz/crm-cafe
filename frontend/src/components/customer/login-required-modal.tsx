@@ -72,7 +72,7 @@ export function LoginRequiredModal({
           <button
             type="button"
             onClick={() => router.push("/register")}
-            className="h-[50px] rounded-[14px] bg-polks-smile text-sm font-bold text-white"
+            className="h-[50px] rounded-[14px] border-[1.5px] border-polks-border bg-white text-sm font-bold text-polks-brand"
           >
             Daftar Gratis
           </button>

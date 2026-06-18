@@ -182,7 +182,7 @@ export default function GuestHomePage() {
             { label: "Tentang", Icon: CheckCircle2, href: "/login" as const },
           ].map(({ label, Icon, href }) => (
             <Link key={label} href={href} className="flex flex-col items-center gap-1.5">
-              <div className="flex size-[50px] items-center justify-center rounded-2xl bg-polks-bg">
+              <div className="flex size-[50px] items-center justify-center rounded-2xl bg-polks-surface">
                 <Icon size={20} color="#25343F" strokeWidth={1.8} />
               </div>
               <span className="text-[10px] font-semibold text-polks-muted">{label}</span>
@@ -192,9 +192,9 @@ export default function GuestHomePage() {
       </div>
 
       {/* Content sections */}
-      <div className="bg-polks-bg">
+      <div className="bg-polks-bg pt-3">
         {/* Promo Aktif */}
-        <div className="mb-2 bg-white px-4 py-[18px]">
+        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           <div className="mb-3.5 flex items-center justify-between">
             <h3 className="text-[15px] font-bold text-polks-text">Promo Aktif</h3>
             <Link href="/login" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
@@ -226,7 +226,7 @@ export default function GuestHomePage() {
         </div>
 
         {/* Reward Catalog */}
-        <div className="mb-2 bg-white px-4 py-[18px]">
+        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           <div className="mb-3.5 flex items-center justify-between">
             <h3 className="text-[15px] font-bold text-polks-text">Reward Catalog</h3>
             <Link href="/login" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
@@ -262,7 +262,7 @@ export default function GuestHomePage() {
         </div>
 
         {/* Cara Kerjanya */}
-        <div className="mb-2 bg-white px-4 py-[18px]">
+        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           <h3 className="mb-4 text-[15px] font-bold text-polks-text">Cara Kerjanya</h3>
           <div className="flex flex-col gap-3.5">
             {steps.map(({ Icon, text }, i) => (
@@ -282,7 +282,7 @@ export default function GuestHomePage() {
         </div>
 
         {/* Outlet */}
-        <div className="mb-2 bg-white px-4 py-[18px]">
+        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           <h3 className="mb-3.5 text-[15px] font-bold text-polks-text">Lokasi Outlet</h3>
           {outlets.map((o, i) => (
             <div
@@ -307,7 +307,7 @@ export default function GuestHomePage() {
         </div>
 
         {/* CTA daftar */}
-        <div className="bg-polks-brand px-4 py-7 text-center">
+        <div className="mx-4 mb-3 rounded-[20px] bg-polks-brand px-5 py-7 text-center">
           <h3 className="mb-2 text-[17px] font-bold text-white">
             Mulai kumpulkan poin hari ini.
           </h3>
@@ -329,7 +329,7 @@ export default function GuestHomePage() {
         </div>
 
         {/* Value props */}
-        <div className="bg-white px-4 py-4">
+        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           {[
             "Daftar gratis — tanpa kartu fisik",
             "Berlaku di semua outlet POLKS",

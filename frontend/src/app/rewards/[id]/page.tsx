@@ -232,7 +232,7 @@ export default function RewardDetailPage() {
                 setRedeemError(null);
                 setConfirming(true);
               }}
-              className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-polks-smile text-sm font-bold text-white disabled:opacity-50"
+              className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-polks-brand text-sm font-bold text-white disabled:opacity-50"
             >
               <Gift size={16} />
               {canRedeem

@@ -73,7 +73,7 @@ export default function VoucherSuccessPage() {
           <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
             <div className="flex items-center justify-between px-5 pb-4 pt-5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-polks-smile">
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-polks-brand">
                   Reward Voucher
                 </p>
                 <p className="mt-1 text-lg font-bold text-polks-text">

@@ -12,7 +12,6 @@ import {
   QrCode,
   Star,
   Tag,
-  Zap,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
@@ -160,28 +159,16 @@ export default function MemberDashboardPage() {
           </Link>
         </div>
 
-        {/* 4-col shortcuts */}
-        <div className="grid grid-cols-4 gap-2 px-4 pb-5 pt-4">
+        {/* Shortcuts ringkas */}
+        <div className="grid grid-cols-3 gap-2 px-4 pb-5 pt-4">
           {[
-            { label: "Promo", Icon: Tag, href: "/promos" as const, accent: false },
-            { label: "Riwayat", Icon: History, href: "/history" as const, accent: false },
-            { label: "Outlet", Icon: MapPin, href: "/outlets" as const, accent: false },
-            { label: "Poin", Icon: Star, href: "/history" as const, accent: true },
-          ].map(({ label, Icon, href, accent }) => (
-            <Link key={label} href={href} className="flex flex-col items-center gap-1.5">
-              <div
-                className={
-                  "flex size-[52px] items-center justify-center rounded-2xl " +
-                  (accent ? "bg-polks-brand" : "bg-polks-surface")
-                }
-              >
-                <Icon
-                  size={20}
-                  color={accent ? "#F6B84B" : "#25343F"}
-                  strokeWidth={1.8}
-                />
-              </div>
-              <span className="text-[11px] font-semibold text-polks-muted">{label}</span>
+            { label: "Promo", Icon: Tag, href: "/promos" as const },
+            { label: "Riwayat", Icon: History, href: "/history" as const },
+            { label: "Outlet", Icon: MapPin, href: "/outlets" as const },
+          ].map(({ label, Icon, href }) => (
+            <Link key={label} href={href} className="flex flex-col items-center gap-1.5 py-1">
+              <Icon size={22} color="#25343F" strokeWidth={1.8} />
+              <span className="text-[11px] font-medium text-polks-muted">{label}</span>
             </Link>
           ))}
         </div>
@@ -257,14 +244,6 @@ export default function MemberDashboardPage() {
               </Link>
             ))}
           </div>
-        </div>
-
-        {/* Info poin */}
-        <div className="flex items-center gap-2.5 rounded-2xl border border-polks-border bg-white px-3.5 py-3">
-          <Zap size={14} color="#25343F" className="shrink-0" />
-          <p className="text-[11px] leading-relaxed text-polks-muted">
-            Poin diperbarui otomatis setelah kasir selesai scan QR melalui POS.
-          </p>
         </div>
       </div>
     </CustomerShell>

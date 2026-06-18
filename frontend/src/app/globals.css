@@ -45,13 +45,13 @@ a:active {
 
 /* Seleksi teks bernuansa brand. */
 ::selection {
-  background-color: rgba(255, 107, 74, 0.25);
+  background-color: rgba(37, 52, 63, 0.12);
 }
 
 /* Elevasi halus untuk kartu putih ber-border. :where() = spesifisitas 0,
  * jadi kartu yang punya shadow eksplisit (shadow-*) tetap menang. */
 :where(.bg-white.border-polks-border) {
-  box-shadow: 0 6px 20px rgba(37, 52, 63, 0.1);
+  box-shadow: 0 4px 16px rgba(37, 52, 63, 0.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
