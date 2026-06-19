@@ -19,27 +19,30 @@ import { RewardsService } from './rewards.service';
 import { CreateRewardDto } from './dto/create-reward.dto';
 import { UpdateRewardDto } from './dto/update-reward.dto';
 
+// GET /rewards & /rewards/:id PUBLIK (katalog bisa dilihat guest sebelum login).
+// Aksi member (redeem/vouchers/redeems) & admin di-guard sendiri.
 @ApiTags('rewards')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller()
 export class RewardsController {
   constructor(private readonly rewards: RewardsService) {}
 
-  // ── Customer ──────────────────────────────────────────────────────────────
+  // ── Customer (publik) ──────────────────────────────────────────────────────
   @Get('rewards')
-  @ApiOperation({ summary: 'Katalog reward aktif' })
+  @ApiOperation({ summary: 'Katalog reward aktif (publik)' })
   list() {
     return this.rewards.listActive();
   }
 
   @Get('rewards/:id')
-  @ApiOperation({ summary: 'Detail reward' })
+  @ApiOperation({ summary: 'Detail reward (publik)' })
   detail(@Param('id') id: string) {
     return this.rewards.getOne(id);
   }
 
+  // ── Member (perlu login) ────────────────────────────────────────────────
   @Post('rewards/:id/redeem')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(200)
   @ApiOperation({ summary: 'Tukar poin dengan reward → voucher' })
   redeem(@CurrentUser('id') userId: string, @Param('id') id: string) {
@@ -47,12 +50,16 @@ export class RewardsController {
   }
 
   @Get('vouchers')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Voucher milik saya' })
   vouchers(@CurrentUser('id') userId: string) {
     return this.rewards.listVouchers(userId);
   }
 
   @Get('redeems')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Histori redeem saya' })
   redeems(@CurrentUser('id') userId: string) {
     return this.rewards.listRedeems(userId);
@@ -60,32 +67,36 @@ export class RewardsController {
 
   // ── Admin ───────────────────────────────────────────────────────────────
   @Post('admin/rewards')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Buat reward' })
   create(@Body() dto: CreateRewardDto) {
     return this.rewards.create(dto);
   }
 
   @Get('admin/rewards')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Semua reward (termasuk nonaktif)' })
   listAll() {
     return this.rewards.listAll();
   }
 
   @Patch('admin/rewards/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Ubah reward' })
   update(@Param('id') id: string, @Body() dto: UpdateRewardDto) {
     return this.rewards.update(id, dto);
   }
 
   @Delete('admin/rewards/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Nonaktifkan reward (soft-delete)' })
   remove(@Param('id') id: string) {
     return this.rewards.remove(id);

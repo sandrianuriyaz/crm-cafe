@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -16,23 +16,10 @@ import {
   LogIn,
 } from "lucide-react";
 import { LoginRequiredModal } from "@/components/customer/login-required-modal";
+import { api } from "@/lib/api";
+import { type Promo, type Reward } from "@/lib/loyalty/types";
 
-const banners = [
-  { id: 1, title: "Diskon Kopi Susu 20%", sub: "Berlaku di semua outlet · s/d 30 Jun 2026", tag: "Promo Aktif" },
-  { id: 2, title: "Buy 1 Get 1 Latte", sub: "Cafe A only · s/d 20 Jun 2026", tag: "Terbatas" },
-  { id: 3, title: "Weekend Coffee Deal", sub: "Semua outlet · 21–22 Jun 2026", tag: "Segera" },
-];
-
-const rewards = [
-  { id: 1, title: "Free Americano", pts: 500, outlet: "All Outlets" },
-  { id: 2, title: "Voucher Rp25.000", pts: 1000, outlet: "All Outlets" },
-];
-
-const outlets = [
-  { name: "Cafe A", city: "Bandung" },
-  { name: "Cafe B", city: "Tasikmalaya" },
-  { name: "Cafe C", city: "Jakarta" },
-];
+type Outlet = { id: string; name: string; city: string | null };
 
 const steps = [
   { Icon: Smartphone, text: "Tunjukkan QR member ke kasir" },
@@ -40,18 +27,13 @@ const steps = [
   { Icon: Gift, text: "Tukar poin jadi reward pilihan" },
 ];
 
-function StatusPill({ status }: { status: "active" | "limited" }) {
-  const dark = status === "active";
-  return (
-    <span
-      className={
-        "inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[10px] font-bold " +
-        (dark ? "bg-polks-brand text-white" : "bg-[#F3F4F6] text-[#374151]")
-      }
-    >
-      {dark ? "Active" : "Limited"}
-    </span>
-  );
+function formatPeriod(startAt: string | null, endAt: string | null): string {
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  if (startAt && endAt) return `${fmt(startAt)} – ${fmt(endAt)}`;
+  if (endAt) return `s/d ${fmt(endAt)}`;
+  if (startAt) return `mulai ${fmt(startAt)}`;
+  return "Berlaku terus";
 }
 
 const navItems = [
@@ -63,9 +45,21 @@ const navItems = [
 ];
 
 export default function GuestHomePage() {
+  const [promos, setPromos] = useState<Promo[]>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [activeBanner, setActiveBanner] = useState(0);
   const [modalReason, setModalReason] = useState<string | null>(null);
   const gate = (reason: string) => () => setModalReason(reason);
+
+  useEffect(() => {
+    // Endpoint publik — guest tetap dapat data asli.
+    api<Promo[]>("/promos").then((d) => setPromos(d.slice(0, 5))).catch(() => setPromos([]));
+    api<Reward[]>("/rewards").then((d) => setRewards(d.slice(0, 3))).catch(() => setRewards([]));
+    api<Outlet[]>("/outlets").then((d) => setOutlets(d.slice(0, 4))).catch(() => setOutlets([]));
+  }, []);
+
+  const promo = promos[activeBanner];
 
   return (
     <div className="polks-phone relative w-full overflow-x-hidden bg-polks-bg font-body text-polks-text">
@@ -89,20 +83,40 @@ export default function GuestHomePage() {
         </button>
       </div>
 
-      {/* Promo banner */}
+      {/* Promo banner (data asli) */}
       <div className="bg-polks-brand px-3.5 pb-4">
-        <div className="overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.07]">
-          <div className="px-5 pb-4 pt-[22px]">
-            <span className="mb-2.5 inline-block rounded-full bg-white/[0.12] px-2.5 py-[3px] text-[9px] font-medium uppercase tracking-[0.08em] text-white/70">
-              {banners[activeBanner].tag}
-            </span>
-            <h2 className="mb-1.5 text-[22px] font-bold leading-tight tracking-[-0.01em] text-white">
-              {banners[activeBanner].title}
-            </h2>
-            <p className="text-xs text-white/50">{banners[activeBanner].sub}</p>
-          </div>
-          <div className="flex justify-center gap-1.5 pb-3.5">
-            {banners.map((b, i) => (
+        <Link
+          href="/login"
+          className="block overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.07]"
+        >
+          {promo?.imageUrl ? (
+            <div className="relative aspect-[16/9] w-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={promo.imageUrl} alt={promo.title} className="size-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-5 pb-4 pt-10">
+                <h2 className="text-[20px] font-bold leading-tight text-white">{promo.title}</h2>
+                <p className="text-xs text-white/70">{formatPeriod(promo.startAt, promo.endAt)}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="px-5 pb-4 pt-[22px]">
+              <span className="mb-2.5 inline-block rounded-full bg-white/[0.12] px-2.5 py-[3px] text-[9px] font-medium uppercase tracking-[0.08em] text-white/70">
+                {promo ? "Promo Aktif" : "POLKS Loyalty"}
+              </span>
+              <h2 className="mb-1.5 text-[22px] font-bold leading-tight tracking-[-0.01em] text-white">
+                {promo ? promo.title : "Kumpulkan poin tiap kunjungan"}
+              </h2>
+              <p className="text-xs text-white/50">
+                {promo
+                  ? formatPeriod(promo.startAt, promo.endAt)
+                  : "Daftar gratis & tukar poin dengan reward."}
+              </p>
+            </div>
+          )}
+        </Link>
+        {promos.length > 1 ? (
+          <div className="flex justify-center gap-1.5 pt-3">
+            {promos.map((b, i) => (
               <button
                 key={b.id}
                 type="button"
@@ -115,12 +129,11 @@ export default function GuestHomePage() {
               />
             ))}
           </div>
-        </div>
+        ) : null}
       </div>
 
       {/* White section */}
       <div className="bg-white">
-        {/* Greeting + Login */}
         <div className="flex items-center justify-between border-b border-[#F3F4F6] px-4 py-3.5">
           <div>
             <p className="text-xs text-[#8A959D]">Selamat datang,</p>
@@ -133,12 +146,11 @@ export default function GuestHomePage() {
             Login
           </Link>
         </div>
-
       </div>
 
       {/* Content sections */}
       <div className="bg-polks-bg pt-3">
-        {/* Reward Catalog */}
+        {/* Reward Catalog (data asli) */}
         <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
           <div className="mb-3.5 flex items-center justify-between">
             <h3 className="text-[15px] font-bold text-polks-text">Reward Catalog</h3>
@@ -146,32 +158,36 @@ export default function GuestHomePage() {
               Lihat Semua <ChevronRight size={13} />
             </Link>
           </div>
-          <div className="flex flex-col">
-            {rewards.map((r, i) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={gate("Login untuk menukar poin dengan reward.")}
-                className={
-                  "flex w-full items-center justify-between py-3 text-left " +
-                  (i < rewards.length - 1 ? "border-b border-polks-surface" : "")
-                }
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-polks-bg">
-                    <Gift size={17} color="#25343F" strokeWidth={1.8} />
+          {rewards.length === 0 ? (
+            <p className="py-2 text-[13px] text-[#8A959D]">Belum ada reward tersedia.</p>
+          ) : (
+            <div className="flex flex-col">
+              {rewards.map((r, i) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={gate("Login untuk menukar poin dengan reward.")}
+                  className={
+                    "flex w-full items-center justify-between py-3 text-left " +
+                    (i < rewards.length - 1 ? "border-b border-polks-surface" : "")
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-polks-bg">
+                      <Gift size={17} color="#25343F" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-polks-text">{r.name}</p>
+                      <p className="mt-0.5 text-[11px] text-[#8A959D]">
+                        {r.pointCost.toLocaleString("id-ID")} pts · All Outlets
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[13px] font-semibold text-polks-text">{r.title}</p>
-                    <p className="mt-0.5 text-[11px] text-[#8A959D]">
-                      {r.pts} pts · {r.outlet}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight size={16} color="#C0CBD3" />
-              </button>
-            ))}
-          </div>
+                  <ChevronRight size={16} color="#C0CBD3" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Cara Kerjanya */}
@@ -194,30 +210,34 @@ export default function GuestHomePage() {
           </div>
         </div>
 
-        {/* Outlet */}
-        <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
-          <h3 className="mb-3.5 text-[15px] font-bold text-polks-text">Lokasi Outlet</h3>
-          {outlets.map((o, i) => (
-            <div
-              key={o.name}
-              className={
-                "flex items-center justify-between py-[11px] " +
-                (i < outlets.length - 1 ? "border-b border-polks-surface" : "")
-              }
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-polks-brand">
-                  <Store size={15} color="#ffffff" strokeWidth={1.8} />
+        {/* Outlet (data asli) */}
+        {outlets.length > 0 ? (
+          <div className="mx-4 mb-3 rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(37,52,63,0.05)]">
+            <h3 className="mb-3.5 text-[15px] font-bold text-polks-text">Lokasi Outlet</h3>
+            {outlets.map((o, i) => (
+              <div
+                key={o.id}
+                className={
+                  "flex items-center justify-between py-[11px] " +
+                  (i < outlets.length - 1 ? "border-b border-polks-surface" : "")
+                }
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-polks-brand">
+                    <Store size={15} color="#ffffff" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-polks-text">{o.name}</p>
+                    {o.city ? <p className="mt-px text-[11px] text-[#8A959D]">{o.city}</p> : null}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-polks-text">{o.name}</p>
-                  <p className="mt-px text-[11px] text-[#8A959D]">{o.city}</p>
-                </div>
+                <span className="inline-flex shrink-0 items-center rounded-full bg-polks-brand px-2.5 py-1 text-[10px] font-bold text-white">
+                  Buka
+                </span>
               </div>
-              <StatusPill status="active" />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : null}
 
         {/* CTA daftar */}
         <div className="mx-4 mb-3 rounded-[20px] bg-polks-brand px-5 py-7 text-center">
