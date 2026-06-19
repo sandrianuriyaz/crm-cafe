@@ -31,6 +31,9 @@ export class PosService {
       reward: {
         name: voucher.reward.name,
         description: voucher.reward.description,
+        type: voucher.reward.type,
+        value: voucher.reward.value,
+        freeItemName: voucher.reward.freeItemName,
       },
       member: {
         name: voucher.member.name,

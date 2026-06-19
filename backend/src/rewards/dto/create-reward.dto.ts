@@ -7,7 +7,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { RewardStatus } from '@prisma/client';
+import { RewardStatus, RewardType } from '@prisma/client';
 
 export class CreateRewardDto {
   @ApiProperty({ example: 'Free Americano' })
@@ -39,4 +39,23 @@ export class CreateRewardDto {
   @IsOptional()
   @IsEnum(RewardStatus)
   status?: RewardStatus;
+
+  // Efek reward saat di-redeem (dibaca POS). Default MANUAL.
+  @ApiPropertyOptional({ enum: RewardType, default: RewardType.MANUAL })
+  @IsOptional()
+  @IsEnum(RewardType)
+  type?: RewardType;
+
+  // Rupiah utk DISCOUNT_AMOUNT, 0-100 utk DISCOUNT_PERCENT, null utk lainnya.
+  @ApiPropertyOptional({ example: 10000 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  value?: number;
+
+  // Hanya untuk FREE_ITEM.
+  @ApiPropertyOptional({ example: 'Americano' })
+  @IsOptional()
+  @IsString()
+  freeItemName?: string;
 }

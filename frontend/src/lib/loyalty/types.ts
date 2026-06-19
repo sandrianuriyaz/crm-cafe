@@ -1,6 +1,12 @@
 // Bentuk response asli dari backend NestJS (lihat backend/src/rewards).
 // Dipisah dari mock-data agar halaman yang sudah real tidak ikut mock.
 
+export type RewardType =
+  | "DISCOUNT_AMOUNT"
+  | "DISCOUNT_PERCENT"
+  | "FREE_ITEM"
+  | "MANUAL";
+
 export type Reward = {
   id: string;
   name: string;
@@ -9,6 +15,9 @@ export type Reward = {
   pointCost: number;
   stock: number;
   status: "ACTIVE" | "INACTIVE";
+  type: RewardType;
+  value: number | null;
+  freeItemName: string | null;
   createdAt: string;
   updatedAt: string;
 };

@@ -5,7 +5,7 @@ import { Plus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { api, ApiError } from "@/lib/api";
-import { type Reward } from "@/lib/loyalty/types";
+import { type Reward, type RewardType } from "@/lib/loyalty/types";
 
 type Draft = {
   name: string;
@@ -14,6 +14,9 @@ type Draft = {
   pointCost: number;
   stock: number;
   status: "ACTIVE" | "INACTIVE";
+  type: RewardType;
+  value: number;
+  freeItemName: string;
 };
 
 const emptyDraft: Draft = {
@@ -23,7 +26,17 @@ const emptyDraft: Draft = {
   pointCost: 100,
   stock: 0,
   status: "ACTIVE",
+  type: "MANUAL",
+  value: 0,
+  freeItemName: "",
 };
+
+const TYPE_OPTIONS: { value: RewardType; label: string }[] = [
+  { value: "DISCOUNT_AMOUNT", label: "Diskon Rupiah" },
+  { value: "DISCOUNT_PERCENT", label: "Diskon Persen" },
+  { value: "FREE_ITEM", label: "Item Gratis" },
+  { value: "MANUAL", label: "Manual (hadiah fisik)" },
+];
 
 export default function AdminRewardsPage() {
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -153,6 +166,9 @@ function RewardForm({
           pointCost: reward.pointCost,
           stock: reward.stock,
           status: reward.status,
+          type: reward.type ?? "MANUAL",
+          value: reward.value ?? 0,
+          freeItemName: reward.freeItemName ?? "",
         }
       : emptyDraft,
   );
@@ -170,6 +186,8 @@ function RewardForm({
     }
     setSaving(true);
     setError(null);
+    const isDiscount =
+      d.type === "DISCOUNT_AMOUNT" || d.type === "DISCOUNT_PERCENT";
     const body = {
       name: d.name,
       description: d.description || undefined,
@@ -177,6 +195,11 @@ function RewardForm({
       pointCost: Number(d.pointCost),
       stock: Number(d.stock),
       status: d.status,
+      type: d.type,
+      // value hanya untuk tipe diskon; freeItemName hanya untuk item gratis.
+      // Selain itu dikirim null agar ter-reset saat ganti tipe.
+      value: isDiscount ? Number(d.value) : null,
+      freeItemName: d.type === "FREE_ITEM" ? d.freeItemName || null : null,
     };
     try {
       if (reward) {
@@ -238,6 +261,51 @@ function RewardForm({
               <option value="INACTIVE">Nonaktif</option>
             </select>
           </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Tipe Reward</label>
+            <select
+              className={field}
+              value={d.type}
+              onChange={(e) => set("type", e.target.value as RewardType)}
+            >
+              {TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-[10px] text-polks-muted">
+              Dibaca POS untuk menerapkan efek saat voucher di-redeem.
+            </p>
+          </div>
+
+          {(d.type === "DISCOUNT_AMOUNT" || d.type === "DISCOUNT_PERCENT") ? (
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-polks-text">
+                {d.type === "DISCOUNT_AMOUNT" ? "Nilai Diskon (Rp)" : "Nilai Diskon (%)"}
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={d.type === "DISCOUNT_PERCENT" ? 100 : undefined}
+                className={field}
+                value={d.value}
+                onChange={(e) => set("value", Number(e.target.value))}
+                placeholder={d.type === "DISCOUNT_AMOUNT" ? "10000" : "0–100"}
+              />
+            </div>
+          ) : null}
+
+          {d.type === "FREE_ITEM" ? (
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-polks-text">Nama Item Gratis</label>
+              <input
+                className={field}
+                value={d.freeItemName}
+                onChange={(e) => set("freeItemName", e.target.value)}
+                placeholder="mis. Americano"
+              />
+            </div>
+          ) : null}
 
           {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}
 
