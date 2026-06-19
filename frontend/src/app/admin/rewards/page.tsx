@@ -38,6 +38,20 @@ const TYPE_OPTIONS: { value: RewardType; label: string }[] = [
   { value: "MANUAL", label: "Manual (hadiah fisik)" },
 ];
 
+// Label tipe reward untuk tabel (termasuk nilai/item-nya).
+function rewardTypeLabel(r: Reward): string {
+  switch (r.type) {
+    case "DISCOUNT_AMOUNT":
+      return `Diskon Rp${(r.value ?? 0).toLocaleString("id-ID")}`;
+    case "DISCOUNT_PERCENT":
+      return `Diskon ${r.value ?? 0}%`;
+    case "FREE_ITEM":
+      return `Gratis ${r.freeItemName ?? "—"}`;
+    default:
+      return "Manual";
+  }
+}
+
 export default function AdminRewardsPage() {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +109,7 @@ export default function AdminRewardsPage() {
           </div>
         ) : (
           <AdminTable
-            columns={["Nama", "Poin", "Stok", "Status", "Aksi"]}
+            columns={["Nama", "Poin", "Stok", "Tipe", "Status", "Aksi"]}
             empty={loading ? "Memuat…" : "Belum ada reward."}
             rows={rewards.map((r) => [
               <div key="n">
@@ -106,6 +120,9 @@ export default function AdminRewardsPage() {
               </div>,
               <span key="p" className="font-semibold">{r.pointCost.toLocaleString("id-ID")}</span>,
               r.stock,
+              <span key="t" className="text-[11px] font-medium text-polks-text">
+                {rewardTypeLabel(r)}
+              </span>,
               <AdminBadge
                 key="s"
                 label={r.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
