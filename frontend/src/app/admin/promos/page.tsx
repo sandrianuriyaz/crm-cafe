@@ -10,6 +10,7 @@ import { type Promo } from "@/lib/loyalty/types";
 type Draft = {
   title: string;
   description: string;
+  imageUrl: string;
   startAt: string; // yyyy-mm-dd
   endAt: string;
   status: "ACTIVE" | "INACTIVE";
@@ -150,11 +151,12 @@ function PromoForm({
       ? {
           title: promo.title,
           description: promo.description ?? "",
+          imageUrl: promo.imageUrl ?? "",
           startAt: toDateInput(promo.startAt),
           endAt: toDateInput(promo.endAt),
           status: promo.status,
         }
-      : { title: "", description: "", startAt: "", endAt: "", status: "ACTIVE" },
+      : { title: "", description: "", imageUrl: "", startAt: "", endAt: "", status: "ACTIVE" },
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,6 +175,7 @@ function PromoForm({
     const body = {
       title: d.title,
       description: d.description || undefined,
+      imageUrl: d.imageUrl.trim() || null,
       startAt: d.startAt ? new Date(d.startAt).toISOString() : undefined,
       endAt: d.endAt ? new Date(d.endAt).toISOString() : undefined,
       status: d.status,
@@ -215,6 +218,27 @@ function PromoForm({
               value={d.description}
               onChange={(e) => set("description", e.target.value)}
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-polks-text">URL Gambar Banner</label>
+            <input
+              className={field}
+              value={d.imageUrl}
+              onChange={(e) => set("imageUrl", e.target.value)}
+              placeholder="https://… (rasio 16:9, mis. 1200×675)"
+            />
+            {d.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={d.imageUrl}
+                alt="Pratinjau banner"
+                className="mt-2 aspect-[16/9] w-full rounded-xl border border-polks-border object-cover"
+              />
+            ) : (
+              <p className="mt-1 text-[10px] text-polks-muted">
+                Opsional. Rasio 16:9 (mis. 1200×675) supaya tampil rapi.
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

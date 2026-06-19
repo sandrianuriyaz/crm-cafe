@@ -84,6 +84,12 @@ export default function PromoDetailPage() {
           </div>
         ) : (
           <>
+            {promo?.imageUrl ? (
+              <div className="aspect-[16/9] w-full overflow-hidden rounded-2xl border border-polks-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={promo.imageUrl} alt={promo.title} className="size-full object-cover" />
+              </div>
+            ) : null}
             {/* Meta */}
             <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-white p-4">
               <div className="flex items-center gap-3">

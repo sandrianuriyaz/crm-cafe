@@ -163,15 +163,28 @@ export default function MemberDashboardPage() {
                 <Link
                   key={p.id}
                   href={`/promos/${p.id}`}
-                  className="flex items-center justify-between rounded-2xl border border-polks-border bg-white px-4 py-3"
+                  className="overflow-hidden rounded-2xl border border-polks-border bg-white"
                 >
-                  <div className="min-w-0 pr-3">
-                    <p className="mb-0.5 truncate text-[13px] font-semibold text-polks-text">{p.title}</p>
-                    <p className="text-[11px] text-[#8A959D]">{formatPeriod(p.startAt, p.endAt)}</p>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-polks-brand px-2.5 py-1 text-[10px] font-bold text-white">
-                    Aktif
-                  </span>
+                  {p.imageUrl ? (
+                    <div className="relative aspect-[16/9] w-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.imageUrl} alt={p.title} className="size-full object-cover" />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-4 pb-3 pt-8">
+                        <p className="truncate text-[14px] font-bold text-white">{p.title}</p>
+                        <p className="text-[11px] text-white/70">{formatPeriod(p.startAt, p.endAt)}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <div className="min-w-0 pr-3">
+                        <p className="mb-0.5 truncate text-[13px] font-semibold text-polks-text">{p.title}</p>
+                        <p className="text-[11px] text-[#8A959D]">{formatPeriod(p.startAt, p.endAt)}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-polks-brand px-2.5 py-1 text-[10px] font-bold text-white">
+                        Aktif
+                      </span>
+                    </div>
+                  )}
                 </Link>
               ))}
             </div>

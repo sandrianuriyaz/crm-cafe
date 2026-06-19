@@ -107,6 +107,12 @@ export default function PromoListPage() {
                 href={`/promos/${p.id}`}
                 className="overflow-hidden rounded-2xl border border-polks-border bg-white"
               >
+                {p.imageUrl ? (
+                  <div className="aspect-[16/9] w-full">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.imageUrl} alt={p.title} className="size-full object-cover" />
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between border-b border-polks-border bg-polks-bg px-4 py-2">
                   <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-polks-brand">
                     Promo
