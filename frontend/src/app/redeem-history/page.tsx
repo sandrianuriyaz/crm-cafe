@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Gift, Copy } from "lucide-react";
+import { ArrowLeft, Gift, Copy, QrCode } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
+import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api, ApiError } from "@/lib/api";
 import { type Voucher } from "@/lib/loyalty/types";
 
@@ -20,7 +21,7 @@ function formatDate(iso: string | null): string {
   return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function VoucherCard({ v }: { v: Voucher }) {
+function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
   const meta = STATUS_META[v.status];
   return (
     <div
@@ -63,6 +64,16 @@ function VoucherCard({ v }: { v: Voucher }) {
           Salin
         </button>
       </div>
+      {v.status === "ACTIVE" && onShowQr ? (
+        <button
+          type="button"
+          onClick={onShowQr}
+          className="flex w-full items-center justify-center gap-1.5 border-t border-polks-border bg-white py-2.5 text-[12px] font-semibold text-polks-brand"
+        >
+          <QrCode size={14} />
+          Tunjukkan QR ke kasir
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -72,6 +83,7 @@ export default function RedeemHistoryPage() {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [qrVoucher, setQrVoucher] = useState<Voucher | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -107,9 +119,9 @@ export default function RedeemHistoryPage() {
           <ArrowLeft size={16} />
           Kembali
         </button>
-        <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Riwayat Penukaran</h1>
+        <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Voucher Saya</h1>
         <p className="mt-1 text-[13px] text-white/50">
-          Semua reward dan voucher yang sudah ditukar.
+          Voucher dari reward yang sudah kamu tukar — tunjukkan ke kasir.
         </p>
         <div className="mt-4 flex gap-3">
           {[
@@ -157,7 +169,7 @@ export default function RedeemHistoryPage() {
                 <p className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A959D]">Aktif</p>
                 <div className="flex flex-col gap-3">
                   {activeList.map((v) => (
-                    <VoucherCard key={v.id} v={v} />
+                    <VoucherCard key={v.id} v={v} onShowQr={() => setQrVoucher(v)} />
                   ))}
                 </div>
               </div>
@@ -175,6 +187,10 @@ export default function RedeemHistoryPage() {
           </>
         )}
       </div>
+
+      {qrVoucher ? (
+        <VoucherQrModal voucher={qrVoucher} onClose={() => setQrVoucher(null)} />
+      ) : null}
     </CustomerShell>
   );
 }

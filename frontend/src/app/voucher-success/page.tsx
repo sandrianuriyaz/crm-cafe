@@ -131,7 +131,7 @@ export default function VoucherSuccessPage() {
             href="/redeem-history"
             className="flex h-[50px] w-full items-center justify-center rounded-[14px] bg-polks-brand text-sm font-bold text-white"
           >
-            Lihat Riwayat Penukaran
+            Lihat Voucher Saya
           </Link>
           <Link
             href="/dashboard"

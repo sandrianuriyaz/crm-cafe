@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Gift, Star, MapPin, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Gift, Star, MapPin, AlertCircle, RefreshCw, Ticket } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -45,14 +45,23 @@ export default function RewardCatalogPage() {
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header */}
       <div className="bg-polks-brand px-5 pb-6 pt-4">
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
-        >
-          <ArrowLeft size={16} />
-          Kembali
-        </button>
+        <div className="mb-4 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard")}
+            className="flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          >
+            <ArrowLeft size={16} />
+            Kembali
+          </button>
+          <Link
+            href="/redeem-history"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
+          >
+            <Ticket size={14} />
+            Voucher Saya
+          </Link>
+        </div>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Reward Catalog</h1>
         <p className="mt-1 text-[13px] text-white/50">
           Tukar poin resmi kamu dengan reward pilihan.
