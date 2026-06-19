@@ -35,6 +35,8 @@ export class PosService {
       member: {
         name: voucher.member.name,
         memberCode: voucher.member.memberCode,
+        externalCustomerId: voucher.member.externalCustomerId,
+        pointBalance: voucher.member.pointBalance,
       },
       used_at: voucher.usedAt,
       created_at: voucher.createdAt,
