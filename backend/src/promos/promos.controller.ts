@@ -17,54 +17,58 @@ import { PromosService } from './promos.service';
 import { CreatePromoDto } from './dto/create-promo.dto';
 import { UpdatePromoDto } from './dto/update-promo.dto';
 
+// GET /promos & /promos/:id PUBLIK (tanpa login) supaya banner home guest bisa
+// menampilkan promo asli. Route admin di-guard sendiri.
 @ApiTags('promos')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller()
 export class PromosController {
   constructor(private readonly promos: PromosService) {}
 
-  // ── Customer ──────────────────────────────────────────────────────────────
+  // ── Customer (publik) ──────────────────────────────────────────────────────
   @Get('promos')
-  @ApiOperation({ summary: 'Promo yang sedang aktif' })
+  @ApiOperation({ summary: 'Promo yang sedang aktif (publik)' })
   list() {
     return this.promos.listActive();
   }
 
   @Get('promos/:id')
-  @ApiOperation({ summary: 'Detail promo' })
+  @ApiOperation({ summary: 'Detail promo (publik)' })
   detail(@Param('id') id: string) {
     return this.promos.getOne(id);
   }
 
   // ── Admin ───────────────────────────────────────────────────────────────
   @Post('admin/promos')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Buat promo' })
   create(@Body() dto: CreatePromoDto) {
     return this.promos.create(dto);
   }
 
   @Get('admin/promos')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Semua promo (termasuk nonaktif/kedaluwarsa)' })
   listAll() {
     return this.promos.listAll();
   }
 
   @Patch('admin/promos/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Ubah promo' })
   update(@Param('id') id: string, @Body() dto: UpdatePromoDto) {
     return this.promos.update(id, dto);
   }
 
   @Delete('admin/promos/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Nonaktifkan promo (soft-delete)' })
   remove(@Param('id') id: string) {
     return this.promos.remove(id);
