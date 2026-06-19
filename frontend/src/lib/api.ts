@@ -32,6 +32,30 @@ type ApiOptions = {
   auth?: boolean; // sertakan Bearer token
 };
 
+// Upload 1 gambar ke backend (multipart) → balas { url }. Bukan JSON, jadi
+// pakai FormData (jangan set Content-Type; browser yang atur boundary).
+export async function uploadImage(
+  file: File,
+  folder?: string,
+): Promise<{ url: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  const token = getToken();
+  const q = folder ? `?folder=${encodeURIComponent(folder)}` : "";
+  const res = await fetch(`${BASE_URL}/admin/uploads${q}`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const message =
+      data?.error?.message ?? data?.message ?? `Upload gagal (${res.status})`;
+    throw new ApiError(res.status, Array.isArray(message) ? message[0] : message);
+  }
+  return data as { url: string };
+}
+
 export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const { method = "GET", body, auth = true } = opts;
 

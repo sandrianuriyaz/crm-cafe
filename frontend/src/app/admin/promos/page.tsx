@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { api, ApiError } from "@/lib/api";
 import { type Promo } from "@/lib/loyalty/types";
 
@@ -220,25 +221,12 @@ function PromoForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-polks-text">URL Gambar Banner</label>
-            <input
-              className={field}
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Gambar Banner</label>
+            <ImageUploadField
               value={d.imageUrl}
-              onChange={(e) => set("imageUrl", e.target.value)}
-              placeholder="https://… (rasio 16:9, mis. 1200×675)"
+              onChange={(url) => set("imageUrl", url)}
+              folder="promos"
             />
-            {d.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={d.imageUrl}
-                alt="Pratinjau banner"
-                className="mt-2 aspect-[16/9] w-full rounded-xl border border-polks-border object-cover"
-              />
-            ) : (
-              <p className="mt-1 text-[10px] text-polks-muted">
-                Opsional. Rasio 16:9 (mis. 1200×675) supaya tampil rapi.
-              </p>
-            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

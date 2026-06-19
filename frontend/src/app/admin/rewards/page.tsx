@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { api, ApiError } from "@/lib/api";
 import { type Reward, type RewardType } from "@/lib/loyalty/types";
 
@@ -268,8 +269,12 @@ function RewardForm({
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-polks-text">Gambar (URL, opsional)</label>
-            <input className={field} value={d.imageUrl} onChange={(e) => set("imageUrl", e.target.value)} placeholder="https://…" />
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Gambar (opsional)</label>
+            <ImageUploadField
+              value={d.imageUrl}
+              onChange={(url) => set("imageUrl", url)}
+              folder="rewards"
+            />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-polks-text">Status</label>

@@ -12,6 +12,7 @@ import { AdminModule } from './admin/admin.module';
 import { OutletsModule } from './outlets/outlets.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PosModule } from './pos/pos.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PosModule } from './pos/pos.module';
     OutletsModule,
     NotificationsModule,
     PosModule,
+    UploadsModule,
   ],
   controllers: [HealthController],
   providers: [],

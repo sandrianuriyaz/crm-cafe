@@ -24,6 +24,12 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CALLBACK_URL: z.string().url().optional(),
 
+  // Supabase Storage (upload gambar promo/reward). Opsional saat boot; wajib
+  // agar POST /admin/uploads berfungsi. Bucket harus publik.
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_BUCKET: z.string().default('uploads'),
+
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.
   CRM_WEBHOOK_SECRET: z.string().min(16),
