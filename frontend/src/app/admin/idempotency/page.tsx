@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { MetricCard, AdminTable, SectionHeader } from "@/components/admin/admin-ui";
-import { api } from "@/lib/api";
+import { MetricCard, SectionHeader } from "@/components/admin/admin-ui";
+import { AdminDataTable } from "@/components/admin/admin-data-table";
+import { useAdminList } from "@/components/admin/use-admin-list";
 
 type IdempotencyKey = {
   idempotencyKey: string;
@@ -14,36 +14,19 @@ type IdempotencyKey = {
   pointsAwarded: number;
   createdAt: string;
 };
-type Paginated = {
-  total: number;
-  skip: number;
-  take: number;
-  items: IdempotencyKey[];
-};
 
 export default function AdminIdempotencyPage() {
-  const [data, setData] = useState<Paginated | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api<Paginated>("/admin/idempotency-keys")
-      .then(setData)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const items = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const withMember = items.filter((r) => r.memberId !== null).length;
-  const totalPoints = items.reduce((sum, r) => sum + r.pointsAwarded, 0);
+  const list = useAdminList<IdempotencyKey>("/admin/idempotency-keys");
+  const withMember = list.items.filter((r) => r.memberId !== null).length;
+  const pagePoints = list.items.reduce((sum, r) => sum + r.pointsAwarded, 0);
 
   return (
     <AdminShell title="Idempotency">
       <div className="flex flex-col gap-5">
         <div className="grid grid-cols-3 gap-3 md:gap-4">
-          <MetricCard label="Total Keys" value={loading ? "—" : total} Icon={ShieldCheck} accent />
-          <MetricCard label="Dengan Member" value={loading ? "—" : withMember} />
-          <MetricCard label="Total Poin" value={loading ? "—" : totalPoints} />
+          <MetricCard label="Total Keys" value={list.loading ? "—" : list.total} Icon={ShieldCheck} accent />
+          <MetricCard label="Dengan Member" value={list.loading ? "—" : withMember} sub="Halaman ini" />
+          <MetricCard label="Total Poin" value={list.loading ? "—" : pagePoints} sub="Halaman ini" />
         </div>
 
         <div className="rounded-xl bg-polks-surface px-4 py-3">
@@ -53,11 +36,12 @@ export default function AdminIdempotencyPage() {
           </p>
         </div>
 
-        <SectionHeader title={loading ? "Records" : `${total} Records`} />
-        <AdminTable
+        <SectionHeader title={list.loading ? "Records" : `${list.total} Records`} />
+        <AdminDataTable
+          list={list}
           columns={["Idempotency Key", "Order ID", "No. Order", "Poin", "Waktu"]}
-          empty={loading ? "Memuat…" : "Belum ada record."}
-          rows={items.map((r) => [
+          empty="Belum ada record."
+          renderRow={(r) => [
             <span key="k" className="block max-w-[220px] truncate font-mono text-[11px] font-semibold text-polks-text">
               {r.idempotencyKey}
             </span>,
@@ -67,7 +51,7 @@ export default function AdminIdempotencyPage() {
             <span key="t" className="text-[11px] text-polks-muted">
               {new Date(r.createdAt).toLocaleString("id-ID")}
             </span>,
-          ])}
+          ]}
         />
       </div>
     </AdminShell>

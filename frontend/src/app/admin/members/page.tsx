@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Search, Plus, Minus, X } from "lucide-react";
+import { useState } from "react";
+import { Plus, Minus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { AdminTable, SectionHeader } from "@/components/admin/admin-ui";
-import { api, ApiError } from "@/lib/api";
-import { type Paginated } from "@/lib/loyalty/types";
+import { SectionHeader } from "@/components/admin/admin-ui";
+import { AdminDataTable } from "@/components/admin/admin-data-table";
+import { useAdminList } from "@/components/admin/use-admin-list";
+import { api } from "@/lib/api";
 
 type AdminMember = {
   id: string;
@@ -18,79 +19,37 @@ type AdminMember = {
 };
 
 export default function AdminMembersPage() {
-  const [data, setData] = useState<Paginated<AdminMember> | null>(null);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const list = useAdminList<AdminMember>("/admin/members", { searchable: true });
   const [adjusting, setAdjusting] = useState<AdminMember | null>(null);
-
-  const load = useCallback(async (q: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({ take: "50" });
-      if (q) params.set("search", q);
-      const res = await api<Paginated<AdminMember>>(`/admin/members?${params}`);
-      setData(res);
-    } catch (err) {
-      if (!(err instanceof ApiError && err.status === 401)) {
-        setError(err instanceof Error ? err.message : "Gagal memuat member");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const t = setTimeout(() => load(search), 300);
-    return () => clearTimeout(t);
-  }, [search, load]);
 
   return (
     <AdminShell title="Members">
       <div className="flex flex-col gap-4">
-        <SectionHeader
-          title={`Member${data ? ` (${data.total})` : ""}`}
-          action={
-            <div className="relative flex items-center">
-              <Search size={13} className="absolute left-2.5 text-[#8A959D]" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari nama / email / kode..."
-                className="h-9 w-[240px] rounded-[10px] border-[1.5px] border-polks-border bg-white pl-7 pr-3 text-xs text-polks-text outline-none focus:border-polks-brand"
-              />
-            </div>
-          }
+        <SectionHeader title={`Member (${list.total})`} />
+        <AdminDataTable
+          list={list}
+          searchable
+          searchPlaceholder="Cari nama / email / kode..."
+          columns={["Member", "Member ID", "Telepon", "Poin", "Aksi"]}
+          empty="Tidak ada member."
+          renderRow={(m) => [
+            <div key="m">
+              <p className="font-semibold text-polks-text">{m.name}</p>
+              <p className="text-[11px] text-polks-muted">{m.user?.email ?? "—"}</p>
+            </div>,
+            <span key="c" className="font-mono text-[11px]">{m.memberCode}</span>,
+            m.phone ?? "—",
+            <span key="p" className="font-semibold">{m.pointBalance.toLocaleString("id-ID")} pts</span>,
+            <button
+              key="a"
+              type="button"
+              onClick={() => setAdjusting(m)}
+              className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+            >
+              Adjust Poin
+            </button>,
+          ]}
         />
-
-        {error ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center text-sm text-polks-muted">
-            {error}
-          </div>
-        ) : (
-          <AdminTable
-            columns={["Member", "Member ID", "Telepon", "Poin", "Aksi"]}
-            empty={loading ? "Memuat…" : "Tidak ada member."}
-            rows={(data?.items ?? []).map((m) => [
-              <div key="m">
-                <p className="font-semibold text-polks-text">{m.name}</p>
-                <p className="text-[11px] text-polks-muted">{m.user?.email ?? "—"}</p>
-              </div>,
-              <span key="c" className="font-mono text-[11px]">{m.memberCode}</span>,
-              m.phone ?? "—",
-              <span key="p" className="font-semibold">{m.pointBalance.toLocaleString("id-ID")} pts</span>,
-              <button
-                key="a"
-                type="button"
-                onClick={() => setAdjusting(m)}
-                className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
-              >
-                Adjust Poin
-              </button>,
-            ])}
-          />
-        )}
       </div>
 
       {adjusting ? (
@@ -99,7 +58,7 @@ export default function AdminMembersPage() {
           onClose={() => setAdjusting(null)}
           onDone={() => {
             setAdjusting(null);
-            load(search);
+            list.reload();
           }}
         />
       ) : null}
