@@ -5,6 +5,7 @@ import { Store, MapPin, Phone, Clock, CheckCircle2 } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { MetricCard, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { api } from "@/lib/api";
+import { type Paginated } from "@/lib/loyalty/types";
 
 type Outlet = {
   id: string;
@@ -24,8 +25,8 @@ export default function AdminOutletsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api<Outlet[]>("/admin/outlets")
-      .then(setOutlets)
+    api<Paginated<Outlet>>("/admin/outlets?take=100")
+      .then((res) => setOutlets(res.items))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

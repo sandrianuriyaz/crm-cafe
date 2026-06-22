@@ -3,10 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { RewardStatus, VoucherStatus } from '@prisma/client';
+import { Prisma, RewardStatus, VoucherStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { generateVoucherCode } from '../common/voucher-code.util';
 import { CreateRewardDto } from './dto/create-reward.dto';
+import { ListRewardsQueryDto } from './dto/list-rewards-query.dto';
 import { UpdateRewardDto } from './dto/update-reward.dto';
 
 // Berapa lama voucher berlaku sejak dibuat (hari).
@@ -36,8 +37,29 @@ export class RewardsService {
     return this.prisma.reward.create({ data: dto });
   }
 
-  listAll() {
-    return this.prisma.reward.findMany({ orderBy: { createdAt: 'desc' } });
+  // Cari (nama/deskripsi) + paginated.
+  async listAll(q: ListRewardsQueryDto) {
+    const skip = q.skip ?? 0;
+    const take = q.take ?? 20;
+    const where: Prisma.RewardWhereInput = q.search
+      ? {
+          OR: [
+            { name: { contains: q.search, mode: 'insensitive' } },
+            { description: { contains: q.search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.reward.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.reward.count({ where }),
+    ]);
+    return { total, skip, take, items };
   }
 
   async update(id: string, dto: UpdateRewardDto) {

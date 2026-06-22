@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, PromoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePromoDto } from './dto/create-promo.dto';
+import { ListPromosQueryDto } from './dto/list-promos-query.dto';
 import { UpdatePromoDto } from './dto/update-promo.dto';
 
 @Injectable()
@@ -36,8 +37,29 @@ export class PromosService {
     return this.prisma.promo.create({ data: this.toData(dto) });
   }
 
-  listAll() {
-    return this.prisma.promo.findMany({ orderBy: { createdAt: 'desc' } });
+  // Cari (judul/deskripsi) + paginated.
+  async listAll(q: ListPromosQueryDto) {
+    const skip = q.skip ?? 0;
+    const take = q.take ?? 20;
+    const where: Prisma.PromoWhereInput = q.search
+      ? {
+          OR: [
+            { title: { contains: q.search, mode: 'insensitive' } },
+            { description: { contains: q.search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.promo.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.promo.count({ where }),
+    ]);
+    return { total, skip, take, items };
   }
 
   async update(id: string, dto: UpdatePromoDto) {

@@ -6,7 +6,7 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { api, ApiError } from "@/lib/api";
-import { type Reward, type RewardType } from "@/lib/loyalty/types";
+import { type Paginated, type Reward, type RewardType } from "@/lib/loyalty/types";
 
 type Draft = {
   name: string;
@@ -63,7 +63,8 @@ export default function AdminRewardsPage() {
     setLoading(true);
     setError(null);
     try {
-      setRewards(await api<Reward[]>("/admin/rewards"));
+      const res = await api<Paginated<Reward>>("/admin/rewards?take=100");
+      setRewards(res.items);
     } catch (err) {
       if (!(err instanceof ApiError && err.status === 401)) {
         setError(err instanceof Error ? err.message : "Gagal memuat reward");

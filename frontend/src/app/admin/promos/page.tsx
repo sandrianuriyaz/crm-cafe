@@ -6,7 +6,7 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { api, ApiError } from "@/lib/api";
-import { type Promo } from "@/lib/loyalty/types";
+import { type Paginated, type Promo } from "@/lib/loyalty/types";
 
 type Draft = {
   title: string;
@@ -37,7 +37,8 @@ export default function AdminPromosPage() {
     setLoading(true);
     setError(null);
     try {
-      setPromos(await api<Promo[]>("/admin/promos"));
+      const res = await api<Paginated<Promo>>("/admin/promos?take=100");
+      setPromos(res.items);
     } catch (err) {
       if (!(err instanceof ApiError && err.status === 401)) {
         setError(err instanceof Error ? err.message : "Gagal memuat promo");

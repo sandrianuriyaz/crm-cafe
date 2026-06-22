@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PromosService } from './promos.service';
 import { CreatePromoDto } from './dto/create-promo.dto';
+import { ListPromosQueryDto } from './dto/list-promos-query.dto';
 import { UpdatePromoDto } from './dto/update-promo.dto';
 
 // GET /promos & /promos/:id PUBLIK (tanpa login) supaya banner home guest bisa
@@ -52,8 +54,8 @@ export class PromosController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Semua promo (termasuk nonaktif/kedaluwarsa)' })
-  listAll() {
-    return this.promos.listAll();
+  listAll(@Query() q: ListPromosQueryDto) {
+    return this.promos.listAll(q);
   }
 
   @Patch('admin/promos/:id')

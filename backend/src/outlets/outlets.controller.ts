@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { OutletsService } from './outlets.service';
 import { CreateOutletDto } from './dto/create-outlet.dto';
+import { ListOutletsQueryDto } from './dto/list-outlets-query.dto';
 import { UpdateOutletDto } from './dto/update-outlet.dto';
 
 // Tanpa guard kelas: GET /outlets publik. Method admin di-guard sendiri.
@@ -34,8 +36,8 @@ export class OutletsController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Semua outlet (termasuk nonaktif)' })
-  listAll() {
-    return this.outlets.listAll();
+  listAll(@Query() q: ListOutletsQueryDto) {
+    return this.outlets.listAll(q);
   }
 
   @Post('admin/outlets')

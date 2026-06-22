@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -17,6 +18,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RewardsService } from './rewards.service';
 import { CreateRewardDto } from './dto/create-reward.dto';
+import { ListRewardsQueryDto } from './dto/list-rewards-query.dto';
 import { UpdateRewardDto } from './dto/update-reward.dto';
 
 // GET /rewards & /rewards/:id PUBLIK (katalog bisa dilihat guest sebelum login).
@@ -80,8 +82,8 @@ export class RewardsController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Semua reward (termasuk nonaktif)' })
-  listAll() {
-    return this.rewards.listAll();
+  listAll(@Query() q: ListRewardsQueryDto) {
+    return this.rewards.listAll(q);
   }
 
   @Patch('admin/rewards/:id')
