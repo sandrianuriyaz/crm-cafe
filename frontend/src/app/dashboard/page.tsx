@@ -122,21 +122,32 @@ export default function MemberDashboardPage() {
             </Link>
           </div>
           <div className="flex gap-3">
-            {(recs.length > 0 ? recs : [null, null]).map((r, i) => (
+            {(recs.length > 0 ? recs : [null, null]).map((r, i) => {
+              const soldOut = r ? r.stock <= 0 : false;
+              return (
               <Link
                 key={r?.id ?? i}
                 href="/rewards"
                 className="flex-1 rounded-2xl border border-polks-border bg-white p-4 text-left"
               >
-                <div className="mb-3 flex size-9 items-center justify-center rounded-xl bg-polks-point-soft">
-                  <Gift size={16} color="#C99A2E" />
+                <div
+                  className={
+                    "mb-3 flex size-9 items-center justify-center rounded-xl " +
+                    (soldOut ? "bg-polks-surface" : "bg-polks-point-soft")
+                  }
+                >
+                  <Gift size={16} color={soldOut ? "#8A959D" : "#C99A2E"} />
                 </div>
                 {r ? (
                   <>
                     <p className="mb-1 line-clamp-1 text-xs font-semibold text-polks-text">{r.name}</p>
-                    <span className="text-xs font-semibold text-polks-muted">
-                      {r.pointCost.toLocaleString("id-ID")} pts
-                    </span>
+                    {soldOut ? (
+                      <span className="text-xs font-semibold text-polks-error">Stok habis</span>
+                    ) : (
+                      <span className="text-xs font-semibold text-polks-muted">
+                        {r.pointCost.toLocaleString("id-ID")} pts
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>
@@ -145,7 +156,8 @@ export default function MemberDashboardPage() {
                   </>
                 )}
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
 
