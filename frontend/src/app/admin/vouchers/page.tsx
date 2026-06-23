@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Copy } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { AdminDataTable } from "@/components/admin/admin-data-table";
-import { useAdminList } from "@/components/admin/use-admin-list";
+import { useClientList } from "@/components/admin/use-client-list";
 import { api } from "@/lib/api";
 
 type VoucherStatus = "ACTIVE" | "USED" | "EXPIRED";
@@ -20,6 +20,8 @@ type AdminVoucher = {
   usedAt: string | null;
   createdAt: string;
 };
+
+type Paginated<T> = { total: number; skip: number; take: number; items: T[] };
 
 const STATUS: Record<VoucherStatus, "success" | "neutral" | "error"> = {
   ACTIVE: "success",
@@ -39,24 +41,44 @@ function fmtDate(iso: string | null) {
 }
 
 export default function AdminVouchersPage() {
+  const [all, setAll] = useState<AdminVoucher[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Semua");
-  const list = useAdminList<AdminVoucher>("/admin/vouchers", {
-    params: { status: filter === "Semua" ? undefined : filter },
-  });
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api<Paginated<AdminVoucher>>("/admin/vouchers?take=100")
+      .then((res) => setAll(res.items))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function markUsed(id: string) {
     try {
       await api("/admin/vouchers/" + id, { method: "PATCH" });
-      list.reload();
+      load();
     } catch {
       // abaikan; daftar tetap seperti semula
     }
   }
 
+  const statusFiltered = useMemo(
+    () => all.filter((v) => filter === "Semua" || v.status === filter),
+    [all, filter],
+  );
+  const list = useClientList(statusFiltered, {
+    loading,
+    searchText: (v) => `${v.code} ${v.memberName ?? ""} ${v.reward ?? ""}`,
+  });
+
   return (
     <AdminShell title="Vouchers">
       <div className="flex flex-col gap-5">
-        {/* Filter status (server-side) */}
+        {/* Filter status */}
         <div className="flex gap-2">
           {FILTERS.map((f) => (
             <button
@@ -78,6 +100,8 @@ export default function AdminVouchersPage() {
         <SectionHeader title={`${list.total} Voucher`} />
         <AdminDataTable
           list={list}
+          searchable
+          searchPlaceholder="Cari kode / member / reward..."
           columns={["Kode", "Member", "Reward", "Status", "Terbit", "Berakhir", ""]}
           empty="Belum ada voucher."
           renderRow={(v) => [
