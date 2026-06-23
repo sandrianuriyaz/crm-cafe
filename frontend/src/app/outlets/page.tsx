@@ -36,7 +36,7 @@ export default function OutletListPage() {
       <div className="bg-polks-brand px-5 pb-7 pt-4">
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.back()}
           className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
         >
           <ArrowLeft size={16} />
