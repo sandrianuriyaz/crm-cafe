@@ -9,6 +9,14 @@ import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { type Paginated, type PointHistory } from "@/lib/loyalty/types";
+import {
+  HistoryFilterSheet,
+  rangeSince,
+  DEFAULT_SORT,
+  DEFAULT_RANGE,
+  type HistorySort,
+  type HistoryRange,
+} from "@/components/customer/history-filter-sheet";
 
 // Tampilan per-tipe mutasi poin.
 function entryView(type: string) {
@@ -48,10 +56,12 @@ export default function HistoryPage() {
   const { user } = useAuth();
 
   const [entries, setEntries] = useState<PointHistory[]>([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>("all");
+  const [sort, setSort] = useState<HistorySort>(DEFAULT_SORT);
+  const [range, setRange] = useState<HistoryRange>(DEFAULT_RANGE);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -61,7 +71,6 @@ export default function HistoryPage() {
         "/member/point-histories?take=50",
       );
       setEntries(data.items);
-      setTotal(data.total);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         router.replace("/login");
@@ -84,13 +93,19 @@ export default function HistoryPage() {
     [entries],
   );
 
-  const visible = useMemo(
-    () =>
-      entries.filter((e) =>
-        filter === "all" ? true : filter === "in" ? e.points >= 0 : e.points < 0,
-      ),
-    [entries, filter],
-  );
+  const visible = useMemo(() => {
+    const since = rangeSince(range, Date.now());
+    const list = entries.filter((e) => {
+      const dirOk =
+        filter === "all" ? true : filter === "in" ? e.points >= 0 : e.points < 0;
+      const timeOk = since === null || new Date(e.createdAt).getTime() >= since;
+      return dirOk && timeOk;
+    });
+    // Data backend sudah terbaru→terlama; balik urutan jika minta terlama dulu.
+    return sort === "oldest" ? [...list].reverse() : list;
+  }, [entries, filter, range, sort]);
+
+  const filterActive = sort !== DEFAULT_SORT || range !== DEFAULT_RANGE;
 
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
@@ -130,7 +145,22 @@ export default function HistoryPage() {
       <div className="flex flex-col gap-5 bg-polks-bg px-5 pb-28">
         {/* Filter */}
         <div className="flex items-center gap-2">
-          <Icon name="filter_list" className="size-4 shrink-0 text-polks-muted" />
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-label="Filter urutan & rentang waktu"
+            className={cn(
+              "relative flex size-8 shrink-0 items-center justify-center rounded-full border transition-colors",
+              filterActive
+                ? "border-polks-brand bg-polks-brand text-white"
+                : "border-polks-border bg-white text-polks-muted",
+            )}
+          >
+            <Icon name="filter_list" className="size-4" />
+            {filterActive ? (
+              <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-[#F6B84B] ring-2 ring-polks-bg" />
+            ) : null}
+          </button>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {FILTERS.map((f) => (
               <button
@@ -149,7 +179,7 @@ export default function HistoryPage() {
             ))}
           </div>
           <span className="ml-auto shrink-0 text-xs text-polks-muted">
-            {total.toLocaleString("id-ID")} mutasi
+            {visible.length.toLocaleString("id-ID")} mutasi
           </span>
         </div>
 
@@ -240,6 +270,20 @@ export default function HistoryPage() {
           Poin dihitung dari transaksi setelah sinkronisasi POS.
         </p>
       </div>
+
+      {sheetOpen ? (
+        <HistoryFilterSheet
+          sort={sort}
+          range={range}
+          onChangeSort={setSort}
+          onChangeRange={setRange}
+          onReset={() => {
+            setSort(DEFAULT_SORT);
+            setRange(DEFAULT_RANGE);
+          }}
+          onClose={() => setSheetOpen(false)}
+        />
+      ) : null}
     </CustomerShell>
   );
 }
