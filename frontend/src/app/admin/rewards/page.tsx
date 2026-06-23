@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { AdminDataTable } from "@/components/admin/admin-data-table";
+import { useAdminList } from "@/components/admin/use-admin-list";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import { api, ApiError } from "@/lib/api";
-import { type Paginated, type Reward, type RewardType } from "@/lib/loyalty/types";
+import { api } from "@/lib/api";
+import { type Reward, type RewardType } from "@/lib/loyalty/types";
 
 type Draft = {
   name: string;
@@ -54,35 +56,14 @@ function rewardTypeLabel(r: Reward): string {
 }
 
 export default function AdminRewardsPage() {
-  const [rewards, setRewards] = useState<Reward[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const list = useAdminList<Reward>("/admin/rewards", { searchable: true });
   const [editing, setEditing] = useState<Reward | "new" | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api<Paginated<Reward>>("/admin/rewards?take=100");
-      setRewards(res.items);
-    } catch (err) {
-      if (!(err instanceof ApiError && err.status === 401)) {
-        setError(err instanceof Error ? err.message : "Gagal memuat reward");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   async function remove(r: Reward) {
     if (!confirm(`Nonaktifkan reward "${r.name}"?`)) return;
     try {
       await api(`/admin/rewards/${r.id}`, { method: "DELETE" });
-      load();
+      list.reload();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Gagal menonaktifkan");
     }
@@ -92,7 +73,7 @@ export default function AdminRewardsPage() {
     <AdminShell title="Rewards">
       <div className="flex flex-col gap-4">
         <SectionHeader
-          title={`Katalog Reward${rewards.length ? ` (${rewards.length})` : ""}`}
+          title={`Katalog Reward (${list.total})`}
           action={
             <button
               type="button"
@@ -105,52 +86,49 @@ export default function AdminRewardsPage() {
           }
         />
 
-        {error ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center text-sm text-polks-muted">
-            {error}
-          </div>
-        ) : (
-          <AdminTable
-            columns={["Nama", "Poin", "Stok", "Tipe", "Status", "Aksi"]}
-            empty={loading ? "Memuat…" : "Belum ada reward."}
-            rows={rewards.map((r) => [
-              <div key="n">
-                <p className="font-semibold text-polks-text">{r.name}</p>
-                {r.description ? (
-                  <p className="line-clamp-1 text-[11px] text-polks-muted">{r.description}</p>
-                ) : null}
-              </div>,
-              <span key="p" className="font-semibold">{r.pointCost.toLocaleString("id-ID")}</span>,
-              r.stock,
-              <span key="t" className="text-[11px] font-medium text-polks-text">
-                {rewardTypeLabel(r)}
-              </span>,
-              <AdminBadge
-                key="s"
-                label={r.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
-                type={r.status === "ACTIVE" ? "success" : "neutral"}
-              />,
-              <div key="a" className="flex gap-2">
+        <AdminDataTable
+          list={list}
+          searchable
+          searchPlaceholder="Cari nama / deskripsi..."
+          columns={["Nama", "Poin", "Stok", "Tipe", "Status", "Aksi"]}
+          empty="Belum ada reward."
+          renderRow={(r) => [
+            <div key="n">
+              <p className="font-semibold text-polks-text">{r.name}</p>
+              {r.description ? (
+                <p className="line-clamp-1 text-[11px] text-polks-muted">{r.description}</p>
+              ) : null}
+            </div>,
+            <span key="p" className="font-semibold">{r.pointCost.toLocaleString("id-ID")}</span>,
+            r.stock,
+            <span key="t" className="text-[11px] font-medium text-polks-text">
+              {rewardTypeLabel(r)}
+            </span>,
+            <AdminBadge
+              key="s"
+              label={r.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
+              type={r.status === "ACTIVE" ? "success" : "neutral"}
+            />,
+            <div key="a" className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setEditing(r)}
+                className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+              >
+                Edit
+              </button>
+              {r.status === "ACTIVE" ? (
                 <button
                   type="button"
-                  onClick={() => setEditing(r)}
-                  className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+                  onClick={() => remove(r)}
+                  className="rounded-lg border border-polks-error/40 px-2.5 py-1 text-[11px] font-semibold text-polks-error hover:bg-[#FDECEC]"
                 >
-                  Edit
+                  Nonaktifkan
                 </button>
-                {r.status === "ACTIVE" ? (
-                  <button
-                    type="button"
-                    onClick={() => remove(r)}
-                    className="rounded-lg border border-polks-error/40 px-2.5 py-1 text-[11px] font-semibold text-polks-error hover:bg-[#FDECEC]"
-                  >
-                    Nonaktifkan
-                  </button>
-                ) : null}
-              </div>,
-            ])}
-          />
-        )}
+              ) : null}
+            </div>,
+          ]}
+        />
       </div>
 
       {editing ? (
@@ -159,7 +137,7 @@ export default function AdminRewardsPage() {
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
-            load();
+            list.reload();
           }}
         />
       ) : null}

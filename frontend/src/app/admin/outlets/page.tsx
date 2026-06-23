@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Store, MapPin, Phone, Clock, CheckCircle2 } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { MetricCard, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
-import { api } from "@/lib/api";
-import { type Paginated } from "@/lib/loyalty/types";
+import { AdminListToolbar, AdminPagination } from "@/components/admin/admin-data-table";
+import { useAdminList } from "@/components/admin/use-admin-list";
 
 type Outlet = {
   id: string;
@@ -21,34 +20,29 @@ type Outlet = {
 };
 
 export default function AdminOutletsPage() {
-  const [outlets, setOutlets] = useState<Outlet[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api<Paginated<Outlet>>("/admin/outlets?take=100")
-      .then((res) => setOutlets(res.items))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const activeCount = outlets.filter((o) => o.status === "ACTIVE").length;
+  const list = useAdminList<Outlet>("/admin/outlets", { searchable: true });
+  const activeCount = list.items.filter((o) => o.status === "ACTIVE").length;
 
   return (
     <AdminShell title="Outlets">
       <div className="flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-3 md:gap-4">
-          <MetricCard label="Total Outlets" value={outlets.length} sub="Semua outlet" Icon={Store} accent />
-          <MetricCard label="Outlet Aktif" value={activeCount} sub="Status aktif" Icon={CheckCircle2} />
+          <MetricCard label="Total Outlets" value={list.total} sub="Semua outlet" Icon={Store} accent />
+          <MetricCard label="Outlet Aktif" value={activeCount} sub="Halaman ini" Icon={CheckCircle2} />
         </div>
 
         <SectionHeader title="Semua Outlet" />
-        {loading ? (
+        <AdminListToolbar list={list} searchable searchPlaceholder="Cari nama / kota / alamat..." />
+
+        {list.loading ? (
           <p className="text-center text-[11px] text-polks-muted">Memuat…</p>
-        ) : outlets.length === 0 ? (
-          <p className="text-center text-[11px] text-polks-muted">Belum ada outlet.</p>
+        ) : list.error ? (
+          <p className="text-center text-[11px] text-polks-muted">{list.error}</p>
+        ) : list.total === 0 ? (
+          <p className="text-center text-[11px] text-polks-muted">Tidak ada outlet.</p>
         ) : (
           <div className="flex flex-col gap-3">
-            {outlets.map((o) => (
+            {list.items.map((o) => (
               <div key={o.id} className="rounded-2xl border border-polks-border bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -90,6 +84,8 @@ export default function AdminOutletsPage() {
             ))}
           </div>
         )}
+
+        {!list.loading && list.total > 0 ? <AdminPagination list={list} /> : null}
       </div>
     </AdminShell>
   );

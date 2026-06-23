@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { AdminDataTable } from "@/components/admin/admin-data-table";
+import { useAdminList } from "@/components/admin/use-admin-list";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import { api, ApiError } from "@/lib/api";
-import { type Paginated, type Promo } from "@/lib/loyalty/types";
+import { api } from "@/lib/api";
+import { type Promo } from "@/lib/loyalty/types";
 
 type Draft = {
   title: string;
@@ -28,35 +30,14 @@ function fmt(iso: string | null) {
 }
 
 export default function AdminPromosPage() {
-  const [promos, setPromos] = useState<Promo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const list = useAdminList<Promo>("/admin/promos", { searchable: true });
   const [editing, setEditing] = useState<Promo | "new" | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api<Paginated<Promo>>("/admin/promos?take=100");
-      setPromos(res.items);
-    } catch (err) {
-      if (!(err instanceof ApiError && err.status === 401)) {
-        setError(err instanceof Error ? err.message : "Gagal memuat promo");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   async function remove(p: Promo) {
     if (!confirm(`Nonaktifkan promo "${p.title}"?`)) return;
     try {
       await api(`/admin/promos/${p.id}`, { method: "DELETE" });
-      load();
+      list.reload();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Gagal menonaktifkan");
     }
@@ -66,7 +47,7 @@ export default function AdminPromosPage() {
     <AdminShell title="Promotions">
       <div className="flex flex-col gap-4">
         <SectionHeader
-          title={`Promo${promos.length ? ` (${promos.length})` : ""}`}
+          title={`Promo (${list.total})`}
           action={
             <button
               type="button"
@@ -79,50 +60,47 @@ export default function AdminPromosPage() {
           }
         />
 
-        {error ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center text-sm text-polks-muted">
-            {error}
-          </div>
-        ) : (
-          <AdminTable
-            columns={["Judul", "Periode", "Status", "Aksi"]}
-            empty={loading ? "Memuat…" : "Belum ada promo."}
-            rows={promos.map((p) => [
-              <div key="t">
-                <p className="font-semibold text-polks-text">{p.title}</p>
-                {p.description ? (
-                  <p className="line-clamp-1 text-[11px] text-polks-muted">{p.description}</p>
-                ) : null}
-              </div>,
-              <span key="pr" className="text-[11px]">
-                {fmt(p.startAt)} – {fmt(p.endAt)}
-              </span>,
-              <AdminBadge
-                key="s"
-                label={p.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
-                type={p.status === "ACTIVE" ? "success" : "neutral"}
-              />,
-              <div key="a" className="flex gap-2">
+        <AdminDataTable
+          list={list}
+          searchable
+          searchPlaceholder="Cari judul / deskripsi..."
+          columns={["Judul", "Periode", "Status", "Aksi"]}
+          empty="Belum ada promo."
+          renderRow={(p) => [
+            <div key="t">
+              <p className="font-semibold text-polks-text">{p.title}</p>
+              {p.description ? (
+                <p className="line-clamp-1 text-[11px] text-polks-muted">{p.description}</p>
+              ) : null}
+            </div>,
+            <span key="pr" className="text-[11px]">
+              {fmt(p.startAt)} – {fmt(p.endAt)}
+            </span>,
+            <AdminBadge
+              key="s"
+              label={p.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
+              type={p.status === "ACTIVE" ? "success" : "neutral"}
+            />,
+            <div key="a" className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setEditing(p)}
+                className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+              >
+                Edit
+              </button>
+              {p.status === "ACTIVE" ? (
                 <button
                   type="button"
-                  onClick={() => setEditing(p)}
-                  className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+                  onClick={() => remove(p)}
+                  className="rounded-lg border border-polks-error/40 px-2.5 py-1 text-[11px] font-semibold text-polks-error hover:bg-[#FDECEC]"
                 >
-                  Edit
+                  Nonaktifkan
                 </button>
-                {p.status === "ACTIVE" ? (
-                  <button
-                    type="button"
-                    onClick={() => remove(p)}
-                    className="rounded-lg border border-polks-error/40 px-2.5 py-1 text-[11px] font-semibold text-polks-error hover:bg-[#FDECEC]"
-                  >
-                    Nonaktifkan
-                  </button>
-                ) : null}
-              </div>,
-            ])}
-          />
-        )}
+              ) : null}
+            </div>,
+          ]}
+        />
       </div>
 
       {editing ? (
@@ -131,7 +109,7 @@ export default function AdminPromosPage() {
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
-            load();
+            list.reload();
           }}
         />
       ) : null}
