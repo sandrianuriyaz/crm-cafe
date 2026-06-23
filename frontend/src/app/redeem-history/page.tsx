@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Gift, Copy, QrCode } from "lucide-react";
+import { ArrowLeft, Gift, Copy, Check, QrCode } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api, ApiError } from "@/lib/api";
@@ -23,6 +23,23 @@ function formatDate(iso: string | null): string {
 
 function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
   const meta = STATUS_META[v.status];
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 3000);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard?.writeText(v.code);
+      setCopied(true);
+    } catch {
+      // abaikan; clipboard tidak tersedia
+    }
+  }
+
   return (
     <div
       className="overflow-hidden rounded-2xl border border-polks-border bg-white"
@@ -57,11 +74,14 @@ function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
         <span className="font-mono text-xs font-bold tracking-[0.12em] text-polks-text">{v.code}</span>
         <button
           type="button"
-          onClick={() => navigator.clipboard?.writeText(v.code)}
-          className="flex items-center gap-1 text-[11px] font-semibold text-polks-brand"
+          onClick={handleCopy}
+          className={
+            "flex items-center gap-1 text-[11px] font-semibold transition-colors " +
+            (copied ? "text-polks-success" : "text-polks-brand")
+          }
         >
-          <Copy size={13} />
-          Salin
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? "Tersalin" : "Salin"}
         </button>
       </div>
       {v.status === "ACTIVE" && onShowQr ? (
