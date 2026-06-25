@@ -11,6 +11,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -23,6 +24,7 @@ import type { GoogleProfile } from './strategies/google.strategy';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
@@ -30,6 +32,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Daftar akun customer (klaim member by phone bila ada)' })
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
@@ -37,6 +40,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Login, balas access_token (JWT)' })
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
@@ -79,6 +83,7 @@ export class AuthController {
 
   @Post('2fa/login')
   @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Tukar tiket 2FA + kode TOTP jadi access_token' })
   loginTwoFactor(@Body() dto: TwoFactorLoginDto) {
     return this.auth.loginTwoFactor(dto.twoFactorToken, dto.code);
@@ -103,6 +108,7 @@ export class AuthController {
 
   @Post('2fa/enable')
   @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Aktifkan 2FA (verifikasi kode pertama)' })
@@ -112,6 +118,7 @@ export class AuthController {
 
   @Post('2fa/disable')
   @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Nonaktifkan 2FA (verifikasi kode)' })

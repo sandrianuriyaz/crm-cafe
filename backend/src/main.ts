@@ -10,6 +10,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
   const config = app.get(ConfigService);
 
+  // Percayai 1 hop reverse proxy (deploy) agar req.ip = IP klien asli, bukan IP
+  // proxy. Penting supaya rate limiter membatasi per-user, bukan menggabung semua.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // CORS — izinkan frontend (Next.js) memanggil API. Pakai Bearer token (bukan
   // cookie). Production: set CORS_ORIGIN (pisah koma); kosong = izinkan semua (dev).
   const corsOrigin = config.get<string>('CORS_ORIGIN');

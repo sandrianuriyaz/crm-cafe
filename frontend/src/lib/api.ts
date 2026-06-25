@@ -74,9 +74,14 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    // Backend membungkus error: { success:false, error:{ message } }
+    // Backend membungkus error sebagai { success:false, error } di mana `error`
+    // bisa berupa objek { message } (HttpException biasa) atau string langsung
+    // (mis. ThrottlerException 429). Tangani keduanya.
+    const rawErr = data?.error;
     const message =
-      data?.error?.message ?? data?.message ?? `Request gagal (${res.status})`;
+      (typeof rawErr === "string" ? rawErr : rawErr?.message) ??
+      data?.message ??
+      `Request gagal (${res.status})`;
     throw new ApiError(res.status, Array.isArray(message) ? message[0] : message);
   }
 
