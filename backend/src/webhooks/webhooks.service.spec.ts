@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WebhooksService } from './webhooks.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TierService } from '../tier/tier.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 describe('WebhooksService.calculatePoints', () => {
   let service: WebhooksService;
@@ -12,6 +13,13 @@ describe('WebhooksService.calculatePoints', () => {
         WebhooksService,
         { provide: PrismaService, useValue: {} },
         { provide: TierService, useValue: {} },
+        {
+          provide: RealtimeGateway,
+          useValue: {
+            emitPointsChanged: jest.fn(),
+            emitTierUp: jest.fn(),
+          },
+        },
       ],
     }).compile();
     service = module.get(WebhooksService);

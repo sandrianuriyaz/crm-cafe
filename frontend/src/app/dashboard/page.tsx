@@ -7,6 +7,7 @@ import { Bell, ChevronRight, Gift, History, MapPin, Star } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useRealtime } from "@/lib/realtime";
 import { TIER_META } from "@/lib/loyalty/tier";
 import { type Promo, type Reward } from "@/lib/loyalty/types";
 
@@ -26,9 +27,11 @@ function formatPeriod(startAt: string | null, endAt: string | null): string {
 
 export default function MemberDashboardPage() {
   const { user } = useAuth();
+  // Badge bell dari context realtime → ikut naik saat ada notifikasi baru
+  // tanpa refresh.
+  const { unreadCount: unread } = useRealtime();
   const [recs, setRecs] = useState<Reward[]>([]);
   const [promos, setPromos] = useState<Promo[]>([]);
-  const [unread, setUnread] = useState(0);
 
   const name = user?.name || "Member";
   const points = user?.pointBalance ?? 0;
@@ -41,9 +44,6 @@ export default function MemberDashboardPage() {
     api<Promo[]>("/promos")
       .then((d) => setPromos(d.slice(0, 2)))
       .catch(() => setPromos([]));
-    api<{ count: number }>("/member/notifications/unread-count")
-      .then((r) => setUnread(r.count))
-      .catch(() => setUnread(0));
   }, []);
 
   return (

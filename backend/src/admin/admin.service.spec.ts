@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
+
+const realtimeMock = { emitPointsChanged: jest.fn() };
 
 describe('AdminService.markVoucherUsed', () => {
   let service: AdminService;
@@ -15,7 +18,11 @@ describe('AdminService.markVoucherUsed', () => {
       },
     };
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AdminService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        AdminService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: RealtimeGateway, useValue: realtimeMock },
+      ],
     }).compile();
     service = module.get(AdminService);
   });
@@ -68,7 +75,11 @@ describe('AdminService.stats', () => {
       $queryRaw: jest.fn().mockResolvedValue([]),
     };
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AdminService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        AdminService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: RealtimeGateway, useValue: realtimeMock },
+      ],
     }).compile();
     service = module.get(AdminService);
   });

@@ -6,6 +6,7 @@ import { ArrowLeft, Gift, Copy, Check, QrCode } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api, ApiError } from "@/lib/api";
+import { connectRealtime } from "@/lib/realtime";
 import { type Voucher } from "@/lib/loyalty/types";
 
 const STATUS_META: Record<Voucher["status"], { label: string; dot: string; bg: string; text: string }> = {
@@ -122,6 +123,28 @@ export default function RedeemHistoryPage() {
       alive = false;
     };
   }, [router]);
+
+  // Realtime: begitu kasir POS scan & redeem voucher, backend push
+  // "voucher:updated" → langsung perbarui kartu jadi "Digunakan" tanpa refresh.
+  useEffect(() => {
+    const socket = connectRealtime();
+    if (!socket) return;
+
+    socket.on("voucher:updated", (updated: Voucher) => {
+      setVouchers((prev) =>
+        prev.map((v) => (v.id === updated.id ? { ...v, ...updated } : v)),
+      );
+      // Bila QR voucher yang sedang dibuka ternyata baru saja dipakai,
+      // tutup modal-nya — sudah tidak relevan ditunjukkan ke kasir.
+      setQrVoucher((cur) =>
+        cur && cur.id === updated.id && updated.status !== "ACTIVE" ? null : cur,
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const activeList = useMemo(() => vouchers.filter((v) => v.status === "ACTIVE"), [vouchers]);
   const pastList = useMemo(() => vouchers.filter((v) => v.status !== "ACTIVE"), [vouchers]);

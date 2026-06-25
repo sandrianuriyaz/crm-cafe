@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { VoucherStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 // Hasil redeem dibedakan agar controller bisa memetakan ke status HTTP yang
 // tepat (200 / 404 / 409) dengan body sesuai kontrak POS.
@@ -14,7 +15,10 @@ export type RedeemResult =
 
 @Injectable()
 export class PosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtime: RealtimeGateway,
+  ) {}
 
   // Validasi voucher by code untuk kasir POS. Tidak mengubah apa pun.
   // Null = tidak ditemukan (controller → 404).
@@ -65,9 +69,44 @@ export class PosService {
       return exists ? { kind: 'conflict' } : { kind: 'not_found' };
     }
 
+    // Push realtime ke app customer agar kartu voucher langsung berubah jadi
+    // "Digunakan" tanpa perlu refresh. Best-effort: gagal notif tidak boleh
+    // membatalkan redeem yang sudah sukses.
+    await this.notifyVoucherUsed(code);
+
     return {
       kind: 'ok',
       body: { ok: true, code, status: 'USED', used_at: usedAt },
     };
+  }
+
+  // Ambil voucher (beserta pemilik & reward) lalu emit ke room user pemiliknya.
+  private async notifyVoucherUsed(code: string) {
+    try {
+      const voucher = await this.prisma.voucher.findUnique({
+        where: { code },
+        include: {
+          member: { select: { userId: true } },
+          reward: { select: { name: true, imageUrl: true } },
+        },
+      });
+      const userId = voucher?.member.userId;
+      if (!voucher || !userId) return;
+
+      this.realtime.emitVoucherUpdated(userId, {
+        id: voucher.id,
+        code: voucher.code,
+        status: voucher.status,
+        expiredAt: voucher.expiredAt,
+        usedAt: voucher.usedAt,
+        createdAt: voucher.createdAt,
+        reward: {
+          name: voucher.reward.name,
+          imageUrl: voucher.reward.imageUrl,
+        },
+      });
+    } catch {
+      // abaikan — notifikasi realtime bersifat best-effort
+    }
   }
 }

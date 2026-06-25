@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, VoucherStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { ListMembersQueryDto } from './dto/list-members-query.dto';
 import {
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtime: RealtimeGateway,
+  ) {}
 
   // Daftar member dengan pencarian (nama/phone/kode/email) + pagination.
   async listMembers(q: ListMembersQueryDto) {
@@ -82,7 +86,7 @@ export class AdminService {
 
   // Penyesuaian poin manual oleh admin (audit di ledger). Saldo tidak boleh negatif.
   async adjustPoints(memberId: string, dto: AdjustPointsDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const member = await tx.member.findUnique({ where: { id: memberId } });
       if (!member) throw new NotFoundException('Member tidak ditemukan');
 
@@ -109,11 +113,29 @@ export class AdminService {
 
       return {
         memberId: member.id,
+        userId: member.userId,
         points: dto.points,
         pointBalance: balanceAfter,
         historyId: history.id,
       };
     });
+
+    // Push saldo terbaru ke app member (kalau punya akun). Tier berbasis
+    // belanja, jadi penyesuaian poin tidak mengubah tier.
+    if (result.userId) {
+      try {
+        this.realtime.emitPointsChanged(result.userId, {
+          pointBalance: result.pointBalance,
+          pointsDelta: result.points,
+          source: 'adjustment',
+        });
+      } catch {
+        // best-effort; jangan ganggu respons admin
+      }
+    }
+
+    const { userId: _userId, ...response } = result;
+    return response;
   }
 
   // Audit semua transaksi POS yang masuk.

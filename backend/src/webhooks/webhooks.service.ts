@@ -3,7 +3,8 @@ import { Prisma } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { TierService } from '../tier/tier.service';
-import { rateForTier, tierForSpend } from '../common/tier.util';
+import { rateForTier, tierForSpend, TierName } from '../common/tier.util';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { PosTransactionEventDto } from './dto/pos-transaction.dto';
 
 export interface WebhookResult {
@@ -21,6 +22,7 @@ export class WebhooksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tier: TierService,
+    private readonly realtime: RealtimeGateway,
   ) {}
 
   // Orkestrasi: idempotency → upsert pelanggan → catat transaksi → award poin.
@@ -61,10 +63,15 @@ export class WebhooksService {
         // Rate earning = rate tier member, dihitung dari belanja bulan ini
         // TERMASUK transaksi yang sedang diproses.
         let pointsAwarded = 0;
+        // Tier sebelum vs sesudah transaksi ini, untuk deteksi "naik tier".
+        let tierBefore: TierName | null = null;
+        let tierAfter: TierName | null = null;
         if (member) {
           const priorSpend = await this.tier.monthlySpend(member.id, tx);
           const spend = priorSpend + dto.transaction.grand_total;
-          const rate = rateForTier(tierForSpend(spend, tierCfg), tierCfg);
+          tierBefore = tierForSpend(priorSpend, tierCfg);
+          tierAfter = tierForSpend(spend, tierCfg);
+          const rate = rateForTier(tierAfter, tierCfg);
           pointsAwarded = this.calculatePoints(dto.transaction.grand_total, rate);
         }
 
@@ -133,12 +140,20 @@ export class WebhooksService {
 
         return {
           memberId: member?.id ?? null,
+          userId: member?.userId ?? null,
           pointsAwarded,
           balance,
+          tierBefore,
+          tierAfter,
         };
       });
 
       await this.logSync(dto, 'processed', null);
+
+      // Push realtime ke app member (kalau punya akun): saldo poin & tier
+      // langsung update tanpa reload. Best-effort, di luar $transaction.
+      this.notifyMember(result);
+
       return {
         ok: true,
         duplicate: false,
@@ -165,6 +180,36 @@ export class WebhooksService {
       }
       await this.logSync(dto, 'error', (err as Error).message);
       throw err;
+    }
+  }
+
+  // Emit event realtime ke app member pemilik akun. Hanya member yang sudah
+  // punya akun (userId) yang punya app untuk dinotifikasi.
+  private notifyMember(result: {
+    userId: string | null;
+    balance: number | null;
+    pointsAwarded: number;
+    tierBefore: TierName | null;
+    tierAfter: TierName | null;
+  }): void {
+    try {
+      const { userId, balance, pointsAwarded, tierBefore, tierAfter } = result;
+      if (!userId) return;
+
+      if (pointsAwarded > 0 && balance !== null) {
+        this.realtime.emitPointsChanged(userId, {
+          pointBalance: balance,
+          pointsDelta: pointsAwarded,
+          source: 'transaction',
+        });
+      }
+
+      // Belanja hanya menambah spend, jadi perubahan tier pasti naik.
+      if (tierBefore && tierAfter && tierBefore !== tierAfter) {
+        this.realtime.emitTierUp(userId, { from: tierBefore, to: tierAfter });
+      }
+    } catch (e) {
+      this.logger.error(`Gagal emit realtime: ${(e as Error).message}`);
     }
   }
 

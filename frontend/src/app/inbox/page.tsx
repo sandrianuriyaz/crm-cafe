@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Bell } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api, getToken } from "@/lib/api";
+import { useRealtime } from "@/lib/realtime";
 import { type Paginated } from "@/lib/loyalty/types";
 
 type Notif = {
@@ -26,9 +27,12 @@ function fmt(iso: string) {
 
 export default function InboxPage() {
   const router = useRouter();
+  const { notificationNonce, markAllNotificationsRead } = useRealtime();
   const [items, setItems] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Refetch saat dibuka & tiap ada notifikasi baru (notificationNonce naik),
+  // agar isi inbox muncul instan tanpa keluar-masuk halaman.
   useEffect(() => {
     if (typeof window !== "undefined" && !getToken()) {
       router.replace("/login");
@@ -41,10 +45,11 @@ export default function InboxPage() {
         if (res.items.some((n) => !n.readAt)) {
           api("/member/notifications/read-all", { method: "POST" }).catch(() => {});
         }
+        markAllNotificationsRead();
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [router, notificationNonce, markAllNotificationsRead]);
 
   return (
     <CustomerShell showHeader={false} showBottomNav={false} topbarRight={null}>
