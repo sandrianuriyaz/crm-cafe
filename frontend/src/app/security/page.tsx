@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ShieldCheck, Smartphone, LogOut } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Mail, KeyRound, LogOut } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { useAuth } from "@/lib/auth";
 
 export default function SecurityPage() {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <CustomerShell showHeader={false} showBottomNav={false} topbarRight={null}>
@@ -37,7 +37,8 @@ export default function SecurityPage() {
           <div>
             <p className="text-[13px] font-bold text-polks-text">Akun terlindungi</p>
             <p className="mt-0.5 text-[11px] leading-relaxed text-polks-muted">
-              Login diamankan dengan verifikasi OTP. POLKS tidak pernah meminta kode OTP kamu.
+              Login pakai email &amp; password atau akun Google. POLKS tidak pernah meminta
+              password kamu lewat chat, telepon, atau email.
             </p>
           </div>
         </div>
@@ -46,15 +47,30 @@ export default function SecurityPage() {
         <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
-              <Smartphone size={16} className="text-polks-brand" />
+              <Mail size={16} className="text-polks-brand" />
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-[14px] font-semibold text-polks-text">Metode Login</p>
-              <p className="text-[11px] text-polks-muted">OTP via WhatsApp / SMS</p>
+              <p className="truncate text-[11px] text-polks-muted">
+                {user?.email ?? "Email & Password"}
+              </p>
             </div>
-            <span className="rounded-full bg-polks-surface px-2.5 py-1 text-[10px] font-bold text-polks-muted">
+            <span className="shrink-0 rounded-full bg-polks-surface px-2.5 py-1 text-[10px] font-bold text-polks-muted">
               Aktif
             </span>
+          </div>
+        </div>
+
+        {/* Ganti password */}
+        <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
+              <KeyRound size={16} className="text-polks-brand" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[14px] font-semibold text-polks-text">Ganti Password</p>
+              <p className="text-[11px] text-polks-muted">Hubungi admin POLKS untuk reset password</p>
+            </div>
           </div>
         </div>
 
@@ -72,7 +88,7 @@ export default function SecurityPage() {
         </button>
 
         <p className="px-1 text-[11px] leading-relaxed text-polks-muted">
-          Ganti nomor & pengaturan keamanan lanjutan akan tersedia setelah backend OTP aktif.
+          Untuk ubah email, nomor HP, atau reset password, hubungi admin POLKS atau pusat bantuan.
         </p>
       </div>
     </CustomerShell>
