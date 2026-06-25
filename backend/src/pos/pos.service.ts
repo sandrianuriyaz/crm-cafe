@@ -1,14 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { VoucherStatus } from '@prisma/client';
+import { Prisma, VoucherStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 // Hasil redeem dibedakan agar controller bisa memetakan ke status HTTP yang
 // tepat (200 / 404 / 409) dengan body sesuai kontrak POS.
+// Objek member yang disertakan di respons voucher agar POS bisa menulis
+// saldo poin terbaru ke customers.poin (CRM tetap sumber kebenaran). Penting
+// untuk order Rp0 (lunas via poin) yang tidak dikirim sebagai transaksi ke CRM,
+// sehingga respons voucher jadi satu-satunya jalur sync saldo.
+type PosMember = {
+  name: string | null;
+  memberCode: string;
+  externalCustomerId: string | null;
+  pointBalance: number;
+};
+
 export type RedeemResult =
   | {
       kind: 'ok';
-      body: { ok: true; code: string; status: 'USED'; used_at: Date };
+      body: {
+        ok: true;
+        code: string;
+        status: 'USED';
+        used_at: Date;
+        member: PosMember;
+      };
     }
   | { kind: 'not_found' }
   | { kind: 'conflict' };
@@ -50,6 +67,21 @@ export class PosService {
     };
   }
 
+  // Ambil saldo member by externalCustomerId (= customer.id POS) untuk jaring
+  // pengaman sync saldo, mis. POS menariknya setelah order Rp0 (lunas via poin)
+  // yang tidak dikirim sebagai transaksi. Null = tidak ditemukan (controller → 404).
+  async getMember(externalCustomerId: string): Promise<PosMember | null> {
+    return this.prisma.member.findUnique({
+      where: { externalCustomerId },
+      select: {
+        name: true,
+        memberCode: true,
+        externalCustomerId: true,
+        pointBalance: true,
+      },
+    });
+  }
+
   // Tandai voucher USED — atomic & sekali pakai. updateMany dengan filter
   // status:ACTIVE mencegah double-redeem (race condition) tanpa transaksi
   // findUnique-lalu-update.
@@ -69,27 +101,47 @@ export class PosService {
       return exists ? { kind: 'conflict' } : { kind: 'not_found' };
     }
 
+    // Ambil voucher (beserta member & reward) sekali untuk dipakai bersama:
+    // (1) menyertakan member di respons agar POS bisa sync saldo poin, dan
+    // (2) push realtime ke app customer pemiliknya.
+    const voucher = await this.prisma.voucher.findUnique({
+      where: { code },
+      include: { member: true, reward: { select: { name: true, imageUrl: true } } },
+    });
+
     // Push realtime ke app customer agar kartu voucher langsung berubah jadi
     // "Digunakan" tanpa perlu refresh. Best-effort: gagal notif tidak boleh
     // membatalkan redeem yang sudah sukses.
-    await this.notifyVoucherUsed(code);
+    this.notifyVoucherUsed(voucher);
 
     return {
       kind: 'ok',
-      body: { ok: true, code, status: 'USED', used_at: usedAt },
+      body: {
+        ok: true,
+        code,
+        status: 'USED',
+        used_at: usedAt,
+        member: {
+          name: voucher!.member.name,
+          memberCode: voucher!.member.memberCode,
+          externalCustomerId: voucher!.member.externalCustomerId,
+          pointBalance: voucher!.member.pointBalance,
+        },
+      },
     };
   }
 
-  // Ambil voucher (beserta pemilik & reward) lalu emit ke room user pemiliknya.
-  private async notifyVoucherUsed(code: string) {
+  // Emit perubahan status voucher ke room user pemiliknya. Best-effort:
+  // kegagalan notif tidak boleh membatalkan redeem yang sudah sukses.
+  private notifyVoucherUsed(
+    voucher: Prisma.VoucherGetPayload<{
+      include: {
+        member: true;
+        reward: { select: { name: true; imageUrl: true } };
+      };
+    }> | null,
+  ) {
     try {
-      const voucher = await this.prisma.voucher.findUnique({
-        where: { code },
-        include: {
-          member: { select: { userId: true } },
-          reward: { select: { name: true, imageUrl: true } },
-        },
-      });
       const userId = voucher?.member.userId;
       if (!voucher || !userId) return;
 
