@@ -15,6 +15,7 @@ import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './strategies/jwt.strategy';
@@ -72,5 +73,49 @@ export class AuthController {
   @ApiOperation({ summary: 'Info user dari token (cek token valid)' })
   me(@CurrentUser() user: AuthUser) {
     return user;
+  }
+
+  // ── 2FA (TOTP) ──────────────────────────────────────────────────────────
+
+  @Post('2fa/login')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Tukar tiket 2FA + kode TOTP jadi access_token' })
+  loginTwoFactor(@Body() dto: TwoFactorLoginDto) {
+    return this.auth.loginTwoFactor(dto.twoFactorToken, dto.code);
+  }
+
+  @Get('2fa/status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Status 2FA akun (aktif/tidak)' })
+  twoFactorStatus(@CurrentUser() user: AuthUser) {
+    return this.auth.getTwoFactorStatus(user.id);
+  }
+
+  @Post('2fa/setup')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mulai setup 2FA → balas secret + QR' })
+  twoFactorSetup(@CurrentUser() user: AuthUser) {
+    return this.auth.setupTwoFactor(user.id);
+  }
+
+  @Post('2fa/enable')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Aktifkan 2FA (verifikasi kode pertama)' })
+  twoFactorEnable(@CurrentUser() user: AuthUser, @Body() dto: TwoFactorCodeDto) {
+    return this.auth.enableTwoFactor(user.id, dto.code);
+  }
+
+  @Post('2fa/disable')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Nonaktifkan 2FA (verifikasi kode)' })
+  twoFactorDisable(@CurrentUser() user: AuthUser, @Body() dto: TwoFactorCodeDto) {
+    return this.auth.disableTwoFactor(user.id, dto.code);
   }
 }

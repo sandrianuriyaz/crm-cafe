@@ -33,7 +33,12 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
+      const res = await login(email, password);
+      if (res.status === "2fa") {
+        setError("Akun ini mengaktifkan verifikasi 2 langkah. Masuk lewat aplikasi customer untuk menyelesaikan verifikasi.");
+        setLoading(false);
+        return;
+      }
       router.push("/admin");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login gagal");

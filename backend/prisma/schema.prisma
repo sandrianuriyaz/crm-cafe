@@ -31,6 +31,12 @@ model User {
   phone        String?  @unique
   passwordHash String?
   role         Role     @default(CUSTOMER)
+
+  // 2FA berbasis TOTP (authenticator app). Saat setup, secret disimpan tapi
+  // twoFactorEnabled tetap false sampai user verifikasi kode pertama (enable).
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

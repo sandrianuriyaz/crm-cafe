@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -8,6 +8,8 @@ export interface JwtPayload {
   sub: string; // user id
   email: string;
   role: Role;
+  // Tiket sementara antara login & verifikasi 2FA — BUKAN access_token penuh.
+  twofa?: boolean;
 }
 
 // Isi req.user setelah token diverifikasi.
@@ -28,6 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtPayload): AuthUser {
+    // Tiket 2FA hanya boleh dipakai di /auth/2fa/login, bukan sebagai Bearer.
+    if (payload.twofa) {
+      throw new UnauthorizedException('Token belum lolos verifikasi 2FA');
+    }
     return { id: payload.sub, email: payload.email, role: payload.role };
   }
 }

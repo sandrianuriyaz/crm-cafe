@@ -35,11 +35,19 @@ type MemberProfile = {
 };
 
 type AuthResponse = { access_token: string; user: AuthUser };
+// Login bisa berhenti di tengah kalau akun pakai 2FA: backend balas tiket,
+// bukan access_token. Frontend lanjut minta kode TOTP lalu /auth/2fa/login.
+type LoginResponse = AuthResponse | { twoFactorRequired: true; twoFactorToken: string };
+export type LoginResult =
+  | { status: "ok" }
+  | { status: "2fa"; twoFactorToken: string };
 
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  // Tahap kedua login 2FA: tukar tiket + kode TOTP jadi sesi penuh.
+  loginTwoFactor: (twoFactorToken: string, code: string) => Promise<void>;
   register: (input: {
     name: string;
     email: string;
@@ -87,15 +95,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await api<AuthResponse>("/auth/login", {
-      method: "POST",
-      auth: false,
-      body: { email, password },
-    });
-    setToken(res.access_token);
-    setUser(res.user);
-  }, []);
+  const login = useCallback(
+    async (email: string, password: string): Promise<LoginResult> => {
+      const res = await api<LoginResponse>("/auth/login", {
+        method: "POST",
+        auth: false,
+        body: { email, password },
+      });
+      if ("twoFactorRequired" in res) {
+        return { status: "2fa", twoFactorToken: res.twoFactorToken };
+      }
+      setToken(res.access_token);
+      setUser(res.user);
+      return { status: "ok" };
+    },
+    [],
+  );
+
+  const loginTwoFactor = useCallback(
+    async (twoFactorToken: string, code: string) => {
+      const res = await api<AuthResponse>("/auth/2fa/login", {
+        method: "POST",
+        auth: false,
+        body: { twoFactorToken, code },
+      });
+      setToken(res.access_token);
+      setUser(res.user);
+    },
+    [],
+  );
 
   const register = useCallback(
     async (input: {
@@ -145,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refreshProfile }}
+      value={{ user, loading, login, loginTwoFactor, register, logout, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

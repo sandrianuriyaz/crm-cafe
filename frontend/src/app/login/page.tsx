@@ -4,30 +4,115 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { GoogleButton } from "@/components/auth/google-button";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginTwoFactor } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Saat akun pakai 2FA, login berhenti di tiket dan kita minta kode TOTP.
+  const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
+  const [code, setCode] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await login(email.trim(), password);
+      const res = await login(email.trim(), password);
+      if (res.status === "2fa") {
+        setTwoFactorToken(res.twoFactorToken);
+        setLoading(false);
+        return;
+      }
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login gagal");
       setLoading(false);
     }
+  }
+
+  async function onVerify(e: React.FormEvent) {
+    e.preventDefault();
+    if (!twoFactorToken) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await loginTwoFactor(twoFactorToken, code.replace(/\s/g, ""));
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verifikasi gagal");
+      setLoading(false);
+    }
+  }
+
+  if (twoFactorToken) {
+    return (
+      <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
+        <div className="polks-phone flex min-h-screen w-full flex-col bg-white">
+          <div className="px-5 pt-5">
+            <button
+              type="button"
+              aria-label="Kembali"
+              onClick={() => {
+                setTwoFactorToken(null);
+                setCode("");
+                setError(null);
+              }}
+              className="inline-flex p-1"
+            >
+              <ArrowLeft size={22} color="#17212A" />
+            </button>
+          </div>
+
+          <div className="flex flex-col items-center px-8 pb-6 pt-6">
+            <div className="flex size-[100px] items-center justify-center rounded-[28px] bg-polks-brand shadow-[0_12px_40px_rgba(37,52,63,0.2)]">
+              <ShieldCheck size={48} className="text-white" />
+            </div>
+          </div>
+
+          <div className="mb-7 px-6">
+            <h1 className="text-[28px] font-bold leading-tight tracking-[-0.01em] text-polks-text">
+              Verifikasi 2 langkah
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-[#8A959D]">
+              Masukkan 6 digit kode dari aplikasi authenticator kamu (Google
+              Authenticator, Authy, dll).
+            </p>
+          </div>
+
+          <form onSubmit={onVerify} className="flex flex-col gap-3.5 px-6">
+            <input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="••••••"
+              className="h-16 w-full rounded-2xl border-[1.5px] border-polks-border bg-white text-center text-[28px] font-bold tracking-[0.4em] text-polks-text outline-none transition-colors focus:border-polks-brand"
+            />
+
+            {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}
+
+            <button
+              type="submit"
+              disabled={loading || code.length !== 6}
+              className="mt-1 flex h-14 w-full items-center justify-center rounded-2xl bg-polks-brand text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(37,52,63,0.25)] disabled:opacity-60"
+            >
+              {loading ? "Memverifikasi…" : "Verifikasi"}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
   }
 
   return (
