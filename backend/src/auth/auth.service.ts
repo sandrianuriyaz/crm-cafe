@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { generateSecret, generateURI, verifySync } from 'otplib';
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
@@ -20,6 +21,8 @@ const SALT_ROUNDS = 10;
 const TOTP_TOLERANCE = 30;
 // Umur "tiket" antara login (password benar) dan input kode 2FA.
 const TWO_FA_TICKET_TTL = '5m';
+// Jumlah kode pemulihan yang dibuat saat aktivasi 2FA.
+const RECOVERY_CODE_COUNT = 10;
 
 @Injectable()
 export class AuthService {
@@ -165,7 +168,18 @@ export class AuthService {
       throw new UnauthorizedException('2FA tidak aktif');
     }
 
-    this.assertTotp(code, user.twoFactorSecret);
+    // Terima kode TOTP ATAU salah satu kode pemulihan (sekali pakai).
+    const result = await this.verifyTwoFactorCode(
+      user.twoFactorSecret,
+      user.twoFactorRecoveryCodes,
+      code,
+    );
+    if (result.consumedRecovery) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { twoFactorRecoveryCodes: result.remainingRecovery },
+      });
+    }
 
     return this.buildAuthResponse(user.id, user.email ?? '', user.role, {
       name: user.name,
@@ -207,7 +221,8 @@ export class AuthService {
     return { secret, otpauthUrl, qrCode };
   }
 
-  // Konfirmasi setup: verifikasi kode pertama, baru tandai aktif.
+  // Konfirmasi setup: verifikasi kode pertama (TOTP), tandai aktif, lalu buat
+  // kode pemulihan yang ditampilkan SEKALI ke user.
   async enableTwoFactor(userId: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.twoFactorSecret) {
@@ -218,26 +233,55 @@ export class AuthService {
     }
 
     this.assertTotp(code, user.twoFactorSecret);
+    const { plain, hashes } = await this.makeRecoveryCodes();
     await this.prisma.user.update({
       where: { id: userId },
-      data: { twoFactorEnabled: true },
+      data: { twoFactorEnabled: true, twoFactorRecoveryCodes: hashes },
     });
-    return { enabled: true };
+    return { enabled: true, recoveryCodes: plain };
   }
 
-  // Matikan 2FA: butuh kode TOTP valid, lalu hapus secret.
+  // Matikan 2FA: butuh kode TOTP/pemulihan valid, lalu hapus secret & kode.
   async disableTwoFactor(userId: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
       throw new BadRequestException('2FA belum aktif');
     }
 
-    this.assertTotp(code, user.twoFactorSecret);
+    await this.verifyTwoFactorCode(
+      user.twoFactorSecret,
+      user.twoFactorRecoveryCodes,
+      code,
+    );
     await this.prisma.user.update({
       where: { id: userId },
-      data: { twoFactorEnabled: false, twoFactorSecret: null },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        twoFactorRecoveryCodes: [],
+      },
     });
     return { enabled: false };
+  }
+
+  // Buat ulang kode pemulihan (kode lama hangus). Butuh kode TOTP/pemulihan valid.
+  async regenerateRecoveryCodes(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new BadRequestException('2FA belum aktif');
+    }
+
+    await this.verifyTwoFactorCode(
+      user.twoFactorSecret,
+      user.twoFactorRecoveryCodes,
+      code,
+    );
+    const { plain, hashes } = await this.makeRecoveryCodes();
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorRecoveryCodes: hashes },
+    });
+    return { recoveryCodes: plain };
   }
 
   private assertTotp(code: string, secret: string) {
@@ -246,6 +290,54 @@ export class AuthService {
     if (!result.valid) {
       throw new UnauthorizedException('Kode verifikasi salah');
     }
+  }
+
+  // Verifikasi kode 2FA: coba TOTP dulu, lalu fallback ke kode pemulihan
+  // (sekali pakai). Throw bila tak ada yang cocok. Pemanggil yang menyimpan
+  // konsumsi recovery (remainingRecovery) bila consumedRecovery true.
+  private async verifyTwoFactorCode(
+    secret: string,
+    recoveryHashes: string[],
+    code: string,
+  ): Promise<{ consumedRecovery: boolean; remainingRecovery: string[] }> {
+    const totp = (code ?? '').replace(/\s/g, '');
+    if (
+      /^\d{6}$/.test(totp) &&
+      verifySync({ token: totp, secret, epochTolerance: TOTP_TOLERANCE }).valid
+    ) {
+      return { consumedRecovery: false, remainingRecovery: recoveryHashes };
+    }
+
+    const normalized = this.normalizeRecovery(code);
+    if (normalized.length >= 8) {
+      for (const hash of recoveryHashes) {
+        if (await bcrypt.compare(normalized, hash)) {
+          return {
+            consumedRecovery: true,
+            remainingRecovery: recoveryHashes.filter((h) => h !== hash),
+          };
+        }
+      }
+    }
+    throw new UnauthorizedException('Kode verifikasi salah');
+  }
+
+  private normalizeRecovery(code: string): string {
+    return (code ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // Buat sekumpulan kode pemulihan: kembalikan plaintext (untuk ditampilkan
+  // sekali) + hash bcrypt (untuk disimpan). Format tampil: "xxxxx-xxxxx".
+  private async makeRecoveryCodes() {
+    const plain: string[] = [];
+    for (let i = 0; i < RECOVERY_CODE_COUNT; i++) {
+      const raw = randomBytes(5).toString('hex'); // 10 hex char
+      plain.push(`${raw.slice(0, 5)}-${raw.slice(5)}`);
+    }
+    const hashes = await Promise.all(
+      plain.map((c) => bcrypt.hash(this.normalizeRecovery(c), SALT_ROUNDS)),
+    );
+    return { plain, hashes };
   }
 
   // Login/registrasi via Google OAuth. Identitas = email. Akun baru → buat

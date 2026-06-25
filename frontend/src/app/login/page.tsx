@@ -19,6 +19,8 @@ export default function LoginPage() {
   // Saat akun pakai 2FA, login berhenti di tiket dan kita minta kode TOTP.
   const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  // Mode kode pemulihan (kalau authenticator hilang) — input non-digit.
+  const [useRecovery, setUseRecovery] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,6 +54,10 @@ export default function LoginPage() {
     }
   }
 
+  const codeValid = useRecovery
+    ? code.replace(/[^a-zA-Z0-9]/g, "").length >= 8
+    : code.length === 6;
+
   if (twoFactorToken) {
     return (
       <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
@@ -82,32 +88,60 @@ export default function LoginPage() {
               Verifikasi 2 langkah
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-[#8A959D]">
-              Masukkan 6 digit kode dari aplikasi authenticator kamu (Google
-              Authenticator, Authy, dll).
+              {useRecovery
+                ? "Masukkan salah satu kode pemulihan yang kamu simpan saat mengaktifkan 2FA."
+                : "Masukkan 6 digit kode dari aplikasi authenticator kamu (Google Authenticator, Authy, dll)."}
             </p>
           </div>
 
           <form onSubmit={onVerify} className="flex flex-col gap-3.5 px-6">
-            <input
-              id="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              autoFocus
-              maxLength={6}
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="••••••"
-              className="h-16 w-full rounded-2xl border-[1.5px] border-polks-border bg-white text-center text-[28px] font-bold tracking-[0.4em] text-polks-text outline-none transition-colors focus:border-polks-brand"
-            />
+            {useRecovery ? (
+              <input
+                id="code"
+                autoComplete="one-time-code"
+                autoFocus
+                maxLength={11}
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, "").toLowerCase().slice(0, 11))
+                }
+                placeholder="xxxxx-xxxxx"
+                className="h-16 w-full rounded-2xl border-[1.5px] border-polks-border bg-white text-center font-mono text-[20px] font-bold tracking-[0.15em] text-polks-text outline-none transition-colors focus:border-polks-brand"
+              />
+            ) : (
+              <input
+                id="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="••••••"
+                className="h-16 w-full rounded-2xl border-[1.5px] border-polks-border bg-white text-center text-[28px] font-bold tracking-[0.4em] text-polks-text outline-none transition-colors focus:border-polks-brand"
+              />
+            )}
 
             {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}
 
             <button
               type="submit"
-              disabled={loading || code.length !== 6}
+              disabled={loading || !codeValid}
               className="mt-1 flex h-14 w-full items-center justify-center rounded-2xl bg-polks-brand text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(37,52,63,0.25)] disabled:opacity-60"
             >
               {loading ? "Memverifikasi…" : "Verifikasi"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setUseRecovery((v) => !v);
+                setCode("");
+                setError(null);
+              }}
+              className="mt-1 text-center text-[13px] font-semibold text-polks-brand"
+            >
+              {useRecovery ? "Pakai kode authenticator" : "Pakai kode pemulihan"}
             </button>
           </form>
         </div>

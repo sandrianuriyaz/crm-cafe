@@ -16,7 +16,11 @@ import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
+import {
+  TwoFactorCodeDto,
+  TwoFactorLoginDto,
+  TwoFactorVerifyDto,
+} from './dto/two-factor.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './strategies/jwt.strategy';
@@ -121,8 +125,21 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Nonaktifkan 2FA (verifikasi kode)' })
-  twoFactorDisable(@CurrentUser() user: AuthUser, @Body() dto: TwoFactorCodeDto) {
+  @ApiOperation({ summary: 'Nonaktifkan 2FA (kode TOTP atau pemulihan)' })
+  twoFactorDisable(@CurrentUser() user: AuthUser, @Body() dto: TwoFactorVerifyDto) {
     return this.auth.disableTwoFactor(user.id, dto.code);
+  }
+
+  @Post('2fa/recovery-codes')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Buat ulang kode pemulihan (kode lama hangus)' })
+  twoFactorRecoveryCodes(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: TwoFactorVerifyDto,
+  ) {
+    return this.auth.regenerateRecoveryCodes(user.id, dto.code);
   }
 }
