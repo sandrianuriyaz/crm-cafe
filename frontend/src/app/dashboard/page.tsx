@@ -85,17 +85,15 @@ export default function MemberDashboardPage() {
 
         {/* Member Card CTA */}
         <div className="px-5 pb-6">
-          <Link href="/member-card">
-            <div className="flex items-center justify-between rounded-2xl bg-polks-brand px-5 py-4">
-              <div className="flex items-center gap-3">
-                <QrCode size={20} className="text-white" />
-                <div>
-                  <p className="text-[13px] font-bold text-white">Kartu Member</p>
-                  <p className="text-[11px] text-white/50">Tunjukkan QR ke kasir</p>
-                </div>
+          <Link href="/member-card" className="flex items-center justify-between rounded-2xl bg-polks-brand px-5 py-4">
+            <div className="flex items-center gap-3">
+              <QrCode size={20} className="text-white" />
+              <div>
+                <p className="text-[13px] font-bold text-white">Kartu Member</p>
+                <p className="text-[11px] text-white/50">Tunjukkan QR ke kasir</p>
               </div>
-              <ChevronRight size={16} className="text-white/50" />
             </div>
+            <ChevronRight size={16} className="text-white/50" />
           </Link>
         </div>
       </div>

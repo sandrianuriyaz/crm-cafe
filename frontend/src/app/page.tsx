@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Gift, Store, CheckCircle2, ChevronRight,
-  Smartphone, Star, Home, LogIn,
+  Star, Home, LogIn,
 } from "lucide-react";
 import { LoginRequiredModal } from "@/components/customer/login-required-modal";
 import { api } from "@/lib/api";
@@ -14,9 +14,9 @@ import { type Promo, type Reward } from "@/lib/loyalty/types";
 type Outlet = { id: string; name: string; city: string | null };
 
 const steps = [
-  { Icon: Smartphone, text: "Tunjukkan QR member ke kasir" },
-  { Icon: Star, text: "Poin masuk otomatis tiap transaksi" },
-  { Icon: Gift, text: "Tukar poin jadi reward pilihan" },
+  { text: "Tunjukkan QR member ke kasir" },
+  { text: "Poin masuk otomatis tiap transaksi" },
+  { text: "Tukar poin jadi reward pilihan" },
 ];
 
 function formatPeriod(startAt: string | null, endAt: string | null): string {
@@ -127,7 +127,7 @@ export default function GuestHomePage() {
         <div className="mx-5 rounded-2xl bg-white px-5 py-5">
           <h2 className="mb-4 text-[15px] font-bold text-polks-text">Cara Kerjanya</h2>
           <div className="flex flex-col gap-4">
-            {steps.map(({ Icon, text }, i) => (
+            {steps.map(({ text }, i) => (
               <div key={text} className="flex items-center gap-3">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-polks-brand text-[11px] font-bold text-white">
                   {i + 1}
