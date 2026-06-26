@@ -63,6 +63,9 @@ export default function GuestHomePage() {
 
       {/* Hero */}
       <div className="bg-white px-6 pb-10 pt-8">
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-polks-muted">
+          FOLKS · COFFEE · COMMUNITY
+        </p>
         <h1 className="text-[34px] font-black leading-[1.1] tracking-[-0.03em] text-polks-text">
           Poin dari<br />setiap cangkir.
         </h1>
@@ -83,7 +86,12 @@ export default function GuestHomePage() {
         </p>
       </div>
 
-      <div className="border-b border-polks-border" />
+      {/* Brand tagline strip */}
+      <div className="bg-polks-brand py-3">
+        <p className="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
+          GOOD COFFEE · GOOD PEOPLE · GREAT MOMENTS
+        </p>
+      </div>
 
       {/* Content */}
       <div className="flex flex-col gap-6 bg-polks-bg pb-28 pt-5">
@@ -124,15 +132,17 @@ export default function GuestHomePage() {
         ) : null}
 
         {/* Cara Kerjanya */}
-        <div className="mx-5 rounded-2xl bg-white px-5 py-5">
-          <h2 className="mb-4 text-[15px] font-bold text-polks-text">Cara Kerjanya</h2>
+        <div className="mx-5 overflow-hidden rounded-2xl bg-polks-brand px-5 py-5">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">
+            Cara Kerjanya
+          </p>
           <div className="flex flex-col gap-4">
             {steps.map(({ text }, i) => (
               <div key={text} className="flex items-center gap-3">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-polks-brand text-[11px] font-bold text-white">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white">
                   {i + 1}
                 </span>
-                <span className="text-[13px] text-polks-text">{text}</span>
+                <span className="text-[13px] text-white/75">{text}</span>
               </div>
             ))}
           </div>

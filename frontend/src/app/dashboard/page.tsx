@@ -83,17 +83,26 @@ export default function MemberDashboardPage() {
           <p className="mt-1 text-[12px] text-polks-muted">pts · Saldo poin kamu</p>
         </div>
 
-        {/* Member Card CTA */}
+        {/* Member Card CTA — ticket design */}
         <div className="px-5 pb-6">
-          <Link href="/member-card" className="flex items-center justify-between rounded-2xl bg-polks-brand px-5 py-4">
-            <div className="flex items-center gap-3">
+          <Link href="/member-card" className="flex overflow-hidden rounded-2xl">
+            {/* Dark left panel */}
+            <div className="flex w-[80px] shrink-0 flex-col items-center justify-center gap-2 bg-polks-brand py-5">
               <QrCode size={20} className="text-white" />
-              <div>
-                <p className="text-[13px] font-bold text-white">Kartu Member</p>
-                <p className="text-[11px] text-white/50">Tunjukkan QR ke kasir</p>
-              </div>
+              <span className="text-[7px] font-bold uppercase tracking-[0.12em] text-white/50">SCAN QR</span>
             </div>
-            <ChevronRight size={16} className="text-white/50" />
+            {/* Perforated edge */}
+            <div className="flex shrink-0 items-center bg-polks-brand px-[5px]">
+              <div className="h-[calc(100%-16px)] border-l-[1.5px] border-dashed border-white/25" />
+            </div>
+            {/* White right panel */}
+            <div className="flex flex-1 items-center justify-between bg-white px-4 py-4">
+              <div>
+                <p className="text-[13px] font-bold text-polks-text">Kartu Member</p>
+                <p className="text-[11px] text-polks-muted">Tunjukkan QR ke kasir</p>
+              </div>
+              <ChevronRight size={16} className="text-polks-muted" />
+            </div>
           </Link>
         </div>
       </div>
