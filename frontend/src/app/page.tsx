@@ -62,28 +62,46 @@ export default function GuestHomePage() {
       </div>
 
       {/* Hero */}
-      <div className="bg-white px-6 pb-10 pt-8">
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-polks-muted">
-          FOLKS · COFFEE · COMMUNITY
-        </p>
-        <h1 className="text-[34px] font-black leading-[1.1] tracking-[-0.03em] text-polks-text">
-          Poin dari<br />setiap cangkir.
-        </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-polks-muted">
-          Daftar gratis & kumpulkan poin dari setiap kunjungan di outlet POLKS.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 flex h-14 w-full items-center justify-center rounded-2xl bg-polks-brand text-[15px] font-bold text-white"
-        >
-          Daftar Gratis
-        </Link>
-        <p className="mt-3 text-center text-[13px] text-polks-muted">
-          Sudah punya akun?{" "}
-          <Link href="/login" className="font-semibold text-polks-brand">
-            Masuk
+      <div className="bg-white pb-10">
+        {/* Headline + cup split */}
+        <div className="flex items-end px-6 pt-8">
+          <div className="flex-1 pr-3">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-polks-muted">
+              FOLKS · COFFEE · COMMUNITY
+            </p>
+            <h1 className="text-[34px] font-black leading-[1.1] tracking-[-0.03em] text-polks-text">
+              Poin dari<br />setiap<br />cangkir.
+            </h1>
+          </div>
+          <div className="relative h-[190px] w-[140px] shrink-0">
+            <Image
+              src="/polks/cup.png"
+              alt="POLKS Cup"
+              fill
+              className="object-contain object-bottom"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Subtitle + CTAs */}
+        <div className="px-6 pt-5">
+          <p className="text-[14px] leading-relaxed text-polks-muted">
+            Daftar gratis & kumpulkan poin dari setiap kunjungan di outlet POLKS.
+          </p>
+          <Link
+            href="/register"
+            className="mt-6 flex h-14 w-full items-center justify-center rounded-2xl bg-polks-brand text-[15px] font-bold text-white"
+          >
+            Daftar Gratis
           </Link>
-        </p>
+          <p className="mt-3 text-center text-[13px] text-polks-muted">
+            Sudah punya akun?{" "}
+            <Link href="/login" className="font-semibold text-polks-brand">
+              Masuk
+            </Link>
+          </p>
+        </div>
       </div>
 
       {/* Brand tagline strip */}
