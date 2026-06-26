@@ -3,9 +3,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCw, History, MapPin, QrCode, Star, Sparkles, CreditCard } from "lucide-react";
+import { ArrowLeft, RefreshCw, History, MapPin, QrCode, Star, Sparkles, CreditCard, Coffee } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -63,16 +62,11 @@ export default function MemberCardPage() {
         <div className="mx-5 mt-5 overflow-hidden rounded-[28px] shadow-[0_18px_48px_rgba(37,52,63,0.22)]">
 
           {/* ── Top: cream section ── */}
-          <div style={{ background: "#F3EEE4" }} className="px-6 pb-6 pt-6">
-            {/* Logo */}
-            <div className="mb-5 flex justify-center">
-              <Image
-                src="/polks/logo.png"
-                alt="POLKS"
-                width={90}
-                height={34}
-                className="h-8 w-auto object-contain brightness-0"
-              />
+          <div style={{ background: "#EDE8DC" }} className="px-6 pb-6 pt-6">
+            {/* Logo — teks navy langsung, logo PNG putih tidak kontras di krem */}
+            <div className="mb-5 flex flex-col items-center gap-0.5">
+              <Coffee size={22} className="text-polks-brand" strokeWidth={1.8} />
+              <p className="text-[22px] font-black tracking-[-0.04em] text-polks-brand">POLKS</p>
             </div>
 
             {/* Labels */}
@@ -110,7 +104,7 @@ export default function MemberCardPage() {
           </div>
 
           {/* Wave: cream → dark navy */}
-          <div style={{ background: "#F3EEE4" }}>
+          <div style={{ background: "#EDE8DC" }}>
             <svg viewBox="0 0 390 32" preserveAspectRatio="none" className="block w-full">
               <path d="M0,0 Q195,32 390,0 L390,32 L0,32 Z" fill="#25343F" />
             </svg>
