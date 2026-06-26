@@ -3,17 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, ChevronRight, Gift, History, MapPin, Star } from "lucide-react";
+import { Bell, ChevronRight, Gift, QrCode, Star } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { TIER_META } from "@/lib/loyalty/tier";
 import { type Promo, type Reward } from "@/lib/loyalty/types";
-
-const quickLinks = [
-  { label: "Riwayat", Icon: History, href: "/history" as const },
-  { label: "Outlet", Icon: MapPin, href: "/outlets" as const },
-];
 
 function formatPeriod(startAt: string | null, endAt: string | null): string {
   const fmt = (iso: string) =>
@@ -48,8 +43,8 @@ export default function MemberDashboardPage() {
 
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
-      {/* Top bar */}
-      <div className="flex items-center justify-between bg-polks-brand px-5 pt-4">
+      {/* Topbar */}
+      <div className="flex h-14 items-center justify-between bg-polks-brand px-5">
         <Image
           src="/polks/logo.png"
           alt="POLKS"
@@ -66,13 +61,11 @@ export default function MemberDashboardPage() {
         </Link>
       </div>
 
-      {/* Balance hero — poin sebagai fokus */}
-      <div className="bg-polks-brand px-5 pb-8 pt-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-white/45">Halo,</p>
-            <p className="text-lg font-bold tracking-[-0.01em] text-white">{name}</p>
-          </div>
+      {/* White section: greeting + poin + member card CTA */}
+      <div className="bg-white">
+        {/* Greeting */}
+        <div className="flex items-center justify-between px-5 pt-5">
+          <p className="text-[15px] font-semibold text-polks-text">Halo, {name}</p>
           <span
             className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em]"
             style={{ backgroundColor: tierMeta.badgeBg, color: tierMeta.badgeText }}
@@ -81,39 +74,38 @@ export default function MemberDashboardPage() {
           </span>
         </div>
 
-        <div className="mt-7">
-          <p className="text-[11px] uppercase tracking-[0.08em] text-white/40">Saldo Poin</p>
-          <div className="mt-1 flex items-baseline gap-2">
-            <Star size={22} color="#F6B84B" fill="#F6B84B" />
-            <span className="text-[40px] font-black leading-none tracking-[-0.02em] text-white">
-              {points.toLocaleString("id-ID")}
-            </span>
-            <span className="text-sm font-semibold text-white/50">pts</span>
-          </div>
+        {/* Poin display */}
+        <div className="px-5 pb-6 pt-4">
+          <Star size={16} color="#F6B84B" fill="#F6B84B" />
+          <p className="mt-1 text-[56px] font-black leading-none tracking-[-0.04em] text-polks-text">
+            {points.toLocaleString("id-ID")}
+          </p>
+          <p className="mt-1 text-[12px] text-polks-muted">pts · Saldo poin kamu</p>
         </div>
 
-      </div>
-
-      {/* Wave */}
-      <div className="bg-polks-brand leading-none">
-        <svg viewBox="0 0 390 28" preserveAspectRatio="none" className="block h-7 w-full">
-          <path d="M0,0 Q195,28 390,0 L390,28 L0,28 Z" fill="#F6F8FA" />
-        </svg>
-      </div>
-
-      {/* Konten */}
-      <div className="flex flex-col gap-7 bg-polks-bg px-5 pb-28 pt-3">
-        {/* Quick links — ringkas */}
-        <div className="grid grid-cols-2 gap-2">
-          {quickLinks.map(({ label, Icon, href }) => (
-            <Link key={label} href={href} className="flex flex-col items-center gap-1.5 py-1">
-              <Icon size={22} color="#25343F" strokeWidth={1.8} />
-              <span className="text-[11px] font-medium text-polks-muted">{label}</span>
-            </Link>
-          ))}
+        {/* Member Card CTA */}
+        <div className="px-5 pb-6">
+          <Link href="/member-card">
+            <div className="flex items-center justify-between rounded-2xl bg-polks-brand px-5 py-4">
+              <div className="flex items-center gap-3">
+                <QrCode size={20} className="text-white" />
+                <div>
+                  <p className="text-[13px] font-bold text-white">Kartu Member</p>
+                  <p className="text-[11px] text-white/50">Tunjukkan QR ke kasir</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-white/50" />
+            </div>
+          </Link>
         </div>
+      </div>
 
-        {/* Reward untuk kamu (data asli) */}
+      {/* Clean separator */}
+      <div className="border-b border-polks-border" />
+
+      {/* Content */}
+      <div className="flex flex-col gap-7 bg-polks-bg px-5 pb-28 pt-5">
+        {/* Reward untuk kamu */}
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-polks-text">Reward untuk Kamu</h3>
@@ -125,43 +117,43 @@ export default function MemberDashboardPage() {
             {(recs.length > 0 ? recs : [null, null]).map((r, i) => {
               const soldOut = r ? r.stock <= 0 : false;
               return (
-              <Link
-                key={r?.id ?? i}
-                href="/rewards"
-                className="flex-1 rounded-2xl border border-polks-border bg-white p-4 text-left"
-              >
-                <div
-                  className={
-                    "mb-3 flex size-9 items-center justify-center rounded-xl " +
-                    (soldOut ? "bg-polks-surface" : "bg-polks-point-soft")
-                  }
+                <Link
+                  key={r?.id ?? i}
+                  href="/rewards"
+                  className="flex-1 rounded-2xl border border-polks-border bg-white p-4 text-left"
                 >
-                  <Gift size={16} color={soldOut ? "#8A959D" : "#C99A2E"} />
-                </div>
-                {r ? (
-                  <>
-                    <p className="mb-1 line-clamp-1 text-xs font-semibold text-polks-text">{r.name}</p>
-                    {soldOut ? (
-                      <span className="text-xs font-semibold text-polks-error">Stok habis</span>
-                    ) : (
-                      <span className="text-xs font-semibold text-polks-muted">
-                        {r.pointCost.toLocaleString("id-ID")} pts
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="mb-2 h-3 w-2/3 rounded bg-polks-surface" />
-                    <div className="h-3 w-1/3 rounded bg-polks-surface" />
-                  </>
-                )}
-              </Link>
+                  <div
+                    className={
+                      "mb-3 flex size-9 items-center justify-center rounded-xl " +
+                      (soldOut ? "bg-polks-surface" : "bg-polks-point-soft")
+                    }
+                  >
+                    <Gift size={16} color={soldOut ? "#8A959D" : "#C99A2E"} />
+                  </div>
+                  {r ? (
+                    <>
+                      <p className="mb-1 line-clamp-1 text-xs font-semibold text-polks-text">{r.name}</p>
+                      {soldOut ? (
+                        <span className="text-xs font-semibold text-polks-error">Stok habis</span>
+                      ) : (
+                        <span className="text-xs font-semibold text-polks-muted">
+                          {r.pointCost.toLocaleString("id-ID")} pts
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-2 h-3 w-2/3 rounded bg-polks-surface" />
+                      <div className="h-3 w-1/3 rounded bg-polks-surface" />
+                    </>
+                  )}
+                </Link>
               );
             })}
           </div>
         </div>
 
-        {/* Promo — sekunder, ringkas (data asli) */}
+        {/* Promo */}
         {promos.length > 0 ? (
           <div>
             <div className="mb-3 flex items-center justify-between">
