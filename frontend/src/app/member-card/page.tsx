@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCw, History, MapPin, QrCode } from "lucide-react";
+import { ArrowLeft, RefreshCw, History, MapPin, QrCode, Star, Sparkles, CreditCard } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -59,81 +59,114 @@ export default function MemberCardPage() {
           </button>
         </div>
 
-        {/* Title */}
-        <div className="px-5 pb-5 pt-3">
-          <h1 className="text-[22px] font-bold tracking-[-0.02em] text-polks-text">Member Card</h1>
-          <p className="mt-0.5 text-[13px] text-polks-muted">
-            Tunjukkan QR ini ke kasir saat transaksi
-          </p>
-        </div>
+        {/* Card */}
+        <div className="mx-5 mt-5 overflow-hidden rounded-[28px] shadow-[0_18px_48px_rgba(37,52,63,0.22)]">
 
-        {/* Kartu member — satu kartu navy */}
-        <div className="px-5">
-          <div
-            className="rounded-[28px] p-6 shadow-[0_18px_45px_rgba(37,52,63,0.28)]"
-            style={{ background: "linear-gradient(135deg,#25343F 0%,#2A3D4D 55%,#1E3040 100%)" }}
-          >
-            {/* Logo + tier */}
-            <div className="flex items-center justify-between">
+          {/* ── Top: cream section ── */}
+          <div style={{ background: "#F3EEE4" }} className="px-6 pb-6 pt-6">
+            {/* Logo */}
+            <div className="mb-5 flex justify-center">
               <Image
                 src="/polks/logo.png"
                 alt="POLKS"
-                width={84}
-                height={32}
-                className="h-7 w-auto object-contain"
+                width={90}
+                height={34}
+                className="h-8 w-auto object-contain brightness-0"
               />
-              <span
-                className="rounded-full bg-white/10 px-2.5 py-[3px] text-[9px] font-semibold uppercase tracking-[0.08em]"
-                style={{ color: tierMeta.badgeText }}
-              >
-                {tierMeta.label} Member
-              </span>
             </div>
 
-            {/* QR dalam tile putih */}
-            <div className="mt-6 flex justify-center">
-              <div className="rounded-2xl bg-white p-3.5">
-                <div className="flex size-[168px] items-center justify-center">
+            {/* Labels */}
+            <div className="mb-5 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-polks-muted">
+                MEMBER QR CODE
+              </p>
+              <p className="mt-1 text-[24px] font-black leading-none tracking-[-0.02em] text-polks-text">
+                SCAN TO EARN
+              </p>
+              <p className="mt-1.5 text-[12px] text-polks-muted">
+                Tunjukkan QR ini ke kasir saat transaksi
+              </p>
+            </div>
+
+            {/* QR */}
+            <div className="flex justify-center">
+              <div className="rounded-2xl bg-white p-3.5 shadow-sm">
+                <div className="flex size-[164px] items-center justify-center">
                   {loadingQr ? (
                     <span className="text-xs font-medium text-polks-muted">Memuat QR…</span>
                   ) : qrImage ? (
                     <img src={qrImage} alt={`QR member ${memberId}`} className="size-full object-contain" />
                   ) : (
-                    <QrCode size={148} color="#17212A" strokeWidth={1} />
+                    <QrCode size={144} color="#17212A" strokeWidth={1} />
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Nama + ID */}
-            <div className="mt-4 text-center">
-              <p className="text-[15px] font-semibold text-white">{name}</p>
-              <p className="mt-0.5 font-mono text-[11px] tracking-[0.04em] text-white/45">{memberId}</p>
-            </div>
+            {/* Member code */}
+            <p className="mt-4 text-center font-mono text-[13px] font-semibold tracking-[0.12em] text-polks-text">
+              {memberId}
+            </p>
+          </div>
 
-            {/* Saldo + scan */}
-            <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-              <div>
-                <p className="text-[10px] text-white/40">Saldo Poin</p>
-                <p className="text-base font-bold text-white">
-                  {points.toLocaleString("id-ID")}
-                  <span className="ml-1 text-[11px] font-medium text-white/50">pts</span>
+          {/* Wave: cream → dark navy */}
+          <div style={{ background: "#F3EEE4" }}>
+            <svg viewBox="0 0 390 32" preserveAspectRatio="none" className="block w-full">
+              <path d="M0,0 Q195,32 390,0 L390,32 L0,32 Z" fill="#25343F" />
+            </svg>
+          </div>
+
+          {/* ── Bottom: dark navy section ── */}
+          <div className="bg-polks-brand px-6 py-5">
+            <div className="flex items-start justify-between">
+              {/* Member Level */}
+              <div className="flex flex-col items-center gap-1.5">
+                <Star size={16} color="#F6B84B" fill="#F6B84B" />
+                <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/40">
+                  MEMBER LEVEL
+                </p>
+                <p className="text-[13px] font-bold" style={{ color: tierMeta.badgeText }}>
+                  {tierMeta.label.toUpperCase()}
                 </p>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium text-white/70">
-                <span className="size-1.5 rounded-full bg-polks-success" />
-                Scan di kasir
-              </span>
+
+              <div className="mt-1 h-10 w-px bg-white/10" />
+
+              {/* Points Balance */}
+              <div className="flex flex-col items-center gap-1.5">
+                <Sparkles size={16} className="text-white/60" />
+                <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/40">
+                  POINTS BALANCE
+                </p>
+                <p className="text-[13px] font-bold text-white">
+                  {points.toLocaleString("id-ID")}
+                  <span className="ml-0.5 text-[10px] font-medium text-white/50"> PTS</span>
+                </p>
+              </div>
+
+              <div className="mt-1 h-10 w-px bg-white/10" />
+
+              {/* Member name */}
+              <div className="flex max-w-[80px] flex-col items-center gap-1.5">
+                <CreditCard size={16} className="text-white/60" />
+                <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/40">
+                  NAMA
+                </p>
+                <p className="line-clamp-1 text-center text-[11px] font-bold text-white">
+                  {name}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Catatan + aksi */}
+        {/* Note */}
         <p className="flex items-center gap-1.5 px-6 pt-4 text-[11px] text-polks-muted">
           <MapPin size={12} className="shrink-0" />
           Berlaku di semua outlet POLKS
         </p>
 
+        {/* Actions */}
         <div className="flex gap-2.5 px-5 pt-4">
           <Link
             href="/history"
