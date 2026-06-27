@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Gift, Store, CheckCircle2, ChevronRight,
-  Star, Home, LogIn,
+  Home, LogIn,
 } from "lucide-react";
 import { LoginRequiredModal } from "@/components/customer/login-required-modal";
 import { api } from "@/lib/api";
