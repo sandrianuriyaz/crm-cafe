@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Users, Store, Tag, Gift, Ticket, Webhook, ShieldCheck,
-  RefreshCw, History, Settings, Radio, LogOut, Bell, Search, Menu, X, Layers, Zap,
+  LayoutDashboard, Users, Store, Tag, Gift, Ticket, Webhook,
+  RefreshCw, History, Settings, Radio, LogOut, Bell, Search,
+  Menu, X, Layers, Zap, ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -15,27 +16,59 @@ type NavItem = {
   label: string;
   href: string;
   Icon: typeof LayoutDashboard;
-  enabled: boolean;
 };
 
-// Menu sesuai Figma. `enabled:false` = belum ada backend (non-aktif sementara).
-const NAV: NavItem[] = [
-  { label: "Overview", href: "/admin", Icon: LayoutDashboard, enabled: true },
-  { label: "Group", href: "/admin/group", Icon: Layers, enabled: true},
-  { label: "Outlets", href: "/admin/outlets", Icon: Store, enabled: true},
-  { label: "Members", href: "/admin/members", Icon: Users, enabled: true },
-  { label: "Promotions", href: "/admin/promos", Icon: Tag, enabled: true},
-  { label: "Rewards", href: "/admin/rewards", Icon: Gift, enabled: true},
-  { label: "Vouchers", href: "/admin/vouchers", Icon: Ticket, enabled: true},
-  { label: "POS Transactions", href: "/admin/transactions", Icon: Zap, enabled: true },
-  { label: "Webhook Inbox", href: "/admin/webhook", Icon: Webhook, enabled: true},
-  { label: "Idempotency", href: "/admin/idempotency", Icon: ShieldCheck, enabled: true},
-  { label: "POS Sync", href: "/admin/pos-sync", Icon: RefreshCw, enabled: true},
-  { label: "Redeem History", href: "/admin/redeem-history", Icon: History, enabled: true},
-  { label: "Loyalty Config", href: "/admin/config", Icon: Settings, enabled: true },
-  { label: "Broadcast", href: "/admin/broadcast", Icon: Radio, enabled: true},
-  { label: "Settings", href: "/admin/settings", Icon: Settings, enabled: true},
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+const STANDALONE: NavItem = {
+  label: "Overview",
+  href: "/admin",
+  Icon: LayoutDashboard,
+};
+
+const GROUPS: NavGroup[] = [
+  {
+    label: "Manajemen",
+    items: [
+      { label: "Members", href: "/admin/members", Icon: Users },
+      { label: "Group", href: "/admin/group", Icon: Layers },
+      { label: "Outlets", href: "/admin/outlets", Icon: Store },
+    ],
+  },
+  {
+    label: "Loyalty",
+    items: [
+      { label: "Promotions", href: "/admin/promos", Icon: Tag },
+      { label: "Rewards", href: "/admin/rewards", Icon: Gift },
+      { label: "Vouchers", href: "/admin/vouchers", Icon: Ticket },
+      { label: "Loyalty Config", href: "/admin/config", Icon: Settings },
+    ],
+  },
+  {
+    label: "Aktivitas",
+    items: [
+      { label: "POS Transactions", href: "/admin/transactions", Icon: Zap },
+      { label: "Redeem History", href: "/admin/redeem-history", Icon: History },
+    ],
+  },
+  {
+    label: "Sistem",
+    items: [
+      { label: "Broadcast", href: "/admin/broadcast", Icon: Radio },
+      { label: "POS Sync", href: "/admin/pos-sync", Icon: RefreshCw },
+      { label: "Webhook Inbox", href: "/admin/webhook", Icon: Webhook },
+    ],
+  },
 ];
+
+const SETTINGS_ITEM: NavItem = {
+  label: "Settings",
+  href: "/admin/settings",
+  Icon: Settings,
+};
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/admin") return pathname === "/admin";
@@ -47,6 +80,24 @@ export function AdminShell({ children, title }: { children: ReactNode; title?: s
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    GROUPS.forEach((g) => {
+      if (g.items.some((item) => isActive(pathname, item.href))) {
+        initial.add(g.label);
+      }
+    });
+    return initial;
+  });
+
+  function toggleGroup(label: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  }
 
   // Proteksi: hanya ADMIN. Selain itu tendang ke login admin.
   useEffect(() => {
@@ -87,45 +138,106 @@ export function AdminShell({ children, title }: { children: ReactNode; title?: s
         <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">Admin Panel</span>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-1">
-        {NAV.map(({ label, href, Icon, enabled }) => {
-          const active = isActive(pathname, href);
-          if (!enabled) {
-            return (
-              <div
-                key={label}
-                className="mb-0.5 flex cursor-not-allowed items-center gap-2.5 rounded-[10px] px-3 py-2.5 opacity-40"
-                title="Segera hadir"
-              >
-                <Icon size={16} className="text-white/50" />
-                <span className="whitespace-nowrap text-[13px] font-medium text-white/55">{label}</span>
-                <span className="ml-auto text-[8px] font-bold uppercase text-white/30">soon</span>
-              </div>
-            );
-          }
+        {/* Overview — standalone */}
+        <Link
+          href={STANDALONE.href}
+          onClick={() => setDrawerOpen(false)}
+          className={cn(
+            "mb-0.5 flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 transition-colors",
+            isActive(pathname, STANDALONE.href) ? "bg-white/[0.12]" : "hover:bg-white/[0.06]",
+          )}
+        >
+          <STANDALONE.Icon
+            size={16}
+            className={isActive(pathname, STANDALONE.href) ? "text-white" : "text-white/50"}
+          />
+          <span
+            className={cn(
+              "whitespace-nowrap text-[13px]",
+              isActive(pathname, STANDALONE.href) ? "font-bold text-white" : "font-medium text-white/55",
+            )}
+          >
+            {STANDALONE.label}
+          </span>
+        </Link>
+
+        {/* Accordion groups */}
+        {GROUPS.map((group) => {
+          const isOpen = openGroups.has(group.label);
           return (
-            <Link
-              key={label}
-              href={href}
-              onClick={() => setDrawerOpen(false)}
-              className={cn(
-                "mb-0.5 flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 transition-colors",
-                active ? "bg-white/[0.12]" : "hover:bg-white/[0.06]",
-              )}
-            >
-              <Icon size={16} className={active ? "text-white" : "text-white/50"} />
-              <span
-                className={cn(
-                  "whitespace-nowrap text-[13px]",
-                  active ? "font-bold text-white" : "font-medium text-white/55",
-                )}
+            <div key={group.label} className="mb-0.5">
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.label)}
+                className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2.5 transition-colors hover:bg-white/[0.06]"
               >
-                {label}
-              </span>
-            </Link>
+                <span className="flex-1 text-left text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                  {group.label}
+                </span>
+                <ChevronRight
+                  size={12}
+                  className={cn(
+                    "text-white/30 transition-transform duration-200",
+                    isOpen && "rotate-90",
+                  )}
+                />
+              </button>
+              {isOpen && (
+                <div className="mt-0.5">
+                  {group.items.map(({ label, href, Icon }) => {
+                    const active = isActive(pathname, href);
+                    return (
+                      <Link
+                        key={label}
+                        href={href}
+                        onClick={() => setDrawerOpen(false)}
+                        className={cn(
+                          "mb-0.5 flex items-center gap-2.5 rounded-[10px] py-2.5 pl-5 pr-3 transition-colors",
+                          active ? "bg-white/[0.12]" : "hover:bg-white/[0.06]",
+                        )}
+                      >
+                        <Icon size={16} className={active ? "text-white" : "text-white/50"} />
+                        <span
+                          className={cn(
+                            "whitespace-nowrap text-[13px]",
+                            active ? "font-bold text-white" : "font-medium text-white/55",
+                          )}
+                        >
+                          {label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
       <div className="flex-shrink-0 border-t border-white/[0.07] px-2 py-3">
+        {/* Settings standalone */}
+        <Link
+          href={SETTINGS_ITEM.href}
+          onClick={() => setDrawerOpen(false)}
+          className={cn(
+            "mb-0.5 flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 transition-colors",
+            isActive(pathname, SETTINGS_ITEM.href) ? "bg-white/[0.12]" : "hover:bg-white/[0.06]",
+          )}
+        >
+          <SETTINGS_ITEM.Icon
+            size={16}
+            className={isActive(pathname, SETTINGS_ITEM.href) ? "text-white" : "text-white/50"}
+          />
+          <span
+            className={cn(
+              "whitespace-nowrap text-[13px]",
+              isActive(pathname, SETTINGS_ITEM.href) ? "font-bold text-white" : "font-medium text-white/55",
+            )}
+          >
+            {SETTINGS_ITEM.label}
+          </span>
+        </Link>
+        {/* Logout */}
         <button
           type="button"
           onClick={handleLogout}
