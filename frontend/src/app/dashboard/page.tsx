@@ -67,11 +67,11 @@ export default function MemberDashboardPage() {
       <div className="min-h-screen bg-polks-bg pb-28">
 
         {/* ── Banner + overlay logo/bell ──────────────────────────────────
-            top-[64px] = PromoBanner mt-3(12px) + CUP_ABOVE(52px)
+            top-[12px] = PromoBanner mt-3(12px), no more CUP_ABOVE offset
             inset-x-4  = matches PromoBanner mx-4 */}
         <div className="relative">
           <PromoBanner />
-          <div className="pointer-events-none absolute inset-x-4 top-[64px] z-20 flex items-center justify-between px-3 py-2.5">
+          <div className="pointer-events-none absolute inset-x-4 top-[12px] z-20 flex items-center justify-between px-3 py-2.5">
             <div className="flex items-center gap-1.5">
               <Image
                 src="/polks/icon.png"
