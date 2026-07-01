@@ -71,7 +71,7 @@ export default function MemberDashboardPage() {
             inset-x-4  = matches PromoBanner mx-4 */}
         <div className="relative">
           <PromoBanner />
-          <div className="pointer-events-none absolute inset-x-4 top-[12px] z-20 flex items-center justify-between px-3 py-2.5">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 py-2.5">
             <div className="flex items-center gap-1.5">
               <Image
                 src="/polks/icon.png"

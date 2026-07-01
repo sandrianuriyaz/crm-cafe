@@ -79,9 +79,9 @@ export function PromoBanner() {
   };
 
   return (
-    <div className="mx-4 mb-3 mt-3">
+    <div className="mb-3">
       <div
-        className="relative overflow-hidden rounded-2xl"
+        className="relative overflow-hidden"
         style={{ aspectRatio: "16/9", touchAction: "pan-y" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
