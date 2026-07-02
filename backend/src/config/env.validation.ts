@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
   DIRECT_URL: z.string().url(),
@@ -29,6 +31,20 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_BUCKET: z.string().default('uploads'),
+
+  // ── SMTP (email transaksional: reset password & verifikasi email) ──────
+  // Semua opsional saat boot. Bila SMTP_HOST kosong, MailService tidak
+  // benar-benar mengirim — email hanya di-log ke console (mode dev).
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  // Alamat pengirim yang tampil di email (mis. "POLKS <no-reply@polks.id>").
+  MAIL_FROM: z.string().default('POLKS <no-reply@polks.id>'),
 
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.

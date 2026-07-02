@@ -6,6 +6,7 @@ import {
   BroadcastTarget,
   CreateBroadcastDto,
 } from './dto/create-broadcast.dto';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
 
 // Ambang tier dari saldo poin (samakan dengan getTier frontend).
 const GOLD_MIN = 1000;
@@ -32,7 +33,12 @@ export class NotificationsService {
 
     await this.prisma.$transaction([
       this.prisma.broadcast.create({
-        data: { title, message, target: dto.target, recipientCount: members.length },
+        data: {
+          title,
+          message,
+          target: dto.target,
+          recipientCount: members.length,
+        },
       }),
       this.prisma.notification.createMany({
         data: members.map((m) => ({ memberId: m.id, title, message })),
@@ -76,8 +82,13 @@ export class NotificationsService {
       case 'platinum':
         return { ...base, pointBalance: { gte: PLATINUM_MIN } };
       case 'inactive': {
-        const cutoff = new Date(Date.now() - INACTIVE_DAYS * 24 * 60 * 60 * 1000);
-        return { ...base, transactions: { none: { createdAt: { gte: cutoff } } } };
+        const cutoff = new Date(
+          Date.now() - INACTIVE_DAYS * 24 * 60 * 60 * 1000,
+        );
+        return {
+          ...base,
+          transactions: { none: { createdAt: { gte: cutoff } } },
+        };
       }
       case 'all':
       default:
@@ -91,7 +102,8 @@ export class NotificationsService {
       where: { userId },
       select: { id: true },
     });
-    if (!member) throw new NotFoundException('Member tidak ditemukan untuk akun ini');
+    if (!member)
+      throw new NotFoundException('Member tidak ditemukan untuk akun ini');
     return member.id;
   }
 
@@ -142,4 +154,44 @@ export class NotificationsService {
     });
     return { updated: res.count };
   }
+
+  // ── Member: preferensi notifikasi ─────────────────────────────────────────
+  // Baris NotificationSettings dibuat lazily (upsert). Bila belum ada, GET
+  // mengembalikan default (semua aktif) tanpa menulis ke DB.
+  private static readonly DEFAULT_SETTINGS = {
+    emailEnabled: true,
+    pushEnabled: true,
+    promoNotifications: true,
+    pointNotifications: true,
+    rewardNotifications: true,
+  };
+
+  async getSettings(userId: string) {
+    const settings = await this.prisma.notificationSettings.findUnique({
+      where: { userId },
+      select: NotificationsService.SETTINGS_SELECT,
+    });
+    return settings ?? { ...NotificationsService.DEFAULT_SETTINGS };
+  }
+
+  async updateSettings(userId: string, dto: UpdateNotificationSettingsDto) {
+    // Buang key undefined supaya partial update tidak menimpa dengan undefined.
+    const data = Object.fromEntries(
+      Object.entries(dto).filter(([, v]) => v !== undefined),
+    );
+    return this.prisma.notificationSettings.upsert({
+      where: { userId },
+      create: { userId, ...NotificationsService.DEFAULT_SETTINGS, ...data },
+      update: data,
+      select: NotificationsService.SETTINGS_SELECT,
+    });
+  }
+
+  private static readonly SETTINGS_SELECT = {
+    emailEnabled: true,
+    pushEnabled: true,
+    promoNotifications: true,
+    pointNotifications: true,
+    rewardNotifications: true,
+  } as const;
 }

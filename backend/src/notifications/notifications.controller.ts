@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ListQueryDto } from '../member/dto/list-query.dto';
 import { NotificationsService } from './notifications.service';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
 
 @ApiTags('member')
 @ApiBearerAuth()
@@ -31,6 +33,21 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Jumlah notifikasi belum dibaca' })
   unread(@CurrentUser('id') userId: string) {
     return this.notifications.unreadCount(userId);
+  }
+
+  @Get('settings')
+  @ApiOperation({ summary: 'Preferensi notifikasi member' })
+  getSettings(@CurrentUser('id') userId: string) {
+    return this.notifications.getSettings(userId);
+  }
+
+  @Patch('settings')
+  @ApiOperation({ summary: 'Ubah preferensi notifikasi member (partial)' })
+  updateSettings(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateNotificationSettingsDto,
+  ) {
+    return this.notifications.updateSettings(userId, dto);
   }
 
   @Patch(':id/read')
