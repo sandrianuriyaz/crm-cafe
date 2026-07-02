@@ -5,18 +5,23 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, Role } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { AuthTokenType, Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { generateSecret, generateURI, verifySync } from 'otplib';
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { generateMemberCode } from '../common/member-code.util';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 
 const SALT_ROUNDS = 10;
+// Masa berlaku token reset password & verifikasi email (ms).
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000; // 1 jam
+const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
 // Toleransi waktu verifikasi TOTP (detik) — menutup jeda ketik & selisih jam.
 const TOTP_TOLERANCE = 30;
 // Umur "tiket" antara login (password benar) dan input kode 2FA.
@@ -29,6 +34,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly mail: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -154,7 +161,9 @@ export class AuthService {
     try {
       payload = await this.jwt.verifyAsync(twoFactorToken);
     } catch {
-      throw new UnauthorizedException('Sesi verifikasi kedaluwarsa, login ulang');
+      throw new UnauthorizedException(
+        'Sesi verifikasi kedaluwarsa, login ulang',
+      );
     }
     if (!payload?.twofa || !payload.sub) {
       throw new UnauthorizedException('Token verifikasi tidak valid');
@@ -286,7 +295,11 @@ export class AuthService {
 
   private assertTotp(code: string, secret: string) {
     const token = (code ?? '').replace(/\s/g, '');
-    const result = verifySync({ token, secret, epochTolerance: TOTP_TOLERANCE });
+    const result = verifySync({
+      token,
+      secret,
+      epochTolerance: TOTP_TOLERANCE,
+    });
     if (!result.valid) {
       throw new UnauthorizedException('Kode verifikasi salah');
     }
@@ -352,11 +365,16 @@ export class AuthService {
       include: { member: true },
     });
     if (existing) {
-      return this.buildAuthResponse(existing.id, existing.email ?? '', existing.role, {
-        name: existing.name,
-        memberCode: existing.member?.memberCode ?? null,
-        pointBalance: existing.member?.pointBalance ?? null,
-      });
+      return this.buildAuthResponse(
+        existing.id,
+        existing.email ?? '',
+        existing.role,
+        {
+          name: existing.name,
+          memberCode: existing.member?.memberCode ?? null,
+          pointBalance: existing.member?.pointBalance ?? null,
+        },
+      );
     }
 
     try {
@@ -398,6 +416,162 @@ export class AuthService {
       }
       throw err;
     }
+  }
+
+  // ── Lupa / reset password ─────────────────────────────────────────────────
+
+  // Selalu balas sukses tanpa membocorkan apakah email terdaftar (anti user
+  // enumeration). Token asli hanya dikirim via email; DB menyimpan hash-nya.
+  async forgotPassword(rawEmail: string) {
+    const email = rawEmail.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    // Hanya kirim bila user ada DAN punya password (akun OTP/Google tanpa
+    // password tidak bisa direset — mereka login lewat jalur lain).
+    if (user && user.passwordHash) {
+      const { token, tokenHash } = this.makeToken();
+      await this.prisma.$transaction([
+        // Batalkan token reset lama yang belum dipakai.
+        this.prisma.authToken.updateMany({
+          where: {
+            userId: user.id,
+            type: AuthTokenType.PASSWORD_RESET,
+            usedAt: null,
+          },
+          data: { usedAt: new Date() },
+        }),
+        this.prisma.authToken.create({
+          data: {
+            userId: user.id,
+            type: AuthTokenType.PASSWORD_RESET,
+            tokenHash,
+            expiresAt: new Date(Date.now() + PASSWORD_RESET_TTL_MS),
+          },
+        }),
+      ]);
+
+      const url = `${this.frontendBase()}/auth/reset-password?token=${token}`;
+      await this.mail.sendPasswordReset(email, user.name, url);
+    }
+
+    return {
+      message:
+        'Jika email terdaftar, tautan reset kata sandi telah dikirim ke email tersebut.',
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const record = await this.consumeToken(token, AuthTokenType.PASSWORD_RESET);
+    const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: record.userId },
+        data: { passwordHash },
+      }),
+      this.prisma.authToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+      // Batalkan token reset lain yang masih menganggur untuk user ini.
+      this.prisma.authToken.updateMany({
+        where: {
+          userId: record.userId,
+          type: AuthTokenType.PASSWORD_RESET,
+          usedAt: null,
+        },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    return {
+      message: 'Kata sandi berhasil diperbarui. Silakan login kembali.',
+    };
+  }
+
+  // ── Verifikasi email ────────────────────────────────────────────────────────
+
+  async sendEmailVerification(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.email) {
+      throw new BadRequestException('Akun tidak punya alamat email');
+    }
+    if (user.emailVerified) {
+      throw new BadRequestException('Email sudah terverifikasi');
+    }
+
+    const { token, tokenHash } = this.makeToken();
+    await this.prisma.$transaction([
+      this.prisma.authToken.updateMany({
+        where: {
+          userId: user.id,
+          type: AuthTokenType.EMAIL_VERIFY,
+          usedAt: null,
+        },
+        data: { usedAt: new Date() },
+      }),
+      this.prisma.authToken.create({
+        data: {
+          userId: user.id,
+          type: AuthTokenType.EMAIL_VERIFY,
+          tokenHash,
+          expiresAt: new Date(Date.now() + EMAIL_VERIFY_TTL_MS),
+        },
+      }),
+    ]);
+
+    const url = `${this.frontendBase()}/auth/verify-email?token=${token}`;
+    await this.mail.sendEmailVerification(user.email, user.name, url);
+    return { message: 'Tautan verifikasi telah dikirim ke email kamu.' };
+  }
+
+  async verifyEmail(token: string) {
+    const record = await this.consumeToken(token, AuthTokenType.EMAIL_VERIFY);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: record.userId },
+        data: { emailVerified: true, emailVerifiedAt: new Date() },
+      }),
+      this.prisma.authToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+    return { message: 'Email berhasil diverifikasi.', emailVerified: true };
+  }
+
+  // ── Helper token sekali-pakai ───────────────────────────────────────────────
+
+  // Buat token acak: `token` dikirim ke user, `tokenHash` (sha256) disimpan.
+  private makeToken(): { token: string; tokenHash: string } {
+    const token = randomBytes(32).toString('hex');
+    return { token, tokenHash: this.hashToken(token) };
+  }
+
+  private hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
+  // Cari token berdasar hash, pastikan sesuai tipe, belum dipakai & belum
+  // kedaluwarsa. Tidak menandai used (pemanggil yang menandai dalam transaksi).
+  private async consumeToken(token: string, type: AuthTokenType) {
+    const tokenHash = this.hashToken((token ?? '').trim());
+    const record = await this.prisma.authToken.findUnique({
+      where: { tokenHash },
+    });
+    if (!record || record.type !== type || record.usedAt) {
+      throw new BadRequestException('Token tidak valid atau sudah dipakai');
+    }
+    if (record.expiresAt.getTime() < Date.now()) {
+      throw new BadRequestException('Token sudah kedaluwarsa');
+    }
+    return record;
+  }
+
+  private frontendBase(): string {
+    return (
+      this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3001'
+    ).replace(/\/$/, '');
   }
 
   async buildAuthResponse(

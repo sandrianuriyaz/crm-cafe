@@ -40,12 +40,63 @@ model User {
   // kalau aplikasi authenticator hilang. Dipakai → dihapus dari array.
   twoFactorRecoveryCodes String[] @default([])
 
+  // Verifikasi email: false sampai user klik tautan verifikasi yang dikirim ke
+  // emailnya. Login tetap boleh tanpa verifikasi (verifikasi bersifat informatif).
+  emailVerified   Boolean   @default(false)
+  emailVerifiedAt DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  member Member?
+  member               Member?
+  authTokens           AuthToken[]
+  notificationSettings NotificationSettings?
 
   @@map("users")
+}
+
+// Token sekali-pakai untuk reset password & verifikasi email. Hanya HASH yang
+// disimpan (sha256) — token asli hanya ada di tautan email. usedAt != null atau
+// expiresAt lewat = token tak berlaku.
+enum AuthTokenType {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+model AuthToken {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  @@index([userId, type])
+  @@map("auth_tokens")
+}
+
+// Preferensi notifikasi per akun (1:1 User). Baris dibuat lewat upsert saat
+// pertama kali diakses/diubah; default semua aktif.
+model NotificationSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Kanal pengiriman.
+  emailEnabled Boolean @default(true)
+  pushEnabled  Boolean @default(true)
+
+  // Kategori konten.
+  promoNotifications  Boolean @default(true)
+  pointNotifications  Boolean @default(true)
+  rewardNotifications Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_settings")
 }
 
 // Tier keanggotaan (opsional, dipakai nanti untuk benefit per level poin).

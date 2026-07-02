@@ -1,0 +1,49 @@
+-- CreateEnum
+CREATE TYPE "AuthTokenType" AS ENUM ('PASSWORD_RESET', 'EMAIL_VERIFY');
+
+-- Verifikasi email pada akun login
+ALTER TABLE "users" ADD COLUMN "emailVerified" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "users" ADD COLUMN "emailVerifiedAt" TIMESTAMP(3);
+
+-- CreateTable
+CREATE TABLE "auth_tokens" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" "AuthTokenType" NOT NULL,
+    "tokenHash" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "usedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "auth_tokens_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_tokens_tokenHash_key" ON "auth_tokens"("tokenHash");
+
+-- CreateIndex
+CREATE INDEX "auth_tokens_userId_type_idx" ON "auth_tokens"("userId", "type");
+
+-- AddForeignKey
+ALTER TABLE "auth_tokens" ADD CONSTRAINT "auth_tokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- CreateTable
+CREATE TABLE "notification_settings" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "emailEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "pushEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "promoNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "pointNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "rewardNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "notification_settings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "notification_settings_userId_key" ON "notification_settings"("userId");
+
+-- AddForeignKey
+ALTER TABLE "notification_settings" ADD CONSTRAINT "notification_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

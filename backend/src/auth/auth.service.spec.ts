@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 
 describe('AuthService.login', () => {
   let service: AuthService;
@@ -15,6 +17,8 @@ describe('AuthService.login', () => {
         AuthService,
         { provide: PrismaService, useValue: prisma },
         { provide: JwtService, useValue: { signAsync: jest.fn() } },
+        { provide: MailService, useValue: {} },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
     }).compile();
     service = module.get(AuthService);
@@ -60,7 +64,12 @@ describe('AuthService.loginByGoogle', () => {
       providers: [
         AuthService,
         { provide: PrismaService, useValue: prisma },
-        { provide: JwtService, useValue: { signAsync: jest.fn().mockResolvedValue('jwt') } },
+        {
+          provide: JwtService,
+          useValue: { signAsync: jest.fn().mockResolvedValue('jwt') },
+        },
+        { provide: MailService, useValue: {} },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
     }).compile();
     service = module.get(AuthService);
@@ -74,12 +83,19 @@ describe('AuthService.loginByGoogle', () => {
       name: 'Andi',
       member: { memberCode: 'MBR-1', pointBalance: 50 },
     });
-    const res = await service.loginByGoogle({ email: 'A@Gmail.com', name: 'Andi' });
+    const res = await service.loginByGoogle({
+      email: 'A@Gmail.com',
+      name: 'Andi',
+    });
     expect(prisma.user.create).not.toHaveBeenCalled();
     expect(res).toEqual(
       expect.objectContaining({
         access_token: 'jwt',
-        user: expect.objectContaining({ id: 'u1', memberCode: 'MBR-1', pointBalance: 50 }),
+        user: expect.objectContaining({
+          id: 'u1',
+          memberCode: 'MBR-1',
+          pointBalance: 50,
+        }),
       }),
     );
   });
@@ -92,16 +108,29 @@ describe('AuthService.loginByGoogle', () => {
       role: 'CUSTOMER',
       name: 'Baru',
     });
-    prisma.member.create.mockResolvedValue({ memberCode: 'MBR-2', pointBalance: 0 });
+    prisma.member.create.mockResolvedValue({
+      memberCode: 'MBR-2',
+      pointBalance: 0,
+    });
 
-    const res = await service.loginByGoogle({ email: 'new@gmail.com', name: 'Baru' });
+    const res = await service.loginByGoogle({
+      email: 'new@gmail.com',
+      name: 'Baru',
+    });
     expect(prisma.user.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ email: 'new@gmail.com', role: 'CUSTOMER' }),
+        data: expect.objectContaining({
+          email: 'new@gmail.com',
+          role: 'CUSTOMER',
+        }),
       }),
     );
     expect(res.user).toEqual(
-      expect.objectContaining({ id: 'u2', memberCode: 'MBR-2', pointBalance: 0 }),
+      expect.objectContaining({
+        id: 'u2',
+        memberCode: 'MBR-2',
+        pointBalance: 0,
+      }),
     );
   });
 });
