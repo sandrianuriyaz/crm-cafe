@@ -1,0 +1,274 @@
+<!-- Transaction History -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction History - POLKS GROUP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "success-container": "#dcfce7",
+                        "on-success-container": "#166534"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "card-title": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "section-title": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-semibold": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col md:flex-row font-body">
+<!-- Navigation Drawer (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-lg px-md bg-on-secondary-fixed dark:bg-on-background text-primary-fixed dark:text-primary-fixed-dim h-full w-[280px] border-r border-outline-variant/10 z-40">
+<div class="mb-xl flex items-center gap-3 px-4">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">A</div>
+<div>
+<h2 class="font-app-name text-app-name text-primary-fixed">Admin Panel</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Manage Loyalty</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2 font-body-semibold text-body-semibold">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span> Members
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span> Transactions
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span> Campaigns
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+            </a>
+</nav>
+</aside>
+<!-- Top App Bar (Mobile) -->
+<header class="md:hidden bg-surface dark:bg-background text-primary dark:text-primary-fixed w-full top-0 border-b border-outline-variant dark:border-outline flex items-center justify-between px-md h-16 max-w-7xl mx-auto z-30 sticky">
+<div class="flex items-center gap-4">
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-app-name text-app-name text-primary dark:text-primary-fixed tracking-tight">POLKS GROUP</h1>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 md:ml-[280px] p-md lg:p-lg pb-32 md:pb-lg w-full max-w-5xl mx-auto">
+<!-- Header Section -->
+<div class="mb-lg">
+<h1 class="font-page-title text-page-title text-on-surface mb-2">Transaction History</h1>
+<p class="font-body text-body text-on-surface-variant">Review all recent transactions and point allocations.</p>
+</div>
+<!-- Point Summary Bento Box -->
+<div class="mb-lg grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="col-span-1 md:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between">
+<div>
+<h3 class="font-card-title text-card-title text-on-surface mb-1">Total Points Earned</h3>
+<p class="font-caption text-caption text-on-surface-variant">Lifetime accumulation across all venues</p>
+</div>
+<div class="mt-6 flex items-end gap-3">
+<span class="text-4xl font-bold tracking-tight text-primary">1,250</span>
+<span class="font-body-semibold text-body-semibold text-primary pb-1">pts</span>
+</div>
+</div>
+<div class="col-span-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
+<div>
+<h3 class="font-card-title text-card-title text-on-surface mb-1">Quick Actions</h3>
+<p class="font-caption text-caption text-on-surface-variant mb-4">Manage sync status</p>
+</div>
+<button class="w-full py-2 px-4 bg-primary text-on-primary rounded-lg font-body-semibold text-body-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">sync</span> Sync All Now
+                </button>
+</div>
+</div>
+<!-- Transactions List -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">Recent Transactions</h3>
+<div class="flex gap-2">
+<button class="p-2 rounded hover:bg-surface-variant transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Transaction Item 1 -->
+<div class="p-4 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<div>
+<h4 class="font-body-semibold text-body-semibold text-on-surface">Cafe A</h4>
+<p class="font-caption text-caption text-on-surface-variant">Order #TRX-001 • Today, 14:30</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-body-semibold text-body-semibold text-on-surface">Rp55.000</div>
+<div class="font-caption text-caption text-primary">+55 pts</div>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-3 ml-13">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-success-container text-on-success-container font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Success
+                        </span>
+<span class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span> Synced
+                        </span>
+</div>
+</div>
+<!-- Transaction Item 2 -->
+<div class="p-4 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<h4 class="font-body-semibold text-body-semibold text-on-surface">Cafe B</h4>
+<p class="font-caption text-caption text-on-surface-variant">Order #TRX-002 • Yesterday, 09:15</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-body-semibold text-body-semibold text-on-surface">Rp38.000</div>
+<div class="font-caption text-caption text-primary">+38 pts</div>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-3 ml-13">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-success-container text-on-success-container font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Success
+                        </span>
+<span class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span> Synced
+                        </span>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-outline-variant text-center">
+<button class="font-body-semibold text-body-semibold text-primary hover:underline">View All Transactions</button>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile) -->
+<nav class="md:hidden bg-on-secondary-fixed dark:bg-on-background fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] rounded-full shadow-lg z-50 flex justify-around items-center px-4 py-2">
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span class="font-label-xs text-label-xs">Dash</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="group">group</span>
+<span class="font-label-xs text-label-xs">Members</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full p-2 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-xs text-label-xs">Transacts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span class="font-label-xs text-label-xs">Settings</span>
+</a>
+</nav>
+</body></html>
+

@@ -48,7 +48,7 @@ export default function PromoDetailPage() {
   return (
     <CustomerShell showHeader={false} showBottomNav={false} topbarRight={null}>
       {/* Header */}
-      <div className="bg-polks-brand px-5 pb-7 pt-4">
+      <div className="bg-polks-brand px-5 pb-5 pt-4">
         <button
           type="button"
           onClick={() => router.push("/promos")}
@@ -62,7 +62,7 @@ export default function PromoDetailPage() {
             Promo
           </span>
           <span className="rounded-full bg-polks-brand px-2 py-0.5 text-[10px] font-bold text-white ring-1 ring-white/20">
-            Active
+            Aktif
           </span>
         </div>
         <h1 className="text-[22px] font-bold leading-tight tracking-[-0.02em] text-white">
@@ -98,7 +98,7 @@ export default function PromoDetailPage() {
                 </div>
                 <div>
                   <div className="text-[11px] text-[#8A959D]">Outlet</div>
-                  <div className="text-[13px] font-semibold text-polks-text">All Outlets</div>
+                  <div className="text-[13px] font-semibold text-polks-text">Semua Outlet</div>
                 </div>
               </div>
               <div className="h-px bg-polks-border" />

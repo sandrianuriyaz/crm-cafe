@@ -3,196 +3,365 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, ChevronRight, Gift, QrCode, Star } from "lucide-react";
+import {
+  Bell, ChevronRight, Gift, Headphones, MapPin, QrCode, Star, Tag, Ticket,
+} from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
+import { PromoBanner } from "@/components/customer/promo-banner";
+import { TierInfoSheet } from "@/components/customer/tier-info-sheet";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { useRealtime } from "@/lib/realtime";
-import { TIER_META } from "@/lib/loyalty/tier";
-import { type Promo, type Reward } from "@/lib/loyalty/types";
+import { useCountUp } from "@/lib/hooks";
+import { TIER_META, formatRupiah } from "@/lib/loyalty/tier";
+import { type Promo, type Reward, type Voucher } from "@/lib/loyalty/types";
 
-function formatPeriod(startAt: string | null, endAt: string | null): string {
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-  if (startAt && endAt) return `${fmt(startAt)} – ${fmt(endAt)}`;
-  if (endAt) return `s/d ${fmt(endAt)}`;
-  if (startAt) return `mulai ${fmt(startAt)}`;
-  return "Berlaku terus";
+function cap(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function SkeletonBlock({ className }: { className?: string }) {
+  return <div className={"skeleton rounded-xl " + (className ?? "")} />;
 }
 
 export default function MemberDashboardPage() {
   const { user } = useAuth();
-  // Badge bell dari context realtime → ikut naik saat ada notifikasi baru
-  // tanpa refresh.
-  const { unreadCount: unread } = useRealtime();
-  const [recs, setRecs] = useState<Reward[]>([]);
-  const [promos, setPromos] = useState<Promo[]>([]);
+  const [promos,      setPromos]      = useState<Promo[]>([]);
+  const [vouchers,    setVouchers]    = useState<Voucher[]>([]);
+  const [rewards,     setRewards]     = useState<Reward[]>([]);
+  const [unread,      setUnread]      = useState(0);
+  const [pending,     setPending]     = useState(3);
+  const [tierSheet,   setTierSheet]   = useState(false);
 
-  const name = user?.name || "Member";
-  const points = user?.pointBalance ?? 0;
-  const tierMeta = TIER_META[user?.tier ?? "bronze"];
+  const firstName    = cap((user?.name || "Member").split(" ")[0]);
+  const points       = user?.pointBalance ?? 0;
+  const loading      = pending > 0;
+  const animatedPts  = useCountUp(points, 900);
+  const tierMeta     = TIER_META[user?.tier ?? "bronze"];
+  const nextTier     = user?.nextTier ?? null;
+  const monthlySpend = user?.monthlySpend ?? 0;
+  const progress     = nextTier ? Math.min(100, (monthlySpend / nextTier.min) * 100) : 100;
+
+  const done = () => setPending((n) => n - 1);
 
   useEffect(() => {
-    api<Reward[]>("/rewards")
-      .then((d) => setRecs(d.slice(0, 2)))
-      .catch(() => setRecs([]));
     api<Promo[]>("/promos")
-      .then((d) => setPromos(d.slice(0, 2)))
-      .catch(() => setPromos([]));
+      .then((d) => setPromos(d.filter((p) => p.status === "ACTIVE").slice(0, 5)))
+      .catch(() => setPromos([]))
+      .finally(done);
+    api<Voucher[]>("/vouchers")
+      .then((d) => setVouchers(d.filter((v) => v.status === "ACTIVE").slice(0, 4)))
+      .catch(() => setVouchers([]))
+      .finally(done);
+    api<Reward[]>("/rewards")
+      .then((d) => setRewards(d.filter((r) => r.status === "ACTIVE").slice(0, 2)))
+      .catch(() => setRewards([]))
+      .finally(done);
+    api<{ count: number }>("/member/notifications/unread-count")
+      .then((r) => setUnread(r.count))
+      .catch(() => setUnread(0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const carouselPromos = promos.filter((p) => p.imageUrl);
 
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
-      {/* Topbar */}
-      <div className="flex h-14 items-center justify-between bg-polks-brand px-5">
-        <Image
-          src="/polks/logo.png"
-          alt="POLKS"
-          width={96}
-          height={40}
-          className="h-8 w-auto object-contain"
-          priority
-        />
-        <Link href="/inbox" aria-label="Notifikasi" className="relative">
-          <Bell size={20} color="rgba(255,255,255,0.65)" />
-          {unread > 0 ? (
-            <span className="absolute -right-0.5 -top-0.5 size-[8px] rounded-full border-[1.5px] border-polks-brand bg-white" />
-          ) : null}
-        </Link>
-      </div>
+      <div className="min-h-screen bg-polks-bg pb-28">
 
-      {/* White section: greeting + poin + member card CTA */}
-      <div className="bg-white">
-        {/* Greeting */}
-        <div className="flex items-center justify-between px-5 pt-5">
-          <p className="text-[15px] font-semibold text-polks-text">Halo, {name}</p>
-          <span
-            className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em]"
-            style={{ backgroundColor: tierMeta.badgeBg, color: tierMeta.badgeText }}
-          >
-            {tierMeta.label}
-          </span>
-        </div>
-
-        {/* Poin display */}
-        <div className="px-5 pb-6 pt-4">
-          <Star size={16} color="#F6B84B" fill="#F6B84B" />
-          <p className="mt-1 text-[56px] font-black leading-none tracking-[-0.04em] text-polks-text">
-            {points.toLocaleString("id-ID")}
-          </p>
-          <p className="mt-1 text-[12px] text-polks-muted">pts · Saldo poin kamu</p>
-        </div>
-
-        {/* Member Card CTA */}
-        <div className="px-5 pb-6">
-          <Link href="/member-card" className="flex items-center justify-between rounded-2xl bg-polks-brand px-5 py-4">
-            <div className="flex items-center gap-3">
-              <QrCode size={20} className="text-white" />
-              <div>
-                <p className="text-[13px] font-bold text-white">Kartu Member</p>
-                <p className="text-[11px] text-white/50">Tunjukkan QR ke kasir</p>
-              </div>
+        {/* ── Banner + overlay logo/bell ──────────────────────────────────
+            top-[12px] = PromoBanner mt-3(12px), no more CUP_ABOVE offset
+            inset-x-4  = matches PromoBanner mx-4 */}
+        <div className="relative">
+          <PromoBanner />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 py-2.5">
+            <div className="flex items-center gap-1.5">
+              <Image
+                src="/polks/icon.png"
+                alt=""
+                width={20}
+                height={20}
+                className="h-5 w-auto drop-shadow"
+                priority
+              />
+              <span className="text-[16px] font-black tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.35)]">
+                POLKS
+              </span>
             </div>
-            <ChevronRight size={16} className="text-white/50" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Clean separator */}
-      <div className="border-b border-polks-border" />
-
-      {/* Content */}
-      <div className="flex flex-col gap-7 bg-polks-bg px-5 pb-28 pt-5">
-        {/* Reward untuk kamu */}
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-polks-text">Reward untuk Kamu</h3>
-            <Link href="/rewards" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
-              Semua <ChevronRight size={13} />
+            <Link
+              href="/inbox"
+              aria-label="Notifikasi"
+              className="pointer-events-auto relative flex size-7 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm"
+            >
+              <Bell size={14} className="text-white" strokeWidth={1.8} />
+              {unread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border border-white/60 bg-white" />
+              )}
             </Link>
           </div>
-          <div className="flex gap-3">
-            {(recs.length > 0 ? recs : [null, null]).map((r, i) => {
-              const soldOut = r ? r.stock <= 0 : false;
-              return (
-                <Link
-                  key={r?.id ?? i}
-                  href="/rewards"
-                  className="flex-1 rounded-2xl border border-polks-border bg-white p-4 text-left"
-                >
-                  <div
-                    className={
-                      "mb-3 flex size-9 items-center justify-center rounded-xl " +
-                      (soldOut ? "bg-polks-surface" : "bg-polks-point-soft")
-                    }
-                  >
-                    <Gift size={16} color={soldOut ? "#8A959D" : "#C99A2E"} />
-                  </div>
-                  {r ? (
-                    <>
-                      <p className="mb-1 line-clamp-1 text-xs font-semibold text-polks-text">{r.name}</p>
-                      {soldOut ? (
-                        <span className="text-xs font-semibold text-polks-error">Stok habis</span>
-                      ) : (
-                        <span className="text-xs font-semibold text-polks-muted">
-                          {r.pointCost.toLocaleString("id-ID")} pts
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="mb-2 h-3 w-2/3 rounded bg-polks-surface" />
-                      <div className="h-3 w-1/3 rounded bg-polks-surface" />
-                    </>
-                  )}
-                </Link>
-              );
-            })}
+        </div>
+
+        {/* ── White section ── */}
+        <div className="bg-white">
+
+          {/* Member info row */}
+          <div className="flex items-center justify-between px-4 pb-3 pt-4">
+            <div>
+              <p className="text-[15px] font-bold text-polks-text">Halo, {firstName}!</p>
+              <button
+                type="button"
+                onClick={() => setTierSheet(true)}
+                className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5"
+                style={{ backgroundColor: tierMeta.badgeBg + "33", color: tierMeta.badgeText }}
+              >
+                <Star size={8} fill={tierMeta.badgeText} color={tierMeta.badgeText} />
+                <span className="text-[9px] font-black uppercase tracking-[0.1em]">{tierMeta.label}</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Ticket size={14} className="text-polks-muted" strokeWidth={1.5} />
+                <span className="text-[13px] font-bold text-polks-text">
+                  {loading ? "–" : vouchers.length}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star size={13} fill="#F6B84B" color="#F6B84B" />
+                <span className="text-[15px] font-black leading-none text-polks-text">
+                  {animatedPts.toLocaleString("id-ID")}
+                </span>
+                <span className="text-[10px] font-semibold text-polks-muted">pts</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2 Big action buttons */}
+          <div className="grid grid-cols-2 gap-2.5 px-4 pb-3">
+            <Link
+              href="/member-card"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-polks-brand px-3 py-4"
+            >
+              <QrCode size={22} className="text-white" strokeWidth={1.8} />
+              <p className="text-[12px] font-bold text-white">Kartu Member</p>
+            </Link>
+            <Link
+              href="/redeem-history"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-polks-surface px-3 py-4"
+            >
+              <Ticket size={22} className="text-polks-text" strokeWidth={1.8} />
+              <p className="text-[12px] font-bold text-polks-text">Voucher Saya</p>
+            </Link>
+          </div>
+
+          {/* 4 Quick actions */}
+          <div className="grid grid-cols-4 divide-x divide-polks-border border-y border-polks-border">
+            {([
+              { href: "/promos",  Icon: Tag,        label: "Promo"   },
+              { href: "/rewards", Icon: Gift,       label: "Rewards" },
+              { href: "/outlets", Icon: MapPin,     label: "Outlet"  },
+              { href: "/help",    Icon: Headphones, label: "Bantuan" },
+            ] as const).map(({ href, Icon, label }) => (
+              <Link key={label} href={href} className="flex flex-col items-center gap-1.5 py-3">
+                <Icon size={18} className="text-polks-text" strokeWidth={1.5} />
+                <p className="text-[10px] font-semibold text-polks-text">{label}</p>
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Promo */}
-        {promos.length > 0 ? (
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-polks-text">Promo</h3>
-              <Link href="/promos" className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand">
-                Semua <ChevronRight size={13} />
-              </Link>
-            </div>
-            <div className="flex flex-col gap-2">
-              {promos.map((p) => (
+        {/* ── Content sections ── */}
+        <div className="flex flex-col gap-4 px-4 pt-4">
+
+          {/* Tier progress — selalu tampil, bisa diklik untuk info lengkap */}
+          <button
+            type="button"
+            onClick={() => setTierSheet(true)}
+            className="w-full rounded-xl border border-polks-border bg-white p-3 text-left"
+          >
+            {nextTier ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] font-bold text-polks-text">
+                    Menuju {cap(nextTier.name)}
+                  </p>
+                  <p className="text-[10px] text-polks-muted">
+                    {formatRupiah(monthlySpend)} / {formatRupiah(nextTier.min)}
+                  </p>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-polks-surface">
+                  <div
+                    className="h-full rounded-full bg-polks-brand transition-all duration-700"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="mt-1.5 flex items-center justify-between">
+                  <p className="text-[10px] text-polks-muted">
+                    {formatRupiah(nextTier.remaining)} lagi untuk naik tier
+                  </p>
+                  <span className="text-[10px] font-semibold text-polks-brand">
+                    Lihat info tier →
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p
+                    className="text-[12px] font-bold"
+                    style={{ color: tierMeta.badgeText }}
+                  >
+                    💎 Platinum Member
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-polks-muted">
+                    Tier tertinggi · 1 poin per Rp 850
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-polks-brand">
+                  Lihat info tier →
+                </span>
+              </div>
+            )}
+          </button>
+
+          {/* Skeleton */}
+          {loading && (
+            <>
+              <SkeletonBlock className="h-[68px]" />
+              <SkeletonBlock className="h-[68px]" />
+            </>
+          )}
+
+          {/* Voucher Aktif */}
+          {!loading && vouchers.length > 0 && (
+            <div className="fade-up" style={{ animationDelay: "120ms" }}>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-[14px] font-bold text-polks-text">Voucher Aktif</h3>
                 <Link
-                  key={p.id}
-                  href={`/promos/${p.id}`}
-                  className="overflow-hidden rounded-2xl border border-polks-border bg-white"
+                  href="/redeem-history"
+                  className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand"
                 >
-                  {p.imageUrl ? (
-                    <div className="relative aspect-[16/9] w-full">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.imageUrl} alt={p.title} className="size-full object-cover" />
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-4 pb-3 pt-8">
-                        <p className="truncate text-[14px] font-bold text-white">{p.title}</p>
-                        <p className="text-[11px] text-white/70">{formatPeriod(p.startAt, p.endAt)}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <div className="min-w-0 pr-3">
-                        <p className="mb-0.5 truncate text-[13px] font-semibold text-polks-text">{p.title}</p>
-                        <p className="text-[11px] text-[#8A959D]">{formatPeriod(p.startAt, p.endAt)}</p>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-polks-brand px-2.5 py-1 text-[10px] font-bold text-white">
-                        Aktif
-                      </span>
-                    </div>
-                  )}
+                  Semua <ChevronRight size={12} />
                 </Link>
-              ))}
+              </div>
+              <div className="flex flex-col gap-2">
+                {vouchers.slice(0, 2).map((v) => (
+                  <div
+                    key={v.id}
+                    className="flex overflow-hidden rounded-xl border border-polks-border bg-white"
+                  >
+                    <div className="flex w-[54px] shrink-0 flex-col items-center justify-center bg-polks-brand px-2 py-3">
+                      <p className="text-center text-[13px] font-black leading-none text-white">
+                        {v.reward.name.match(/\d+%/)?.[0] ?? "OFF"}
+                      </p>
+                    </div>
+                    <div className="flex flex-1 flex-col justify-center px-3 py-2.5">
+                      <p className="text-[12px] font-bold text-polks-text">{v.reward.name}</p>
+                      {v.expiredAt && (
+                        <p className="mt-0.5 text-[9px] text-polks-muted">
+                          Sampai{" "}
+                          {new Date(v.expiredAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center px-3">
+                      <Link
+                        href="/member-card"
+                        className="rounded-lg bg-polks-brand px-2.5 py-1.5 text-[10px] font-bold text-white"
+                      >
+                        Gunakan
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : null}
+          )}
+
+          {/* Reward untuk Kamu */}
+          {!loading && (
+            <div className="fade-up" style={{ animationDelay: "180ms" }}>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-[14px] font-bold text-polks-text">Reward untuk Kamu</h3>
+                <Link
+                  href="/rewards"
+                  className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand"
+                >
+                  Semua <ChevronRight size={12} />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {(rewards.length > 0 ? rewards : [null, null]).map((r, i) => (
+                  <Link
+                    key={r?.id ?? i}
+                    href="/rewards"
+                    className="rounded-xl border border-polks-border bg-white p-3"
+                  >
+                    <div className="mb-2.5 flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
+                      <Gift size={14} color="#C99A2E" />
+                    </div>
+                    {r ? (
+                      <>
+                        <p className="line-clamp-1 text-[11px] font-semibold text-polks-text">{r.name}</p>
+                        <p className="mt-0.5 text-[10px] font-semibold text-polks-muted">
+                          {r.pointCost.toLocaleString("id-ID")} pts
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mb-1.5 h-2.5 w-3/4 rounded bg-polks-surface" />
+                        <div className="h-2.5 w-1/2 rounded bg-polks-surface" />
+                      </>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Promo & Berita */}
+          {!loading && carouselPromos.length > 0 && (
+            <div className="pb-2 fade-up" style={{ animationDelay: "240ms" }}>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-[14px] font-bold text-polks-text">Promo &amp; Berita</h3>
+                <Link
+                  href="/promos"
+                  className="flex items-center gap-0.5 text-xs font-semibold text-polks-brand"
+                >
+                  Semua <ChevronRight size={12} />
+                </Link>
+              </div>
+              <div className="flex gap-2.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+                {carouselPromos.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/promos/${p.id}`}
+                    className="relative w-[120px] shrink-0 overflow-hidden rounded-xl"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.imageUrl!} alt={p.title} className="aspect-square w-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-2">
+                      <p className="line-clamp-2 text-[11px] font-black leading-tight text-white">{p.title}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
+
+      {tierSheet && (
+        <TierInfoSheet
+          currentTier={user?.tier ?? "bronze"}
+          monthlySpend={monthlySpend}
+          onClose={() => setTierSheet(false)}
+        />
+      )}
     </CustomerShell>
   );
 }

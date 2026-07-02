@@ -2,23 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Tag, QrCode, Gift, User } from "lucide-react";
+import { Home, Tag, QrCode, Gift, User, Store, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", Icon: Home, label: "Home", match: ["/dashboard"] },
-  { href: "/promos", Icon: Tag, label: "Promo", match: ["/promos"] },
-  { href: "/member-card", Icon: QrCode, label: "Card", match: ["/member-card"] },
-  { href: "/rewards", Icon: Gift, label: "Rewards", match: ["/rewards", "/voucher-success"] },
-  { href: "/profile", Icon: User, label: "Profile", match: ["/profile"] },
+const MEMBER_NAV = [
+  { href: "/dashboard",   Icon: Home,  label: "Home",    match: ["/dashboard"] },
+  { href: "/promos",      Icon: Tag,   label: "Promo",   match: ["/promos"] },
+  { href: "/member-card", Icon: QrCode, label: "Card",   match: ["/member-card"] },
+  { href: "/rewards",     Icon: Gift,  label: "Rewards", match: ["/rewards", "/voucher-success"] },
+  { href: "/profile",     Icon: User,  label: "Profile", match: ["/profile"] },
+] as const;
+
+const GUEST_NAV = [
+  { href: "/",         Icon: Home,  label: "Home",   match: ["/"] },
+  { href: "/outlets",  Icon: Store, label: "Outlet", match: ["/outlets"] },
+  { href: "/register", Icon: LogIn, label: "Daftar", match: ["/register", "/login"] },
 ] as const;
 
 export function CustomerBottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const items = user ? MEMBER_NAV : GUEST_NAV;
+
+  const navW = user ? "w-[340px]" : "w-[280px]";
 
   return (
-    <nav className="fixed bottom-5 left-1/2 z-50 flex h-[60px] w-[340px] max-w-[calc(100%-32px)] -translate-x-1/2 items-center justify-around rounded-full bg-polks-brand px-2 shadow-[0_8px_24px_rgba(37,52,63,0.3)]">
-      {NAV_ITEMS.map((item) => {
+    <nav className={cn("fixed bottom-5 left-1/2 z-50 flex h-[60px] max-w-[calc(100%-32px)] -translate-x-1/2 items-center justify-around rounded-full bg-polks-brand px-2 shadow-[0_8px_24px_rgba(37,52,63,0.3)]", navW)}>
+      {items.map((item) => {
         const active = item.match.some(
           (href) => pathname === href || pathname.startsWith(`${href}/`),
         );

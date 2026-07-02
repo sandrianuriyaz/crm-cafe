@@ -26,19 +26,26 @@ function formatJoined(iso: string) {
 export default function AccountInfoPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [p, setP] = useState<MemberProfile | null>(null);
+  const [p, setP]           = useState<MemberProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
+    setError(null);
     let alive = true;
     api<MemberProfile>("/member/profile")
-      .then((d) => alive && setP(d))
+      .then((d) => { if (alive) setP(d); })
       .catch((err) => {
-        if (err instanceof ApiError && err.status === 401) router.replace("/login");
-      });
-    return () => {
-      alive = false;
-    };
-  }, [router]);
+        if (!alive) return;
+        if (err instanceof ApiError && err.status === 401) { router.replace("/login"); return; }
+        setError("Gagal memuat data akun. Coba lagi.");
+      })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  };
+
+  useEffect(load, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tierMeta = TIER_META[user?.tier ?? "bronze"];
 
@@ -73,25 +80,53 @@ export default function AccountInfoPage() {
       </div>
 
       <div className="bg-polks-bg px-5 pb-10">
-        <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
-          {rows.map(({ Icon, label, value }, i) => (
-            <div
-              key={label}
-              className={
-                "flex items-center gap-3 px-4 py-3.5 " +
-                (i > 0 ? "border-t border-polks-surface" : "")
-              }
+        {loading ? (
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className={"flex items-center gap-3 px-4 py-3.5 " + (i > 0 ? "border-t border-polks-surface" : "")}
+              >
+                <div className="skeleton size-9 shrink-0 rounded-xl" />
+                <div className="flex-1">
+                  <div className="skeleton mb-1.5 h-2.5 w-1/4 rounded" />
+                  <div className="skeleton h-3.5 w-1/2 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-polks-border bg-white p-6 text-center">
+            <p className="text-sm text-polks-muted">{error}</p>
+            <button
+              type="button"
+              onClick={load}
+              className="rounded-xl bg-polks-brand px-5 py-2.5 text-xs font-bold text-white"
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
-                <Icon size={16} className="text-polks-brand" />
+              Coba Lagi
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+            {rows.map(({ Icon, label, value }, i) => (
+              <div
+                key={label}
+                className={
+                  "flex items-center gap-3 px-4 py-3.5 " +
+                  (i > 0 ? "border-t border-polks-surface" : "")
+                }
+              >
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
+                  <Icon size={16} className="text-polks-brand" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-[#8A959D]">{label}</p>
+                  <p className="truncate text-[14px] font-semibold text-polks-text">{value}</p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] text-[#8A959D]">{label}</p>
-                <p className="truncate text-[14px] font-semibold text-polks-text">{value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <p className="mt-3 px-1 text-[11px] leading-relaxed text-polks-muted">
           Untuk mengubah data akun, hubungi admin POLKS atau pusat bantuan.
         </p>

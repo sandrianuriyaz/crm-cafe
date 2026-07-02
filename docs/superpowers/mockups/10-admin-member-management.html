@@ -1,0 +1,369 @@
+<!-- Member Management -->
+<!DOCTYPE html>
+
+<html class="h-full bg-background dark:bg-on-secondary-fixed" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Member Management - POLKS GROUP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "card-title": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "section-title": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-semibold": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="flex h-full antialiased font-body text-body text-on-background">
+<!-- Navigation Drawer -->
+<nav class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-lg px-md w-[280px] bg-on-secondary-fixed border-r border-outline-variant/10 z-40">
+<!-- Header -->
+<div class="mb-xl flex items-center gap-md cursor-pointer hover:bg-on-secondary-fixed-variant/50 transition-colors p-sm rounded-lg">
+<div class="h-10 w-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-body-semibold text-body-semibold">
+                AP
+            </div>
+<div>
+<h2 class="font-body-semibold text-body-semibold text-primary-fixed">Admin Panel</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Manage Loyalty</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<ul class="space-y-sm flex-1">
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-semibold text-body-semibold">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group" data-weight="fill" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-body-semibold text-body-semibold">Members</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-body-semibold text-body-semibold">Transactions</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+<span class="font-body-semibold text-body-semibold">Campaigns</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-semibold text-body-semibold">Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-semibold text-body-semibold">Settings</span>
+</a>
+</li>
+</ul>
+<!-- Brand Footer -->
+<div class="mt-auto pt-lg border-t border-outline-variant/10 flex justify-center">
+<span class="font-app-name text-app-name text-primary-fixed">POLKS GROUP</span>
+</div>
+</nav>
+<!-- Top App Bar (Mobile Only) -->
+<header class="md:hidden flex items-center justify-between px-md h-16 w-full top-0 fixed z-40 bg-surface border-b border-outline-variant">
+<button class="text-primary hover:bg-surface-container-high transition-colors p-2 rounded-full cursor-pointer active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="font-app-name text-app-name text-primary tracking-tight">POLKS GROUP</span>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[280px] pt-16 md:pt-0 p-md md:p-gutter max-w-7xl mx-auto w-full">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-md mb-lg">
+<div>
+<h1 class="font-page-title text-page-title text-on-surface">Member Management</h1>
+<p class="font-body text-body text-on-surface-variant mt-1">Manage loyalty members, view history, and adjust points balances.</p>
+</div>
+<div class="flex gap-sm">
+<button class="flex items-center gap-xs px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-body-semibold text-body-semibold hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_list">filter_list</span>
+                    Filter
+                </button>
+<button class="flex items-center gap-xs px-4 py-2 bg-primary text-on-primary rounded-lg font-body-semibold text-body-semibold hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="person_add">person_add</span>
+                    Add Member
+                </button>
+</div>
+</div>
+<!-- Search and Actions Bar -->
+<div class="bg-surface rounded-t-xl border border-outline-variant border-b-0 p-md flex flex-col sm:flex-row gap-md justify-between items-center">
+<div class="relative w-full sm:max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-inverse-primary outline-none transition-all font-body text-body text-on-surface placeholder:text-on-surface-variant/60" placeholder="Search members by name, ID, or email..." type="text"/>
+</div>
+<div class="flex items-center gap-4 w-full sm:w-auto">
+<span class="font-caption text-caption text-on-surface-variant">Showing 1-10 of 1,245</span>
+<div class="flex gap-1">
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Member List Table -->
+<div class="bg-surface rounded-b-xl border border-outline-variant overflow-x-auto shadow-sm">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Member Details</th>
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Member ID</th>
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider text-right">Points Balance</th>
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Tier</th>
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Last Visit</th>
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="py-3 px-4 font-caption text-caption text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-body-semibold text-body-semibold shrink-0">
+                                    SJ
+                                </div>
+<div>
+<div class="font-body-semibold text-body-semibold text-on-surface">Sarah Jenkins</div>
+<div class="font-caption text-caption text-on-surface-variant">sarah.j@example.com</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 font-body text-body text-on-surface-variant">PG-8472-A</td>
+<td class="py-3 px-4 font-body-semibold text-body-semibold text-on-surface text-right">12,450 <span class="font-caption text-on-surface-variant ml-1">pts</span></td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-md bg-[#FFF3C4] text-[#B45309] font-label-xs text-label-xs gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="stars" data-weight="fill" style="font-variation-settings: 'FILL' 1; color: #F5B82E;">stars</span>
+                                Gold
+                            </span>
+</td>
+<td class="py-3 px-4 font-body text-body text-on-surface-variant">Oct 12, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 font-caption text-caption">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                Active
+                            </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="View History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="Adjust Points">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors ml-2" title="More">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-body-semibold text-body-semibold shrink-0">
+                                    MR
+                                </div>
+<div>
+<div class="font-body-semibold text-body-semibold text-on-surface">Michael Ross</div>
+<div class="font-caption text-caption text-on-surface-variant">m.ross@company.com</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 font-body text-body text-on-surface-variant">PG-3921-B</td>
+<td class="py-3 px-4 font-body-semibold text-body-semibold text-on-surface text-right">3,200 <span class="font-caption text-on-surface-variant ml-1">pts</span></td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-md bg-secondary-fixed text-on-secondary-fixed font-label-xs text-label-xs gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="workspace_premium" data-weight="fill" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                Silver
+                            </span>
+</td>
+<td class="py-3 px-4 font-body text-body text-on-surface-variant">Sep 28, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 font-caption text-caption">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                Active
+                            </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="View History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="Adjust Points">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors ml-2" title="More">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-body-semibold text-body-semibold shrink-0">
+                                    EL
+                                </div>
+<div>
+<div class="font-body-semibold text-body-semibold text-on-surface">Emily Chen</div>
+<div class="font-caption text-caption text-on-surface-variant">emily.c@example.com</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 font-body text-body text-on-surface-variant">PG-1055-C</td>
+<td class="py-3 px-4 font-body-semibold text-body-semibold text-on-surface text-right">450 <span class="font-caption text-on-surface-variant ml-1">pts</span></td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container-high text-on-surface-variant font-label-xs text-label-xs gap-1">
+                                Base
+                            </span>
+</td>
+<td class="py-3 px-4 font-body text-body text-on-surface-variant">Oct 14, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 font-caption text-caption text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                                Inactive
+                            </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="View History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1.5 text-primary hover:bg-secondary-container rounded-md transition-colors" title="Adjust Points">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors ml-2" title="More">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+</body></html>
+

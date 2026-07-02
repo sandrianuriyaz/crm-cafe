@@ -34,7 +34,7 @@ button {
  * link teks inline tidak terpengaruh transform. */
 button:not(:disabled):active,
 a:active {
-  transform: scale(0.985);
+  transform: scale(0.97);
 }
 
 /* Ring fokus keyboard (mengikuti radius elemen). */
@@ -63,6 +63,50 @@ a:active {
   a:active {
     transform: none;
   }
+  .skeleton {
+    animation: none;
+    background: #EEF2F4;
+  }
+  .fade-up {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── Skeleton shimmer ──────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -300% 0; }
+  100% { background-position:  300% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #EEF2F4 0%, #F8FAFB 50%, #EEF2F4 100%);
+  background-size: 300% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Banner animations ──────────────────────────────────────────────────── */
+@keyframes banner-bg-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cup-slide-in {
+  from { opacity: 0; transform: translateX(56px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+.banner-bg-in {
+  animation: banner-bg-in 0.45s ease forwards;
+}
+.cup-slide-in {
+  animation: cup-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Staggered fade-up untuk sections ─────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fade-up 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .polks-phone {

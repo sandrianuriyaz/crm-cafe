@@ -1,0 +1,405 @@
+<!-- Admin Overview Dashboard -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POLKS GROUP - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#d3d1ff",
+                      "surface-container-low": "#f3f2fe",
+                      "on-tertiary-fixed": "#0f0069",
+                      "on-primary-fixed": "#001551",
+                      "error-container": "#ffdad6",
+                      "surface-container": "#ededf9",
+                      "on-secondary-fixed": "#131b2e",
+                      "outline": "#747686",
+                      "surface-container-highest": "#e2e1ed",
+                      "on-background": "#1a1b23",
+                      "on-surface": "#1a1b23",
+                      "inverse-on-surface": "#f0f0fb",
+                      "tertiary-container": "#4b41e1",
+                      "outline-variant": "#c4c5d7",
+                      "surface-bright": "#faf8ff",
+                      "primary-container": "#1d4ed8",
+                      "tertiary-fixed": "#e2dfff",
+                      "surface": "#faf8ff",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "secondary-fixed": "#dae2fd",
+                      "surface-container-high": "#e8e7f3",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "surface-dim": "#d9d9e5",
+                      "inverse-primary": "#b7c4ff",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#5c647a",
+                      "secondary-container": "#dae2fd",
+                      "on-surface-variant": "#434655",
+                      "surface-tint": "#2151da",
+                      "surface-variant": "#e2e1ed",
+                      "on-primary-container": "#cad3ff",
+                      "primary": "#0037b0",
+                      "primary-fixed": "#dce1ff",
+                      "inverse-surface": "#2e3039",
+                      "tertiary": "#311fca",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#3323cc",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "on-error-container": "#93000a",
+                      "background": "#faf8ff",
+                      "tertiary-fixed-dim": "#c3c0ff",
+                      "secondary": "#565e74",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed-variant": "#0039b5",
+                      "primary-fixed-dim": "#b7c4ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "xl": "32px",
+                      "margin-desktop": "32px",
+                      "md": "16px",
+                      "gutter": "24px",
+                      "lg": "24px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "app-name": ["Inter"],
+                      "body": ["Inter"],
+                      "card-title": ["Inter"],
+                      "label-xs": ["Inter"],
+                      "page-title": ["Inter"],
+                      "caption": ["Inter"],
+                      "section-title": ["Inter"],
+                      "body-semibold": ["Inter"]
+              },
+              "fontSize": {
+                      "app-name": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "card-title": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "label-xs": ["11px", {"lineHeight": "12px", "fontWeight": "700"}],
+                      "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "section-title": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-semibold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex antialiased">
+<!-- Navigation Drawer (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-lg px-md w-[280px] bg-on-secondary-fixed dark:bg-on-background border-r border-outline-variant/10 z-40">
+<!-- Header -->
+<div class="flex items-center left_align mb-xl px-2">
+<img alt="Admin User" class="w-10 h-10 rounded-full mr-3 border-2 border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbk3WjvdEJ_EO2DFw_M5rgMha_U9k3RZFFE95PbxgsgcOnc4YzPHcdaq4b5fOnfIHX9G4Ilr9KlMvjdG0EJbYelJ4r8BbWNETiwEFKxDbHSge_MVYfuWI8gTkcIagrgOllekkNomAyfASgmrDK5li3bMOhPiS9SgTJRf-JUNLYBYUmgY7foXxwMKK8H0GHh0_AM_jdQtQ3eaw8Uiu6EqQWDt6JgvstordpLxjDGwmhs8lxiETpQ6ow7lXhotuMZP9gy_vtZTFm100"/>
+<div>
+<h2 class="font-body-semibold text-body-semibold text-primary-fixed dark:text-primary-fixed-dim">Admin Panel</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Manage Loyalty</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 space-y-1 overflow-y-auto">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center px-3 py-2 rounded-lg text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3 filled">dashboard</span>
+                Dashboard
+            </a>
+<!-- Inactive Tabs mapped to user request + json fallback where applicable -->
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">storefront</span>
+                Outlets
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+                Members
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">campaign</span>
+                Promos
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">stars</span>
+                Rewards
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">receipt_long</span>
+                POS Transactions
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">inbox</span>
+                Webhook Inbox
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">tune</span>
+                Loyalty Config
+            </a>
+<a class="flex items-center px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors font-body-semibold text-body-semibold cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant/10">
+<div class="flex items-center justify-center p-4">
+<span class="font-app-name text-app-name text-primary-fixed tracking-tight">POLKS GROUP</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
+<!-- TopAppBar (Mobile & Desktop Header context) -->
+<header class="flex items-center justify-between px-md h-16 w-full max-w-7xl mx-auto bg-surface dark:bg-background top-0 border-b border-outline-variant dark:border-outline sticky z-30">
+<div class="flex items-center">
+<button class="md:hidden mr-4 text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-page-title text-page-title text-on-surface">Overview</h1>
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-4 md:p-gutter max-w-7xl mx-auto w-full space-y-gutter flex-1 overflow-y-auto">
+<!-- Bento Grid Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Total Members -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 hover:border-primary/50 transition-colors flex flex-col justify-between h-32">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider">Total Members</span>
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined text-[20px]">group</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-page-title text-page-title text-on-surface">124,592</span>
+<span class="font-caption text-caption text-emerald-600 flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 12%</span>
+</div>
+</div>
+<!-- Active Outlets -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 hover:border-primary/50 transition-colors flex flex-col justify-between h-32">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider">Active Outlets</span>
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-page-title text-page-title text-on-surface">84</span>
+<span class="font-caption text-caption text-emerald-600 flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 2</span>
+</div>
+</div>
+<!-- Total Points -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 hover:border-primary/50 transition-colors flex flex-col justify-between h-32">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider">Total Points (Circ)</span>
+<div class="p-2 bg-[#FFF3C4] rounded-lg text-[#F5B82E]">
+<span class="material-symbols-outlined text-[20px] filled">stars</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-page-title text-page-title text-on-surface">8.4M</span>
+<span class="font-caption text-caption text-on-surface-variant flex items-center">-</span>
+</div>
+</div>
+<!-- Recent Trans (24h) -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 hover:border-primary/50 transition-colors flex flex-col justify-between h-32">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider">Transactions (24h)</span>
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-page-title text-page-title text-on-surface">3,204</span>
+<span class="font-caption text-caption text-emerald-600 flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 5%</span>
+</div>
+</div>
+</div>
+<!-- Charts & Activity Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Chart Area -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright">
+<h3 class="font-section-title text-section-title text-on-surface">Points Flow</h3>
+<div class="flex space-x-2">
+<button class="px-3 py-1 text-xs font-body-semibold rounded-md bg-surface-container-highest text-on-surface-variant hover:bg-surface-dim transition-colors">Week</button>
+<button class="px-3 py-1 text-xs font-body-semibold rounded-md bg-primary text-on-primary">Month</button>
+</div>
+</div>
+<div class="p-6 flex-1 flex flex-col relative min-h-[300px]">
+<!-- Chart Legend / Summary -->
+<div class="flex space-x-6 mb-4">
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-primary mr-2"></div>
+<span class="font-caption text-caption text-on-surface-variant">Issued (4.2M)</span>
+</div>
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-[#F5B82E] mr-2"></div>
+<span class="font-caption text-caption text-on-surface-variant">Redeemed (1.1M)</span>
+</div>
+</div>
+<!-- CSS/HTML Mock Chart (Bar) -->
+<div class="flex-1 flex items-end justify-between gap-2 mt-4">
+<!-- Bars -->
+<div class="w-full flex justify-around items-end h-full relative border-b border-outline-variant/20 pb-2">
+<!-- Y-Axis labels -->
+<div class="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-on-surface-variant/50 -ml-2 -mt-2">
+<span>1M</span>
+<span>500k</span>
+<span>0</span>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[40%] group relative">
+<div class="w-full bg-[#F5B82E] h-1/4 rounded-sm hover:opacity-80 transition-opacity"></div>
+<div class="w-full bg-primary h-3/4 rounded-sm hover:opacity-80 transition-opacity"></div>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[60%]">
+<div class="w-full bg-[#F5B82E] h-1/5 rounded-sm"></div>
+<div class="w-full bg-primary h-4/5 rounded-sm"></div>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[30%]">
+<div class="w-full bg-[#F5B82E] h-1/3 rounded-sm"></div>
+<div class="w-full bg-primary h-2/3 rounded-sm"></div>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[80%]">
+<div class="w-full bg-[#F5B82E] h-[15%] rounded-sm"></div>
+<div class="w-full bg-primary h-[85%] rounded-sm"></div>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[50%]">
+<div class="w-full bg-[#F5B82E] h-1/4 rounded-sm"></div>
+<div class="w-full bg-primary h-3/4 rounded-sm"></div>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[70%]">
+<div class="w-full bg-[#F5B82E] h-1/5 rounded-sm"></div>
+<div class="w-full bg-primary h-4/5 rounded-sm"></div>
+</div>
+<div class="w-8 flex flex-col justify-end space-y-1 h-[90%]">
+<div class="w-full bg-[#F5B82E] h-[20%] rounded-sm"></div>
+<div class="w-full bg-primary h-[80%] rounded-sm"></div>
+</div>
+</div>
+</div>
+<div class="flex justify-around mt-2 text-xs text-on-surface-variant px-8">
+<span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+</div>
+</div>
+</div>
+<!-- Recent Activity / System Status -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col overflow-hidden h-[400px]">
+<div class="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">System Activity</h3>
+<span class="flex items-center text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full"><div class="w-2 h-2 rounded-full bg-emerald-500 mr-1 animate-pulse"></div> All Systems Op</span>
+</div>
+<div class="flex-1 overflow-y-auto p-0">
+<ul class="divide-y divide-outline-variant/20">
+<!-- Activity Item 1 -->
+<li class="p-4 hover:bg-surface-container-low transition-colors flex gap-3">
+<div class="mt-1 p-1.5 bg-blue-50 text-blue-600 rounded-lg h-fit">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</div>
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">POS Sync Completed</p>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Outlet #42 (Downtown) synced 142 transactions.</p>
+<p class="font-caption text-xs text-outline mt-1">Just now</p>
+</div>
+</li>
+<!-- Activity Item 2 -->
+<li class="p-4 hover:bg-surface-container-low transition-colors flex gap-3">
+<div class="mt-1 p-1.5 bg-purple-50 text-purple-600 rounded-lg h-fit">
+<span class="material-symbols-outlined text-[16px]">webhook</span>
+</div>
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">Webhook: member.created</p>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">New registration via App.</p>
+<p class="font-caption text-xs text-outline mt-1">2 mins ago</p>
+</div>
+</li>
+<!-- Activity Item 3 -->
+<li class="p-4 hover:bg-surface-container-low transition-colors flex gap-3">
+<div class="mt-1 p-1.5 bg-[#FFF3C4] text-[#F5B82E] rounded-lg h-fit">
+<span class="material-symbols-outlined text-[16px] filled">stars</span>
+</div>
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">Reward Redeemed</p>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Free Coffee claimed at Outlet #12.</p>
+<p class="font-caption text-xs text-outline mt-1">15 mins ago</p>
+</div>
+</li>
+<!-- Activity Item 4 -->
+<li class="p-4 hover:bg-surface-container-low transition-colors flex gap-3">
+<div class="mt-1 p-1.5 bg-red-50 text-red-600 rounded-lg h-fit">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+</div>
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">Webhook Delivery Failed</p>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Endpoint timeout on transaction.updated.</p>
+<p class="font-caption text-xs text-outline mt-1">1 hr ago</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="p-3 border-t border-outline-variant/30 bg-surface-bright text-center">
+<a class="text-sm font-body-semibold text-primary hover:underline" href="#">View All Logs</a>
+</div>
+</div>
+</div>
+<!-- Bottom Margin for scroll clearance -->
+<div class="h-24 md:h-8"></div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<!-- Not rendering bottom nav as this is a complex admin dashboard best suited for the drawer/hamburger approach on mobile, but adhering strictly to JSON instructions for mobile bottom nav if it were a consumer app. Given it's an admin dashboard, a drawer is better, but I'll add the bottom nav for mobile compliance with JSON. -->
+<nav class="md:hidden fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] rounded-full bg-on-secondary-fixed dark:bg-on-background shadow-lg z-50 flex justify-around items-center px-4 py-2 border-none">
+<a class="flex flex-col items-center justify-center text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full p-2 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined filled">dashboard</span>
+<span class="font-label-xs text-label-xs mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-xs text-label-xs mt-1">Trans</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-xs text-label-xs mt-1">Users</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-xs text-label-xs mt-1">Menu</span>
+</a>
+</nav>
+</body></html>
+

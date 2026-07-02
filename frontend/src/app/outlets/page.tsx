@@ -21,19 +21,23 @@ export default function OutletListPage() {
 
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
     setLoading(true);
+    setError(null);
     api<Outlet[]>("/outlets")
       .then((res) => setOutlets(Array.isArray(res) ? res : []))
-      .catch(() => setOutlets([]))
+      .catch(() => setError("Gagal memuat data outlet. Cek koneksimu dan coba lagi."))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(load, []);
 
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header */}
-      <div className="bg-polks-brand px-5 pb-7 pt-4">
+      <div className="bg-polks-brand px-5 pb-5 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
@@ -64,9 +68,30 @@ export default function OutletListPage() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-4 bg-polks-bg px-5 pb-28">
+      <div className="mt-3 flex flex-col gap-3 bg-polks-bg px-5 pb-28">
         {loading ? (
-          <p className="py-8 text-center text-xs font-medium text-polks-muted">Memuat…</p>
+          /* Skeleton cards */
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+              <div className="skeleton h-11 w-full rounded-none" />
+              <div className="flex flex-col gap-2.5 px-4 py-3">
+                <div className="skeleton h-3 w-3/4 rounded" />
+                <div className="skeleton h-3 w-1/2 rounded" />
+                <div className="skeleton h-3 w-1/3 rounded" />
+              </div>
+            </div>
+          ))
+        ) : error ? (
+          <div className="py-8 text-center">
+            <p className="mb-3 text-xs font-medium text-polks-muted">{error}</p>
+            <button
+              type="button"
+              onClick={load}
+              className="rounded-xl bg-polks-brand px-5 py-2.5 text-xs font-bold text-white"
+            >
+              Coba Lagi
+            </button>
+          </div>
         ) : outlets.length === 0 ? (
           <p className="py-8 text-center text-xs font-medium text-polks-muted">Belum ada outlet.</p>
         ) : (
@@ -81,7 +106,7 @@ export default function OutletListPage() {
                   {o.status === "ACTIVE" ? "Buka" : "Tutup"}
                 </span>
               </div>
-              <div className="flex flex-col gap-3 px-4 py-4">
+              <div className="flex flex-col gap-2.5 px-4 py-3">
                 <div className="flex items-start gap-3">
                   <MapPin size={14} color="#8A959D" className="mt-0.5 shrink-0" />
                   <span className="text-[13px] leading-relaxed text-polks-text">{o.address ?? "—"}</span>
@@ -92,7 +117,16 @@ export default function OutletListPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone size={14} color="#8A959D" className="shrink-0" />
-                  <span className="text-xs text-polks-muted">{o.phone ?? "—"}</span>
+                  {o.phone ? (
+                    <a
+                      href={`tel:${o.phone}`}
+                      className="text-xs font-medium text-polks-brand underline-offset-2 hover:underline"
+                    >
+                      {o.phone}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-polks-muted">—</span>
+                  )}
                 </div>
               </div>
             </div>

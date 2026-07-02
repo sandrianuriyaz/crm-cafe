@@ -1,0 +1,380 @@
+<!-- POS Transactions Management -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POLKS GROUP - POS Transactions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "card-title": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-xs": ["11px", {"lineHeight": "12px", "fontWeight": "700"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "section-title": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-semibold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body text-body antialiased flex">
+<!-- Navigation Drawer -->
+<nav class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-lg px-md bg-on-secondary-fixed w-[280px] border-r border-outline-variant/10 z-50">
+<!-- Header -->
+<div class="flex items-center gap-3 mb-xl px-sm">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden">
+<img alt="Admin User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-yN0iFu2d571bfXAZie927SrmiG0WhMnr9qSB1Y-7ALfzU_4rqFyKbtcBnNel2ZQhx3m0I5-I6GpK5aqKZLC3eGOv-ai0syRYLc0PFq7nAfhxwgG6-m4lU2R9Zuy4qYqvv2smVubdZCDwaWqO0GsvG9UQzLg_LeXlnL5LaP7t6ag3U-Ii8iFCKXT5VZU73HgLVd3aebbLwf--e3A4jS_nsWQatk-q0dR3Vqv5j2JW4JQrqMWuxA-wKmdC8R1yIq_RtZlHuCvePw8"/>
+</div>
+<div>
+<h2 class="font-body-semibold text-body-semibold text-primary-fixed">Admin Panel</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Manage Loyalty</p>
+</div>
+</div>
+<!-- Links -->
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-semibold text-body-semibold">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-semibold text-body-semibold">Members</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-body-semibold text-body-semibold">Transactions</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span class="font-body-semibold text-body-semibold">Campaigns</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-semibold text-body-semibold">Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-semibold text-body-semibold">Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-lg border-t border-outline-variant/10">
+<div class="font-app-name text-app-name text-primary-fixed px-sm">POLKS GROUP</div>
+</div>
+</nav>
+<!-- Top App Bar (Mobile) -->
+<header class="md:hidden flex items-center justify-between px-md h-16 w-full fixed top-0 bg-surface border-b border-outline-variant z-40">
+<button class="text-primary hover:bg-surface-container-high transition-colors p-2 rounded-full cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-app-name text-app-name text-primary tracking-tight">POLKS GROUP</div>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3P1RvSr7lEbFKWYaTVG36W3LcA7sR5upWl3vqsbI7k98fd2LdZwha-2AY9aMsCO9z-Y9P67xYP2o8owqdHcdwcS3LBc0XeNj0mH0IjRNM-k9MHtI89DwNBAukih7cWHG8L3nNBAenHcyrih9CTadWBkYq7Keg9kXvGut9bAEsCLF2Re9Yu3mauT-6PxU6Z7bdrRvYktzCsWwsLAmW6Gc_fZVsGVP4s2C1MWKsdPTqR_UQVSD48kftwh_X2Waqy8D7loX8jTqYZbA"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 md:ml-[280px] pt-16 md:pt-0 min-h-screen pb-24 md:pb-0">
+<!-- Header Section -->
+<div class="px-md md:px-margin-desktop py-lg border-b border-outline-variant bg-surface">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto w-full">
+<div>
+<h1 class="font-page-title text-page-title text-on-surface mb-1">POS Transactions</h1>
+<p class="font-body text-body text-secondary">Manage and verify point-of-sale synchronizations.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-on-secondary border border-outline-variant rounded-lg text-primary hover:bg-surface-container-high transition-colors font-body-semibold text-body-semibold">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export CSV
+                    </button>
+</div>
+</div>
+</div>
+<!-- Content Area -->
+<div class="p-md md:p-margin-desktop max-w-7xl mx-auto w-full">
+<!-- Filters Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-lg mb-lg">
+<div class="flex flex-col md:flex-row gap-4 items-end">
+<div class="w-full md:w-auto flex-1">
+<label class="block font-caption text-caption text-secondary mb-2">Date Range</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">calendar_month</span>
+<input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg font-body text-body bg-on-secondary focus:border-primary focus:ring-2 focus:ring-inverse-primary outline-none" placeholder="Last 7 Days" type="text"/>
+</div>
+</div>
+<div class="w-full md:w-auto flex-1">
+<label class="block font-caption text-caption text-secondary mb-2">Outlet</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">storefront</span>
+<select class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg font-body text-body bg-on-secondary focus:border-primary focus:ring-2 focus:ring-inverse-primary outline-none appearance-none">
+<option>All Outlets</option>
+<option>Downtown Flagship</option>
+<option>Westside Mall</option>
+<option>Airport Terminal B</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="w-full md:w-auto flex-1">
+<label class="block font-caption text-caption text-secondary mb-2">Sync Status</label>
+<div class="relative">
+<select class="w-full pl-4 pr-4 py-2 border border-outline-variant rounded-lg font-body text-body bg-on-secondary focus:border-primary focus:ring-2 focus:ring-inverse-primary outline-none appearance-none">
+<option>All Statuses</option>
+<option>Synced</option>
+<option>Pending</option>
+<option>Failed</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<button class="w-full md:w-auto px-6 py-2 bg-primary text-on-primary rounded-lg font-body-semibold text-body-semibold hover:opacity-90 transition-opacity">
+                        Filter Results
+                    </button>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-[16px] overflow-hidden">
+<div class="px-lg py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<h3 class="font-section-title text-section-title text-on-surface">Recent Transactions</h3>
+<span class="font-caption text-caption text-secondary bg-surface-container px-2 py-1 rounded">244 Records</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider">Transaction ID</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider">Outlet</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider">Member ID</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider text-right">Amount</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider text-right">Points</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider text-center">HMAC</th>
+<th class="py-3 px-lg font-caption text-caption text-on-surface-variant uppercase tracking-wider">Date</th>
+</tr>
+</thead>
+<tbody class="font-body text-body">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-lg text-primary font-body-semibold">TXN-88219</td>
+<td class="py-4 px-lg text-on-surface">Downtown Flagship</td>
+<td class="py-4 px-lg text-on-surface-variant">MEM-4091</td>
+<td class="py-4 px-lg text-on-surface font-body-semibold text-right">$145.50</td>
+<td class="py-4 px-lg text-right">
+<span class="inline-flex items-center gap-1 bg-[#FFF3C4] text-[#B45309] px-2 py-1 rounded font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]">stars</span>
+                                        +145
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="inline-flex items-center gap-1 text-[#15803D] bg-[#DCFCE7] px-2 py-1 rounded font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span> Synced
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+</td>
+<td class="py-4 px-lg text-on-surface-variant font-caption text-caption">Oct 24, 14:30</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-lg text-primary font-body-semibold">TXN-88218</td>
+<td class="py-4 px-lg text-on-surface">Westside Mall</td>
+<td class="py-4 px-lg text-on-surface-variant">MEM-1102</td>
+<td class="py-4 px-lg text-on-surface font-body-semibold text-right">$89.00</td>
+<td class="py-4 px-lg text-right">
+<span class="inline-flex items-center gap-1 bg-[#FFF3C4] text-[#B45309] px-2 py-1 rounded font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]">stars</span>
+                                        +89
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="inline-flex items-center gap-1 text-[#15803D] bg-[#DCFCE7] px-2 py-1 rounded font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span> Synced
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+</td>
+<td class="py-4 px-lg text-on-surface-variant font-caption text-caption">Oct 24, 14:15</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-lg text-primary font-body-semibold">TXN-88217</td>
+<td class="py-4 px-lg text-on-surface">Downtown Flagship</td>
+<td class="py-4 px-lg text-on-surface-variant">Guest</td>
+<td class="py-4 px-lg text-on-surface font-body-semibold text-right">$32.00</td>
+<td class="py-4 px-lg text-right text-outline font-caption text-caption">
+                                    N/A
+                                </td>
+<td class="py-4 px-lg text-center">
+<span class="inline-flex items-center gap-1 text-[#B45309] bg-[#FEF3C7] px-2 py-1 rounded font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">sync</span> Pending
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="material-symbols-outlined text-outline text-[18px]">gpp_maybe</span>
+</td>
+<td class="py-4 px-lg text-on-surface-variant font-caption text-caption">Oct 24, 13:50</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/50 transition-colors group bg-error-container/20">
+<td class="py-4 px-lg text-primary font-body-semibold">TXN-88216</td>
+<td class="py-4 px-lg text-on-surface">Airport Terminal B</td>
+<td class="py-4 px-lg text-on-surface-variant">MEM-9921</td>
+<td class="py-4 px-lg text-on-surface font-body-semibold text-right">$210.75</td>
+<td class="py-4 px-lg text-right">
+<span class="inline-flex items-center gap-1 bg-[#FFF3C4] text-[#B45309] px-2 py-1 rounded font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]">stars</span>
+                                        +210
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="inline-flex items-center gap-1 text-on-error-container bg-error-container px-2 py-1 rounded font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">error</span> Failed
+                                    </span>
+</td>
+<td class="py-4 px-lg text-center">
+<span class="material-symbols-outlined text-error text-[18px]">warning</span>
+</td>
+<td class="py-4 px-lg text-on-surface-variant font-caption text-caption">Oct 24, 12:05</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-lg py-4 border-t border-outline-variant flex items-center justify-between bg-surface-bright">
+<span class="font-caption text-caption text-secondary">Showing 1 to 4 of 244</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-secondary hover:bg-surface-container disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-primary bg-primary text-on-primary">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-secondary hover:bg-surface-container">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-secondary hover:bg-surface-container">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-secondary hover:bg-surface-container">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile) -->
+<nav class="md:hidden fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] z-50 flex justify-around items-center px-4 py-2 bg-on-secondary-fixed rounded-full shadow-lg">
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-xs text-label-xs mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-xs text-label-xs mt-1">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-label-xs text-label-xs mt-1">Rewards</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-xs text-label-xs mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
+

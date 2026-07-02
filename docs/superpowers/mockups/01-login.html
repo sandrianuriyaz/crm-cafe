@@ -1,0 +1,213 @@
+<!-- Login -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POLKS GROUP - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "card-title": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-xs": ["11px", {"lineHeight": "12px", "fontWeight": "700"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "section-title": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-semibold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6F7FB;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Input focus rings matching design system */
+        .ds-input:focus {
+            outline: none;
+            border-color: #1D4ED8;
+            box-shadow: 0 0 0 2px #DBEAFE;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex items-center justify-center font-body text-on-background relative overflow-hidden bg-background">
+<!-- Decorative abstract background elements for modern professional look -->
+<div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+<div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary-fixed opacity-30 blur-[120px]"></div>
+<div class="absolute bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full bg-secondary-fixed opacity-40 blur-[100px]"></div>
+</div>
+<!-- Login Container -->
+<div class="w-full max-w-[420px] px-md md:px-0 z-10 relative">
+<!-- Back to Guest Action (Top Left of card flow) -->
+<div class="mb-lg flex items-center">
+<button class="flex items-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px] mr-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-body-semibold text-body-semibold">Back to Guest</span>
+</button>
+</div>
+<!-- Main Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden flex flex-col">
+<!-- Header Area -->
+<div class="px-lg pt-lg pb-md flex flex-col items-center text-center border-b border-outline-variant/20 relative">
+<!-- Subtle top accent line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<div class="w-16 h-16 bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center mb-md shadow-sm">
+<span class="material-symbols-outlined text-[32px] text-primary icon-fill">coffee_maker</span>
+</div>
+<h1 class="font-app-name text-app-name text-primary mb-xs tracking-tight">POLKS GROUP</h1>
+<p class="font-caption text-caption text-on-surface-variant">Your coffee, your rewards.</p>
+</div>
+<!-- Form Area -->
+<div class="p-lg">
+<form class="flex flex-col gap-md">
+<!-- Email/Phone Input -->
+<div class="flex flex-col gap-xs">
+<label class="font-body-semibold text-body-semibold text-on-surface" for="identifier">Email or Phone</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">person</span>
+<input class="w-full h-12 pl-10 pr-3 rounded-lg border border-outline-variant/50 bg-surface-container-lowest font-body text-body text-on-surface placeholder:text-outline ds-input transition-all" id="identifier" placeholder="Enter your email or phone" type="text"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-xs mt-sm">
+<div class="flex justify-between items-center">
+<label class="font-body-semibold text-body-semibold text-on-surface" for="password">Password</label>
+<a class="font-caption text-caption text-primary hover:text-primary-fixed-dim transition-colors" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">lock</span>
+<input class="w-full h-12 pl-10 pr-10 rounded-lg border border-outline-variant/50 bg-surface-container-lowest font-body text-body text-on-surface placeholder:text-outline ds-input transition-all" id="password" placeholder="Enter your password" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Login Button -->
+<button class="mt-md h-12 w-full bg-primary-container text-on-primary rounded-lg font-body-semibold text-body-semibold shadow-sm hover:bg-primary-container/90 active:scale-[0.98] transition-all flex items-center justify-center gap-sm" type="submit">
+                        Login to Dashboard
+                        <span class="material-symbols-outlined text-[20px]">login</span>
+</button>
+</form>
+<!-- Divider -->
+<div class="my-lg flex items-center gap-md">
+<div class="h-px bg-outline-variant/30 flex-1"></div>
+<span class="font-caption text-caption text-outline">or</span>
+<div class="h-px bg-outline-variant/30 flex-1"></div>
+</div>
+<!-- Register Action -->
+<div class="text-center">
+<p class="font-body text-body text-on-surface-variant">
+                        New to Polks Group? 
+                        <a class="font-body-semibold text-body-semibold text-primary hover:text-primary-container transition-colors ml-xs" href="#">Register now</a>
+</p>
+</div>
+</div>
+</div>
+<!-- Footer Meta -->
+<div class="mt-xl text-center flex justify-center items-center gap-md font-caption text-caption text-outline">
+<a class="hover:text-on-surface-variant transition-colors" href="#">Privacy Policy</a>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<a class="hover:text-on-surface-variant transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</body></html>

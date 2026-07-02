@@ -1,0 +1,334 @@
+<!-- Member Dashboard -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POLKS GROUP - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "deep-navy": "#0F172A",
+                        "gold": "#F5B82E",
+                        "soft-gold": "#FFF3C4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "card-title": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-xs": ["11px", {"lineHeight": "12px", "fontWeight": "700"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "section-title": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-semibold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body pb-32">
+<!-- TopAppBar (Mobile & Desktop) -->
+<header class="w-full top-0 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline flat no shadows z-40 sticky">
+<div class="flex items-center justify-between px-md h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="text-primary dark:text-primary-fixed cursor-pointer active:opacity-80 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors p-2 rounded-full hidden md:block">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-app-name text-app-name text-primary dark:text-primary-fixed tracking-tight">POLKS GROUP</h1>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-on-surface-variant dark:text-surface-variant cursor-pointer active:opacity-80 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-body-semibold text-body-semibold">
+                    S
+                </div>
+</div>
+</div>
+</header>
+<div class="flex max-w-7xl mx-auto h-full">
+<!-- NavigationDrawer (Desktop Only) -->
+<aside class="hidden md:flex flex-col h-screen sticky left-0 top-16 py-lg px-md bg-on-secondary-fixed dark:bg-on-background h-[calc(100vh-64px)] w-[280px] border-r border-outline-variant/10 flat no shadows z-30">
+<div class="flex items-center gap-3 mb-8 px-4">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-body-semibold text-body-semibold">S</div>
+<div>
+<h2 class="font-body-semibold text-body-semibold text-primary-fixed dark:text-primary-fixed-dim">Admin Panel</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Manage Loyalty</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200 hover:bg-on-secondary-fixed-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200 hover:bg-on-secondary-fixed-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+                    Members
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200 hover:bg-on-secondary-fixed-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+                    Transactions
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200 hover:bg-on-secondary-fixed-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined">campaign</span>
+                    Campaigns
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200 hover:bg-on-secondary-fixed-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                    Analytics
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed-dim hover:text-primary-fixed font-body-semibold text-body-semibold cursor-pointer duration-200 hover:bg-on-secondary-fixed-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 px-md md:px-lg py-6 max-w-3xl mx-auto w-full">
+<div class="mb-6">
+<h2 class="font-page-title text-page-title text-on-background">Hi, Sandria</h2>
+<p class="font-body text-body text-on-surface-variant">Welcome back to your POLKS account.</p>
+</div>
+<!-- Premium Point Wallet Card -->
+<section class="mb-8">
+<div class="bg-deep-navy rounded-3xl p-6 relative overflow-hidden shadow-2xl">
+<!-- Decorative subtle circle -->
+<div class="absolute -top-16 -right-16 w-64 h-64 bg-white opacity-5 rounded-full blur-2xl"></div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<p class="font-caption text-caption text-secondary-fixed-dim mb-1 uppercase tracking-wider">Available Balance</p>
+<h3 class="text-[36px] leading-[40px] font-bold text-gold tracking-tight mb-4 flex items-center gap-2">
+                                1,250 <span class="text-[18px] font-medium text-soft-gold opacity-80 mt-2">pts</span>
+</h3>
+<div class="inline-flex items-center bg-soft-gold/10 px-3 py-1.5 rounded-full border border-soft-gold/20">
+<span class="material-symbols-outlined text-[16px] text-gold mr-2" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-caption text-caption text-soft-gold">Gold Tier Member</span>
+</div>
+</div>
+<!-- Mini QR Preview -->
+<div class="bg-white p-2 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-lg border border-white/20">
+<span class="material-symbols-outlined text-[40px] text-on-background">qr_code_2</span>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-white/10 flex justify-between items-center relative z-10">
+<div>
+<p class="font-caption text-caption text-secondary-fixed-dim mb-0.5">Member ID</p>
+<p class="font-body-semibold text-body-semibold text-white tracking-widest">POLKS-8492-331</p>
+</div>
+<button class="text-white hover:text-gold transition-colors">
+<span class="material-symbols-outlined">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="grid grid-cols-2 gap-4 mt-4">
+<button class="bg-primary-container text-on-primary-container font-body-semibold text-body-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary transition-colors hover:text-white shadow-sm">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+                        View Card
+                    </button>
+<button class="bg-surface-container text-on-surface font-body-semibold text-body-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant shadow-sm">
+<span class="material-symbols-outlined text-[20px]">history</span>
+                        History
+                    </button>
+</div>
+</section>
+<!-- Today's Promo (Bento Style) -->
+<section class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-section-title text-section-title text-on-background">Today's Promo</h3>
+<a class="font-body-semibold text-body-semibold text-primary hover:underline" href="#">See all</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden group cursor-pointer hover:border-primary/30 hover:shadow-md transition-all">
+<div class="h-32 bg-secondary-container relative">
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+<img class="w-full h-full object-cover" data-alt="A modern, high-end cafe counter with a sophisticated espresso machine. The setting is bright and clean with a premium corporate aesthetic. Natural light pours in highlighting the polished surfaces. The color palette features neutral grays, warm wood tones, and subtle hints of deep navy blue." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjdD0BixNGu56lyPfEoHrR6ZpQ6d6SjSTITRiGKWWDEW3wc-6UQWYdpEiZX5wSjCeBN8j_5Z_gR2c0HfDLWsvBD02wvx1XAU6ZfYnP-1L-5Y8IM1BlQhXC0H3XblGKIAw1p-GLdZ62J4HHuep3LHcVKMDHEBrX2Cc7nXvTM_PW-sryNGrSt-b4879DEs1J32nWJ-Ph5VbtlpNMhFzR9-gvzcb1OmVz0uhn4yhr0YhvPH6tkrPavLHen4QZc8qVNWDCBEFBPoxaVHw"/>
+<div class="absolute bottom-3 left-3 z-20">
+<span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded font-label-xs text-label-xs text-primary uppercase font-bold tracking-wider">2x Points</span>
+</div>
+</div>
+<div class="p-4">
+<h4 class="font-card-title text-card-title text-on-background mb-1 group-hover:text-primary transition-colors">Double Points on Coffee</h4>
+<p class="font-body text-body text-on-surface-variant line-clamp-2 text-sm">Earn 2x points on all espresso beverages at partner cafes today.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden group cursor-pointer hover:border-primary/30 hover:shadow-md transition-all">
+<div class="h-32 bg-secondary-container relative">
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+<img class="w-full h-full object-cover" data-alt="A sleek, modern retail store interior showcasing premium electronics or accessories. The space is minimalist and authoritative, lit with crisp white light. Shelves are neatly organized. The color scheme is predominantly bright white, silver, and deep professional navy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMdOfE9pe35rdjl2bueTcm8M2ReSmBOw1oNLN11k475d8SLTsC1nV8CaZ2hqUeU74dCaIRf2i2S4a9M3Wt5leoH0mmz9qw28q07BSBEQgkjSz-PQ7qxwBRzWMDfZWIsWRTjEaq1i99OkYXtamh-HIIc8GwOpHSZDrqRBVKksdI-c0SrllUQrcgtOABPsORwXMKQstrjoOGVoajudVN44U67ophtNzvmSjQ4vk7MdTLiEUGmyPAsUTOJfQbfpufxqS2_laY4Og_s8U"/>
+<div class="absolute bottom-3 left-3 z-20">
+<span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded font-label-xs text-label-xs text-error uppercase font-bold tracking-wider">Ends Today</span>
+</div>
+</div>
+<div class="p-4">
+<h4 class="font-card-title text-card-title text-on-background mb-1 group-hover:text-primary transition-colors">Tech Store Bonus</h4>
+<p class="font-body text-body text-on-surface-variant line-clamp-2 text-sm">Get 500 bonus points on purchases over $100 at PrimeTech.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Recommended Rewards (List Style) -->
+<section class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-section-title text-section-title text-on-background">Recommended Rewards</h3>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden">
+<!-- Reward Item 1 -->
+<div class="flex items-center p-4 border-b border-outline-variant/30 hover:bg-surface-container-low cursor-pointer transition-colors">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center mr-4 shrink-0 text-primary">
+<span class="material-symbols-outlined">flight_takeoff</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-semibold text-body-semibold text-on-background truncate">Lounge Access Pass</h4>
+<p class="font-caption text-caption text-on-surface-variant truncate">Premium airport lounges</p>
+</div>
+<div class="text-right ml-4">
+<span class="font-body-semibold text-body-semibold text-primary block">800 pts</span>
+</div>
+</div>
+<!-- Reward Item 2 -->
+<div class="flex items-center p-4 border-b border-outline-variant/30 hover:bg-surface-container-low cursor-pointer transition-colors">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container text-on-tertiary-container flex items-center justify-center mr-4 shrink-0">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-semibold text-body-semibold text-on-background truncate">$50 Dining Voucher</h4>
+<p class="font-caption text-caption text-on-surface-variant truncate">Valid at 50+ restaurants</p>
+</div>
+<div class="text-right ml-4">
+<span class="font-body-semibold text-body-semibold text-primary block">500 pts</span>
+</div>
+</div>
+<!-- Reward Item 3 -->
+<div class="flex items-center p-4 hover:bg-surface-container-low cursor-pointer transition-colors">
+<div class="w-12 h-12 rounded-xl bg-surface-variant text-on-surface-variant flex items-center justify-center mr-4 shrink-0">
+<span class="material-symbols-outlined">local_mall</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-semibold text-body-semibold text-on-background truncate">Exclusive Merch Pack</h4>
+<p class="font-caption text-caption text-on-surface-variant truncate">Limited edition items</p>
+</div>
+<div class="text-right ml-4">
+<span class="font-body-semibold text-body-semibold text-primary block">1,200 pts</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] z-50 flex justify-around items-center px-4 py-2 bg-on-secondary-fixed dark:bg-on-background rounded-full shadow-lg">
+<!-- Active Tab: Home -->
+<a class="flex flex-col items-center justify-center text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full p-2 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-xs text-label-xs mt-1">Home</span>
+</a>
+<!-- Inactive Tab: Wallet -->
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-xs text-label-xs mt-1">Wallet</span>
+</a>
+<!-- Inactive Tab: Rewards -->
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-label-xs text-label-xs mt-1">Rewards</span>
+</a>
+<!-- Inactive Tab: Profile -->
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-xs text-label-xs mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
+
