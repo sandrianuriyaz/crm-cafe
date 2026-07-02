@@ -1,0 +1,186 @@
+<!-- Admin Login -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Login - POLKS GROUP CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "card-title": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "section-title": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-semibold": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen w-screen overflow-hidden flex flex-col md:flex-row">
+<!-- Note: TopAppBar, BottomNavBar, and NavigationDrawer are suppressed as this is a transactional Login page. -->
+<!-- Left Panel (Deep Navy) -->
+<div class="hidden md:flex flex-col justify-between w-1/2 bg-[#0F172A] p-margin-desktop text-on-primary">
+<div>
+<h1 class="font-page-title text-page-title text-on-primary mb-2">POLKS GROUP CRM Admin</h1>
+<p class="font-body text-body text-primary-fixed-dim">Manage members, rewards, POS sync.</p>
+</div>
+<div class="space-y-lg">
+<div class="bg-on-primary-fixed p-lg rounded-xl border border-on-secondary-fixed">
+<div class="flex items-center space-x-md mb-md">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-3xl">group</span>
+<div>
+<p class="font-caption text-caption text-primary-fixed-dim">Total Members</p>
+<p class="font-section-title text-section-title text-on-primary">1,248</p>
+</div>
+</div>
+<div class="w-full bg-on-secondary-fixed h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary-fixed-dim h-full w-[65%]"></div>
+</div>
+</div>
+<div class="flex space-x-lg">
+<div class="flex-1 bg-on-primary-fixed p-lg rounded-xl border border-on-secondary-fixed flex flex-col justify-center">
+<span class="material-symbols-outlined text-tertiary-fixed-dim mb-base">store</span>
+<p class="font-caption text-caption text-primary-fixed-dim">Active Outlets</p>
+<p class="font-section-title text-section-title text-on-primary">3</p>
+</div>
+<div class="flex-1 bg-on-primary-fixed p-lg rounded-xl border border-on-secondary-fixed flex flex-col justify-center">
+<span class="material-symbols-outlined text-[#F5B82E] mb-base">stars</span>
+<p class="font-caption text-caption text-primary-fixed-dim">Points Issued</p>
+<p class="font-section-title text-section-title text-on-primary">245,800</p>
+</div>
+</div>
+</div>
+<div class="text-primary-fixed-dim font-caption text-caption">
+            © 2024 POLKS GROUP. All rights reserved.
+        </div>
+</div>
+<!-- Right Panel (Login) -->
+<div class="w-full md:w-1/2 flex items-center justify-center p-margin-mobile md:p-margin-desktop bg-surface relative">
+<div class="w-full max-w-md bg-surface-container-lowest p-lg md:p-xl rounded-xl border border-outline-variant">
+<div class="mb-xl text-center">
+<h2 class="font-page-title text-page-title text-on-surface mb-sm">Sign In</h2>
+<p class="font-body text-body text-on-surface-variant">Access your admin dashboard</p>
+</div>
+<form class="space-y-md">
+<div>
+<label class="block font-caption text-caption text-on-surface-variant mb-xs" for="email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body text-body text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-secondary-fixed transition-all" id="email" placeholder="admin@polksgroup.com" type="email"/>
+</div>
+</div>
+<div>
+<label class="block font-caption text-caption text-on-surface-variant mb-xs" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body text-body text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-secondary-fixed transition-all" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="flex items-center justify-between mt-sm mb-lg">
+<label class="flex items-center space-x-2 cursor-pointer">
+<input class="w-4 h-4 text-primary-container border-outline-variant rounded focus:ring-primary-container bg-surface-container-lowest" type="checkbox"/>
+<span class="font-caption text-caption text-on-surface-variant">Remember me</span>
+</label>
+<a class="font-caption text-caption text-primary-container hover:underline" href="#">Forgot password?</a>
+</div>
+<button class="w-full py-3 bg-primary-container text-on-primary font-body-semibold text-body-semibold rounded-lg hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center space-x-2 active:scale-95 duration-150" type="button">
+<span>Login</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</form>
+</div>
+</div>
+</body></html>
+

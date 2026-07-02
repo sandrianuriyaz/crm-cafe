@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { PromoBanner } from "@/components/customer/promo-banner";
+import { TierInfoSheet } from "@/components/customer/tier-info-sheet";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useCountUp } from "@/lib/hooks";
@@ -24,11 +25,12 @@ function SkeletonBlock({ className }: { className?: string }) {
 
 export default function MemberDashboardPage() {
   const { user } = useAuth();
-  const [promos,   setPromos]   = useState<Promo[]>([]);
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [rewards,  setRewards]  = useState<Reward[]>([]);
-  const [unread,   setUnread]   = useState(0);
-  const [pending,  setPending]  = useState(3);
+  const [promos,      setPromos]      = useState<Promo[]>([]);
+  const [vouchers,    setVouchers]    = useState<Voucher[]>([]);
+  const [rewards,     setRewards]     = useState<Reward[]>([]);
+  const [unread,      setUnread]      = useState(0);
+  const [pending,     setPending]     = useState(3);
+  const [tierSheet,   setTierSheet]   = useState(false);
 
   const firstName    = cap((user?.name || "Member").split(" ")[0]);
   const points       = user?.pointBalance ?? 0;
@@ -105,13 +107,15 @@ export default function MemberDashboardPage() {
           <div className="flex items-center justify-between px-4 pb-3 pt-4">
             <div>
               <p className="text-[15px] font-bold text-polks-text">Halo, {firstName}!</p>
-              <div
+              <button
+                type="button"
+                onClick={() => setTierSheet(true)}
                 className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5"
                 style={{ backgroundColor: tierMeta.badgeBg + "33", color: tierMeta.badgeText }}
               >
                 <Star size={8} fill={tierMeta.badgeText} color={tierMeta.badgeText} />
                 <span className="text-[9px] font-black uppercase tracking-[0.1em]">{tierMeta.label}</span>
-              </div>
+              </button>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
@@ -167,26 +171,56 @@ export default function MemberDashboardPage() {
         {/* ── Content sections ── */}
         <div className="flex flex-col gap-4 px-4 pt-4">
 
-          {/* Tier progress */}
-          {nextTier && (
-            <div className="rounded-xl border border-polks-border bg-white p-3">
+          {/* Tier progress — selalu tampil, bisa diklik untuk info lengkap */}
+          <button
+            type="button"
+            onClick={() => setTierSheet(true)}
+            className="w-full rounded-xl border border-polks-border bg-white p-3 text-left"
+          >
+            {nextTier ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] font-bold text-polks-text">
+                    Menuju {cap(nextTier.name)}
+                  </p>
+                  <p className="text-[10px] text-polks-muted">
+                    {formatRupiah(monthlySpend)} / {formatRupiah(nextTier.min)}
+                  </p>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-polks-surface">
+                  <div
+                    className="h-full rounded-full bg-polks-brand transition-all duration-700"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="mt-1.5 flex items-center justify-between">
+                  <p className="text-[10px] text-polks-muted">
+                    {formatRupiah(nextTier.remaining)} lagi untuk naik tier
+                  </p>
+                  <span className="text-[10px] font-semibold text-polks-brand">
+                    Lihat info tier →
+                  </span>
+                </div>
+              </>
+            ) : (
               <div className="flex items-center justify-between">
-                <p className="text-[12px] font-bold text-polks-text">Menuju {cap(nextTier.name)}</p>
-                <p className="text-[10px] text-polks-muted">
-                  {formatRupiah(monthlySpend)} / {formatRupiah(nextTier.min)}
-                </p>
+                <div>
+                  <p
+                    className="text-[12px] font-bold"
+                    style={{ color: tierMeta.badgeText }}
+                  >
+                    💎 Platinum Member
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-polks-muted">
+                    Tier tertinggi · 1 poin per Rp 850
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-polks-brand">
+                  Lihat info tier →
+                </span>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-polks-surface">
-                <div
-                  className="h-full rounded-full bg-polks-brand transition-all duration-700"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p className="mt-1 text-[10px] text-polks-muted">
-                {formatRupiah(nextTier.remaining)} lagi untuk naik tier
-              </p>
-            </div>
-          )}
+            )}
+          </button>
 
           {/* Skeleton */}
           {loading && (
@@ -320,6 +354,14 @@ export default function MemberDashboardPage() {
 
         </div>
       </div>
+
+      {tierSheet && (
+        <TierInfoSheet
+          currentTier={user?.tier ?? "bronze"}
+          monthlySpend={monthlySpend}
+          onClose={() => setTierSheet(false)}
+        />
+      )}
     </CustomerShell>
   );
 }

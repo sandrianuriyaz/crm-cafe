@@ -44,7 +44,7 @@ export default function RewardCatalogPage() {
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header */}
-      <div className="bg-polks-brand px-5 pb-6 pt-4">
+      <div className="bg-polks-brand px-5 pb-4 pt-4">
         <div className="mb-4 flex items-center justify-between">
           <button
             type="button"
@@ -67,7 +67,7 @@ export default function RewardCatalogPage() {
           Tukar poin resmi kamu dengan reward pilihan.
         </p>
         <div
-          className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-[rgba(246,184,75,0.2)] px-4 py-2.5"
+          className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-[rgba(246,184,75,0.2)] px-4 py-2"
           style={{ background: "linear-gradient(135deg,#1A2830 0%,#2A3D4D 45%,#2D3A28 100%)" }}
         >
           <Star size={13} color="#F6B84B" fill="#F6B84B" />
@@ -113,7 +113,7 @@ export default function RewardCatalogPage() {
             </button>
           </div>
         ) : rewards.length === 0 ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-8 text-center">
+          <div className="rounded-2xl border border-polks-border bg-white p-5 text-center">
             <p className="text-sm text-polks-muted">Belum ada reward yang tersedia.</p>
           </div>
         ) : (

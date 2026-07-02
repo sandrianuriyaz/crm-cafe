@@ -40,19 +40,21 @@ function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
     }
   }
 
+  const isActive = v.status === "ACTIVE";
+
   return (
     <div
       className="overflow-hidden rounded-2xl border border-polks-border bg-white"
-      style={{ opacity: v.status === "EXPIRED" ? 0.7 : 1 }}
+      style={{ opacity: isActive ? 1 : 0.65 }}
     >
       <div className="flex items-center gap-3 px-4 py-3">
         <div
           className={
             "flex size-10 shrink-0 items-center justify-center rounded-xl " +
-            (v.status === "ACTIVE" ? "bg-polks-point-soft" : "bg-polks-surface")
+            (isActive ? "bg-polks-point-soft" : "bg-polks-surface")
           }
         >
-          <Gift size={18} color={v.status === "ACTIVE" ? "#F6B84B" : "#8A959D"} />
+          <Gift size={18} color={isActive ? "#F6B84B" : "#8A959D"} />
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-semibold text-polks-text">{v.reward.name}</p>
@@ -70,28 +72,34 @@ function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
           </span>
         </span>
       </div>
+
+      {/* Code bar — copy button hanya untuk voucher ACTIVE */}
       <div className="flex items-center justify-between border-t border-dashed border-polks-border bg-polks-bg px-4 py-2.5">
         <span className="font-mono text-xs font-bold tracking-[0.12em] text-polks-text">{v.code}</span>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className={
-            "flex items-center gap-1 text-[11px] font-semibold transition-colors " +
-            (copied ? "text-polks-success" : "text-polks-brand")
-          }
-        >
-          {copied ? <Check size={13} /> : <Copy size={13} />}
-          {copied ? "Tersalin" : "Salin"}
-        </button>
+        {isActive ? (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className={
+              "flex items-center gap-1 text-[11px] font-semibold transition-colors " +
+              (copied ? "text-polks-success" : "text-polks-brand")
+            }
+          >
+            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? "Tersalin" : "Salin"}
+          </button>
+        ) : null}
       </div>
-      {v.status === "ACTIVE" && onShowQr ? (
+
+      {/* CTA — hanya untuk ACTIVE */}
+      {isActive && onShowQr ? (
         <button
           type="button"
           onClick={onShowQr}
-          className="flex w-full items-center justify-center gap-1.5 border-t border-polks-border bg-white py-2.5 text-[12px] font-semibold text-polks-brand"
+          className="flex w-full items-center justify-center gap-2 bg-polks-brand py-3 text-[13px] font-bold text-white"
         >
-          <QrCode size={14} />
-          Tunjukkan QR ke kasir
+          <QrCode size={15} />
+          Gunakan di Kasir
         </button>
       ) : null}
     </div>
@@ -130,7 +138,7 @@ export default function RedeemHistoryPage() {
   return (
     <CustomerShell showHeader={false} showBottomNav={false} topbarRight={null}>
       {/* Header */}
-      <div className="bg-polks-brand px-5 pb-7 pt-4">
+      <div className="bg-polks-brand px-5 pb-5 pt-4">
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
@@ -153,7 +161,7 @@ export default function RedeemHistoryPage() {
               key={label}
               className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-3 py-2.5 text-center"
             >
-              <p className="text-lg font-bold text-white">{val}</p>
+              <p className="text-[15px] font-bold text-white">{val}</p>
               <p className="mt-0.5 text-[9px] text-white/40">{label}</p>
             </div>
           ))}
@@ -179,7 +187,7 @@ export default function RedeemHistoryPage() {
             <p className="text-sm text-polks-muted">{error}</p>
           </div>
         ) : vouchers.length === 0 ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-8 text-center">
+          <div className="rounded-2xl border border-polks-border bg-white p-5 text-center">
             <p className="text-sm text-polks-muted">Belum ada penukaran. Tukar poinmu di katalog reward!</p>
           </div>
         ) : (

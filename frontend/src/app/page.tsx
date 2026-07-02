@@ -112,7 +112,7 @@ export default function GuestHomePage() {
         <div className="mx-4 rounded-2xl bg-white px-5 py-5">
           <h2 className="mb-4 text-[14px] font-bold text-polks-text">Cara Kerjanya</h2>
           <div className="flex flex-col gap-3.5">
-            {HOW_IT_WORKS.map(({ Icon, text }, i) => (
+            {HOW_IT_WORKS.map(({ text }, i) => (
               <div key={text} className="flex items-center gap-3">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-polks-brand text-[11px] font-bold text-white">
                   {i + 1}

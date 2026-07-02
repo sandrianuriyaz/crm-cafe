@@ -86,8 +86,8 @@ export default function ProfilePage() {
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header */}
-      <div className="bg-polks-brand px-5 pb-7 pt-4">
-        <div className="mb-5 flex items-center justify-between">
+      <div className="bg-polks-brand px-5 pb-5 pt-4">
+        <div className="mb-3 flex items-center justify-between">
           <Image
             src="/polks/logo.png"
             alt="POLKS"
@@ -102,7 +102,7 @@ export default function ProfilePage() {
         {/* Profile row */}
         <div className="flex items-center gap-4">
           <div
-            className="flex size-[60px] shrink-0 items-center justify-center rounded-full text-[22px] font-bold"
+            className="flex size-[52px] shrink-0 items-center justify-center rounded-full text-[18px] font-bold"
             style={{
               background: "linear-gradient(135deg,#1A2830,#2A3D4D)",
               border: `2.5px solid ${tierMeta.badgeText}`,
@@ -129,15 +129,15 @@ export default function ProfilePage() {
         </div>
 
         {/* Points + ID */}
-        <div className="mt-5 flex gap-3">
-          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-3">
+        <div className="mt-4 flex gap-3">
+          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-2.5">
             <p className="text-[10px] text-white/40">Saldo Poin</p>
-            <p className="text-xl font-bold tracking-[-0.02em]" style={{ color: tierMeta.badgeText }}>
+            <p className="text-[17px] font-bold tracking-[-0.02em]" style={{ color: tierMeta.badgeText }}>
               {points.toLocaleString("id-ID")}
               <span className="ml-1 text-[11px] font-semibold">pts</span>
             </p>
           </div>
-          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-3">
+          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-2.5">
             <p className="text-[10px] text-white/40">Member ID</p>
             <p className="mt-1 text-xs font-medium tracking-[0.02em] text-white">{memberId}</p>
           </div>
@@ -180,7 +180,7 @@ export default function ProfilePage() {
                   key={label}
                   href={href}
                   className={
-                    "flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-polks-bg " +
+                    "flex items-center justify-between px-4 py-3 transition-colors hover:bg-polks-bg " +
                     (i > 0 ? "border-t border-polks-surface" : "")
                   }
                 >
@@ -201,7 +201,7 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-white py-4"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-white py-3"
         >
           <LogOut size={16} color="#E04F4F" />
           <span className="text-sm font-bold text-polks-error">Keluar</span>

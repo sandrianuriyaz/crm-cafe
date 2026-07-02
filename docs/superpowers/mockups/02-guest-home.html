@@ -1,0 +1,448 @@
+<!-- Guest Home -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POLKS GROUP - Guest Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#d3d1ff",
+                    "surface-container-low": "#f3f2fe",
+                    "on-tertiary-fixed": "#0f0069",
+                    "on-primary-fixed": "#001551",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#ededf9",
+                    "on-secondary-fixed": "#131b2e",
+                    "outline": "#747686",
+                    "surface-container-highest": "#e2e1ed",
+                    "on-background": "#1a1b23",
+                    "on-surface": "#1a1b23",
+                    "inverse-on-surface": "#f0f0fb",
+                    "tertiary-container": "#4b41e1",
+                    "outline-variant": "#c4c5d7",
+                    "surface-bright": "#faf8ff",
+                    "primary-container": "#1d4ed8",
+                    "tertiary-fixed": "#e2dfff",
+                    "surface": "#faf8ff",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "secondary-fixed": "#dae2fd",
+                    "surface-container-high": "#e8e7f3",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#d9d9e5",
+                    "inverse-primary": "#b7c4ff",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#5c647a",
+                    "secondary-container": "#dae2fd",
+                    "on-surface-variant": "#434655",
+                    "surface-tint": "#2151da",
+                    "surface-variant": "#e2e1ed",
+                    "on-primary-container": "#cad3ff",
+                    "primary": "#0037b0",
+                    "primary-fixed": "#dce1ff",
+                    "inverse-surface": "#2e3039",
+                    "tertiary": "#311fca",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#3323cc",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-error-container": "#93000a",
+                    "background": "#faf8ff",
+                    "tertiary-fixed-dim": "#c3c0ff",
+                    "secondary": "#565e74",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#0039b5",
+                    "primary-fixed-dim": "#b7c4ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "xl": "32px",
+                    "margin-desktop": "32px",
+                    "md": "16px",
+                    "gutter": "24px",
+                    "lg": "24px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "app-name": [
+                            "Inter"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "card-title": [
+                            "Inter"
+                    ],
+                    "label-xs": [
+                            "Inter"
+                    ],
+                    "page-title": [
+                            "Inter"
+                    ],
+                    "caption": [
+                            "Inter"
+                    ],
+                    "section-title": [
+                            "Inter"
+                    ],
+                    "body-semibold": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "app-name": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "card-title": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-xs": [
+                            "11px",
+                            {
+                                    "lineHeight": "12px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "page-title": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "section-title": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-semibold": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Subtle texture for hero section */
+        .bg-pattern-dots {
+            background-image: radial-gradient(circle, #c4c5d7 1px, transparent 1px);
+            background-size: 16px 16px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-[100px] md:pb-0 md:pl-[280px]">
+<!-- NavigationDrawer (Desktop) -->
+<nav class="hidden md:flex bg-on-secondary-fixed border-r border-outline-variant/10 flex flex-col h-screen fixed left-0 top-0 py-lg px-md h-full w-[280px] z-40">
+<div class="mb-xl">
+<h1 class="font-app-name text-app-name text-primary-fixed tracking-tight">POLKS GROUP</h1>
+</div>
+<div class="flex items-center gap-sm mb-xl p-md rounded-lg bg-on-secondary-fixed-variant/20">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">
+<span class="material-symbols-outlined text-primary">person</span>
+</div>
+<div>
+<p class="font-body-semibold text-body-semibold text-primary-fixed">Guest User</p>
+<p class="font-caption text-caption text-secondary-fixed-dim">Join to earn points</p>
+</div>
+</div>
+<ul class="flex flex-col gap-sm flex-1">
+<li class="flex items-center gap-md px-md py-sm rounded-lg text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed cursor-pointer duration-200">
+<span class="material-symbols-outlined" data-weight="fill">home</span>
+<span class="font-body-semibold text-body-semibold">Home</span>
+</li>
+<li class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-body-semibold text-body-semibold">Wallet</span>
+</li>
+<li class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-body-semibold text-body-semibold">Rewards</span>
+</li>
+<li class="flex items-center gap-md px-md py-sm rounded-lg text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200">
+<span class="material-symbols-outlined">person</span>
+<span class="font-body-semibold text-body-semibold">Profile</span>
+</li>
+</ul>
+<div class="mt-auto flex flex-col gap-sm pt-lg border-t border-outline-variant/10">
+<button class="w-full py-2 px-4 rounded-lg bg-primary-fixed text-on-primary-fixed font-body-semibold text-body-semibold hover:bg-primary-fixed-dim transition-colors">
+                Login
+            </button>
+<button class="w-full py-2 px-4 rounded-lg border border-primary-fixed text-primary-fixed font-body-semibold text-body-semibold hover:bg-primary-fixed/10 transition-colors">
+                Register
+            </button>
+</div>
+</nav>
+<!-- TopAppBar (Mobile) -->
+<header class="md:hidden flex items-center justify-between px-md h-16 w-full max-w-7xl mx-auto bg-surface border-b border-outline-variant w-full top-0 sticky z-30">
+<div class="flex items-center gap-sm cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-primary">menu</span>
+</div>
+<h1 class="font-app-name text-app-name text-primary tracking-tight">POLKS GROUP</h1>
+<div class="flex gap-sm">
+<button class="px-3 py-1 rounded-md bg-primary text-on-primary font-caption text-caption">Login</button>
+</div>
+</header>
+<main class="w-full max-w-7xl mx-auto p-md md:p-lg flex flex-col gap-lg md:gap-xl">
+<!-- Hero Section -->
+<section class="relative w-full rounded-xl bg-[#0F172A] overflow-hidden p-lg md:p-xl flex flex-col md:flex-row items-center justify-between gap-lg">
+<div class="absolute inset-0 bg-pattern-dots opacity-10"></div>
+<div class="relative z-10 flex-1 flex flex-col gap-md">
+<div class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-primary/20 border border-primary/30 w-fit">
+<span class="material-symbols-outlined text-primary-fixed text-sm">stars</span>
+<span class="font-caption text-caption text-primary-fixed">Official CRM Points</span>
+</div>
+<h2 class="font-page-title text-page-title text-white leading-tight md:text-[32px] md:leading-[40px]">
+                    Collect points from every purchase.
+                </h2>
+<p class="font-body text-body text-secondary-fixed-dim max-w-md">
+                    Show your member QR to cashier and earn official CRM points to unlock exclusive rewards and tiers.
+                </p>
+<div class="flex gap-sm mt-sm">
+<button class="px-6 py-3 rounded-lg bg-primary-fixed text-on-primary-fixed font-body-semibold text-body-semibold hover:opacity-90 transition-opacity">
+                        Join Now
+                    </button>
+</div>
+</div>
+<div class="relative z-10 w-full max-w-[280px] md:max-w-[320px] aspect-[1.6/1] bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-xl border border-white/10 p-md flex flex-col justify-between shadow-2xl transform rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500">
+<div class="flex justify-between items-start">
+<span class="font-app-name text-app-name text-white">POLKS</span>
+<span class="material-symbols-outlined text-white/50">qr_code_scanner</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<p class="font-caption text-caption text-white/50">Guest Status</p>
+<p class="font-body-semibold text-body-semibold text-white">0 Points</p>
+</div>
+<div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-black">qr_code</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Public Promo Preview -->
+<section class="flex flex-col gap-md">
+<div class="flex justify-between items-end border-b border-outline-variant pb-xs">
+<h3 class="font-section-title text-section-title text-on-surface">Trending Promos</h3>
+<a class="font-caption text-caption text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Promo Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col group cursor-pointer hover:border-primary transition-colors">
+<div class="w-full h-40 bg-surface-container-high relative overflow-hidden">
+<img alt="Gourmet burger and fries meal on a wooden table with moody lighting." class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A mouth-watering gourmet burger with a side of crispy fries, presented on a rustic wooden table in a dimly lit, high-end casual dining environment. The lighting emphasizes the texture of the bun and the juiciness of the patty, creating a premium fast-food aesthetic. Deep shadows and warm highlights enhance the appetite appeal, aligning with a modern, sophisticated brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIdvy3FIuvf9BgcrzmFm5Jbh2ZCRldhLDV6FnGvuNm2lkm76FJaNIhJXjvMPtkh_0pHay7ATy4gsXastpUJZGWPEtFR5YRo7UtDOS_c754yEgmtxFfsaVbT21vtipaeFOS7ni4iN7XPQb3a69-WzWG6lVvc7VUNZjkqbYJdsVKFQhSrU8l7bC2pL3EUFQBbM1nOIMtnaHlxFaF-5qDNRs9Q1iu-I0mz-e9hf0uNtpAlfGfcTocHvogvwlopID-HF1-0BAwCVs9XNc"/>
+<div class="absolute top-sm right-sm bg-surface-container-lowest px-2 py-1 rounded-md border border-outline-variant shadow-sm">
+<span class="font-caption text-caption text-primary">Ends in 2 days</span>
+</div>
+</div>
+<div class="p-md flex flex-col gap-xs flex-1">
+<h4 class="font-card-title text-card-title text-on-surface line-clamp-1">Double Points on Signature Combos</h4>
+<p class="font-body text-body text-on-surface-variant line-clamp-2">Order any signature combo meal and receive double the standard CRM points to your account.</p>
+</div>
+</div>
+<!-- Promo Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col group cursor-pointer hover:border-primary transition-colors">
+<div class="w-full h-40 bg-surface-container-high relative overflow-hidden">
+<img alt="Artisan coffee latte with latte art on a dark saucer." class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A perfectly poured artisan coffee latte featuring intricate latte art, resting on a matte dark saucer. The setting is a minimalist, modern cafe with a dark navy table surface that contrasts with the warm tones of the coffee. High-key, directional lighting highlights the glossy surface of the milk foam, conveying a sense of premium quality and crafted precision suitable for a luxury rewards program." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnYtVBW-rHBM-kZSmATMRJCDGixHSq0cZN130DFAbmvIzXSOs2wD_TZ5dk1a1AppBSgO97WxWMEZ9wlQaKg91ytcoiv6o7ZefdIvwO0K_aM83WRPubxsb7H6U7NwByiKCtV1glyhOE1Yw-yfHmh0asWQ0g_FAoUofAhy-4h1Hczh63288GLa-x8DbD9-zWxiqK0YOfHe0KK1xWNQTDhgUfJhAynSFggBhRMkg2589Z1Y5Ch_TQXwjZs58ntU9CQl1R9vu44t6iyjs"/>
+<div class="absolute top-sm right-sm bg-surface-container-lowest px-2 py-1 rounded-md border border-outline-variant shadow-sm">
+<span class="font-caption text-caption text-primary">New Members</span>
+</div>
+</div>
+<div class="p-md flex flex-col gap-xs flex-1">
+<h4 class="font-card-title text-card-title text-on-surface line-clamp-1">Free Welcome Beverage</h4>
+<p class="font-body text-body text-on-surface-variant line-clamp-2">Register today and enjoy a complimentary handcrafted beverage of your choice at any participating outlet.</p>
+</div>
+</div>
+<!-- Promo Card 3 (Hidden on mobile for better balance) -->
+<div class="hidden lg:flex bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex-col group cursor-pointer hover:border-primary transition-colors">
+<div class="w-full h-40 bg-[#0F172A] relative overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-6xl opacity-20 group-hover:scale-110 transition-transform duration-500">card_giftcard</span>
+<div class="absolute inset-0 flex flex-col items-center justify-center p-md text-center">
+<span class="font-card-title text-card-title text-white">Unlock Premium Tiers</span>
+<span class="font-caption text-caption text-secondary-fixed-dim mt-xs">Earn 500 pts to upgrade</span>
+</div>
+</div>
+<div class="p-md flex flex-col gap-xs flex-1">
+<h4 class="font-card-title text-card-title text-on-surface line-clamp-1">Tier Multiplier Active</h4>
+<p class="font-body text-body text-on-surface-variant line-clamp-2">Gold and Platinum members enjoy a 1.5x multiplier on all weekend purchases this month.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works (Bento Grid Style) -->
+<section class="flex flex-col gap-md">
+<div class="border-b border-outline-variant pb-xs">
+<h3 class="font-section-title text-section-title text-on-surface">How It Works</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-sm md:gap-md">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md flex flex-row md:flex-col items-center md:items-start gap-md hover:bg-surface-container-low transition-colors">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="font-body-semibold text-body-semibold text-primary">1</span>
+</div>
+<div>
+<h4 class="font-body-semibold text-body-semibold text-on-surface mb-xs">Order at Cashier</h4>
+<p class="font-caption text-caption text-on-surface-variant">Place your order at any participating Polks Group outlet.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md flex flex-row md:flex-col items-center md:items-start gap-md hover:bg-surface-container-low transition-colors">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="font-body-semibold text-body-semibold text-primary">2</span>
+</div>
+<div>
+<h4 class="font-body-semibold text-body-semibold text-on-surface mb-xs">Show QR</h4>
+<p class="font-caption text-caption text-on-surface-variant">Open the app and display your unique member QR code.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md flex flex-row md:flex-col items-center md:items-start gap-md hover:bg-surface-container-low transition-colors">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="font-body-semibold text-body-semibold text-primary">3</span>
+</div>
+<div>
+<h4 class="font-body-semibold text-body-semibold text-on-surface mb-xs">Cashier Scans</h4>
+<p class="font-caption text-caption text-on-surface-variant">The cashier scans your code before finalizing the payment.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-primary/30 shadow-[0_0_15px_rgba(29,78,216,0.1)] p-md flex flex-row md:flex-col items-center md:items-start gap-md relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-primary/5 rounded-full blur-xl"></div>
+<div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 z-10">
+<span class="font-body-semibold text-body-semibold">4</span>
+</div>
+<div class="z-10">
+<h4 class="font-body-semibold text-body-semibold text-primary mb-xs">Earn Points</h4>
+<p class="font-caption text-caption text-on-surface-variant">Official points are instantly credited to your CRM account.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Outlets & Join CTA (Asymmetric Layout) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Outlets List -->
+<div class="md:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center border-b border-outline-variant pb-xs mb-xs">
+<h3 class="font-body-semibold text-body-semibold text-on-surface">Available Outlets</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">location_on</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center justify-between py-sm border-b border-outline-variant/50">
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">Downtown Flagship</p>
+<p class="font-caption text-caption text-on-surface-variant">123 Commerce Ave, Metro City</p>
+</div>
+<span class="px-2 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface">Open</span>
+</div>
+<div class="flex items-center justify-between py-sm border-b border-outline-variant/50">
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">Westside Mall</p>
+<p class="font-caption text-caption text-on-surface-variant">Level 2, Westside Shopping Center</p>
+</div>
+<span class="px-2 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface">Open</span>
+</div>
+<div class="flex items-center justify-between py-sm">
+<div>
+<p class="font-body-semibold text-body-semibold text-on-surface">Tech Park Plaza</p>
+<p class="font-caption text-caption text-on-surface-variant">Bldg 4, Innovation District</p>
+</div>
+<span class="px-2 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface">Closes 9PM</span>
+</div>
+</div>
+<button class="mt-auto w-full py-2 text-center font-caption text-caption text-primary hover:bg-surface-container-low rounded-lg transition-colors">
+                    View All Locations
+                </button>
+</div>
+<!-- Join CTA Card -->
+<div class="md:col-span-1 bg-[#0F172A] rounded-xl p-md flex flex-col justify-center items-center text-center gap-md relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-0"></div>
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-colors duration-500"></div>
+<span class="material-symbols-outlined text-4xl text-primary-fixed z-10">card_membership</span>
+<div class="z-10">
+<h3 class="font-card-title text-card-title text-white mb-xs">Ready to start earning?</h3>
+<p class="font-caption text-caption text-secondary-fixed-dim">Join thousands of members enjoying exclusive rewards today.</p>
+</div>
+<button class="w-full py-2 bg-primary text-white rounded-lg font-body-semibold text-body-semibold hover:bg-primary-container transition-colors z-10 shadow-lg shadow-primary/20">
+                    Register Now
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden bg-on-secondary-fixed fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] rounded-full shadow-lg z-50 flex justify-around items-center px-4 py-2">
+<div class="flex flex-col items-center justify-center text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full p-2 scale-95 active:scale-90 transition-transform cursor-pointer">
+<span class="material-symbols-outlined" data-weight="fill">home</span>
+<span class="font-label-xs text-label-xs mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform cursor-pointer">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-xs text-label-xs mt-1 hidden">Wallet</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform cursor-pointer">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-label-xs text-label-xs mt-1 hidden">Rewards</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all scale-95 active:scale-90 transition-transform cursor-pointer">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-xs text-label-xs mt-1 hidden">Profile</span>
+</div>
+</nav>
+</body></html>
+

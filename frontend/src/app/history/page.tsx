@@ -97,7 +97,7 @@ export default function HistoryPage() {
     const since = rangeSince(range, Date.now());
     const list = entries.filter((e) => {
       const dirOk =
-        filter === "all" ? true : filter === "in" ? e.points >= 0 : e.points < 0;
+        filter === "all" ? true : filter === "in" ? e.points > 0 : e.points < 0;
       const timeOk = since === null || new Date(e.createdAt).getTime() >= since;
       return dirOk && timeOk;
     });
@@ -110,24 +110,24 @@ export default function HistoryPage() {
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header navy + ringkasan */}
-      <div className="bg-polks-brand px-5 pb-6 pt-4">
+      <div className="bg-polks-brand px-5 pb-4 pt-4">
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Riwayat Poin</h1>
         <p className="mt-1 text-[13px] text-white/50">Semua mutasi poin kamu di POLKS.</p>
 
         <div className="mt-4 flex gap-3">
           <div
-            className="flex-1 rounded-2xl border border-[rgba(246,184,75,0.2)] px-4 py-3"
+            className="flex-1 rounded-2xl border border-[rgba(246,184,75,0.2)] px-4 py-2.5"
             style={{ background: "linear-gradient(135deg,#1A2830 0%,#2A3D4D 45%,#2D3A28 100%)" }}
           >
             <p className="text-[10px] text-white/45">Total Diperoleh</p>
-            <p className="text-xl font-bold tracking-[-0.02em] text-[#F6B84B]">
+            <p className="text-[17px] font-bold tracking-[-0.02em] text-[#F6B84B]">
               +{totalEarned.toLocaleString("id-ID")}
               <span className="ml-0.5 text-xs font-semibold">pts</span>
             </p>
           </div>
-          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-3">
+          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.08] px-4 py-2.5">
             <p className="text-[10px] text-white/45">Saldo Saat Ini</p>
-            <p className="text-xl font-bold tracking-[-0.02em] text-white">
+            <p className="text-[17px] font-bold tracking-[-0.02em] text-white">
               {(user?.pointBalance ?? 0).toLocaleString("id-ID")}
               <span className="ml-0.5 text-xs font-semibold">pts</span>
             </p>
@@ -209,7 +209,7 @@ export default function HistoryPage() {
             </Button>
           </div>
         ) : visible.length === 0 ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-8 text-center">
+          <div className="rounded-2xl border border-polks-border bg-white p-5 text-center">
             <p className="text-sm text-polks-muted">
               {entries.length === 0
                 ? "Belum ada riwayat poin."
@@ -268,6 +268,7 @@ export default function HistoryPage() {
 
         <p className="text-center text-[11px] leading-relaxed text-polks-muted">
           Poin dihitung dari transaksi setelah sinkronisasi POS.
+          <br />Menampilkan 50 entri terbaru.
         </p>
       </div>
 

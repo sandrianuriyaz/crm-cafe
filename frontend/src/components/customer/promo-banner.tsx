@@ -1,17 +1,56 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { type Promo } from "@/lib/loyalty/types";
 
-type Slide = { id: string; title: string; imageUrl: string; href: string };
+type Slide = { id: string; title: string; imageUrl?: string; href: string };
 
 const FALLBACK: Slide[] = [
-  { id: "f1", title: "Iced Coffee",    imageUrl: "/polks/coffe.png",        href: "/promos" },
-  { id: "f2", title: "Matcha Latte",   imageUrl: "/polks/matcha.png",       href: "/promos" },
-  { id: "f3", title: "Vanilla Latte",  imageUrl: "/polks/vanillalatte.png", href: "/promos" },
+  { id: "brand", title: "POLKS Loyalty", href: "/promos" },
 ];
+
+function BrandedSlide() {
+  return (
+    <div
+      className="relative flex size-full flex-col items-center justify-center overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #1C2B36 0%, #25343F 55%, #1A3040 100%)" }}
+    >
+      {/* Subtle radial accents */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(ellipse at 15% 85%, rgba(246,184,75,0.12) 0%, transparent 55%), radial-gradient(ellipse at 85% 15%, rgba(246,184,75,0.08) 0%, transparent 55%)",
+        }}
+      />
+      <div className="relative flex flex-col items-center gap-2 px-8 text-center">
+        <Image
+          src="/polks/icon.png"
+          alt=""
+          width={44}
+          height={44}
+          className="h-11 w-auto brightness-0 invert opacity-90"
+        />
+        <p className="text-[24px] font-black tracking-[-0.03em] text-white">
+          POLKS Loyalty
+        </p>
+        <p className="text-[12px] leading-relaxed text-white/55">
+          Kumpulkan poin dari setiap kunjungan.
+          <br />
+          Tukar jadi reward istimewa.
+        </p>
+        <div className="mt-1 rounded-full bg-[#F6B84B]/15 px-4 py-1.5 ring-1 ring-[#F6B84B]/25">
+          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#F6B84B]">
+            Mulai Kumpulkan Poin
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function PromoBanner() {
   const [slides,   setSlides]   = useState<Slide[]>(FALLBACK);
@@ -106,13 +145,17 @@ export function PromoBanner() {
                 if (Math.abs(dragDist.current) > 6) e.preventDefault();
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={s.imageUrl}
-                alt={s.title}
-                className="size-full object-cover"
-                draggable={false}
-              />
+              {s.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={s.imageUrl}
+                  alt={s.title}
+                  className="size-full object-cover"
+                  draggable={false}
+                />
+              ) : (
+                <BrandedSlide />
+              )}
             </Link>
           ))}
         </div>

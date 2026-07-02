@@ -1,0 +1,243 @@
+<!-- Rewards Catalog -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reward Catalog - POLKS GROUP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "card-title": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "section-title": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-semibold": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6F7FB;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background min-h-screen pb-24 font-body">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-background border-b border-outline-variant dark:border-outline flex items-center justify-between px-md h-16 w-full max-w-7xl mx-auto top-0 z-40 sticky">
+<div class="flex items-center cursor-pointer active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed mr-sm" data-icon="menu">menu</span>
+</div>
+<div class="font-app-name text-app-name text-primary dark:text-primary-fixed tracking-tight">POLKS GROUP</div>
+<div class="w-6"></div> <!-- Spacer for center alignment -->
+</header>
+<main class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-lg space-y-lg">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+<div>
+<h1 class="font-page-title text-page-title text-on-surface">Reward Catalog</h1>
+<p class="font-body text-body text-on-surface-variant mt-xs">Explore and redeem your points.</p>
+</div>
+<!-- Balance Card -->
+<div class="bg-primary text-on-primary rounded-xl p-md shadow-sm border border-outline-variant/20 flex items-center gap-md min-w-[200px]">
+<div class="bg-primary-fixed text-on-primary-fixed p-sm rounded-full">
+<span class="material-symbols-outlined" data-icon="stars">stars</span>
+</div>
+<div>
+<div class="font-caption text-caption text-primary-fixed-dim">Available Balance</div>
+<div class="font-card-title text-card-title font-bold">1,250 pts</div>
+</div>
+</div>
+</div>
+<!-- Category Chips -->
+<div class="flex gap-sm overflow-x-auto hide-scrollbar pb-xs">
+<button class="px-md py-sm rounded-full bg-primary text-on-primary font-body-semibold text-body-semibold whitespace-nowrap shadow-sm">All</button>
+<button class="px-md py-sm rounded-full bg-surface text-on-surface border border-outline-variant font-body-semibold text-body-semibold whitespace-nowrap hover:bg-surface-container-high transition-colors">Drinks</button>
+<button class="px-md py-sm rounded-full bg-surface text-on-surface border border-outline-variant font-body-semibold text-body-semibold whitespace-nowrap hover:bg-surface-container-high transition-colors">Pastry</button>
+<button class="px-md py-sm rounded-full bg-surface text-on-surface border border-outline-variant font-body-semibold text-body-semibold whitespace-nowrap hover:bg-surface-container-high transition-colors">Voucher</button>
+</div>
+<!-- Rewards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- Voucher Card -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden group hover:border-primary transition-colors flex flex-col">
+<div class="h-40 bg-secondary-container flex items-center justify-center relative">
+<span class="material-symbols-outlined text-[64px] text-on-secondary-container opacity-50" data-icon="local_activity">local_activity</span>
+<div class="absolute top-sm right-sm bg-surface-container-lowest text-primary font-label-xs text-label-xs px-sm py-xs rounded-full shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="stars">stars</span>
+                        1,000 pts
+                    </div>
+</div>
+<div class="p-md flex-1 flex flex-col justify-between">
+<div>
+<div class="font-caption text-caption text-primary mb-xs">Voucher</div>
+<h3 class="font-card-title text-card-title text-on-surface">Rp25.000 Discount</h3>
+<p class="font-body text-body text-on-surface-variant mt-xs line-clamp-2">Valid for all transactions at POLKS GROUP outlets. Terms and conditions apply.</p>
+</div>
+<button class="mt-md w-full bg-surface-container-high hover:bg-primary hover:text-on-primary text-primary font-body-semibold text-body-semibold py-sm rounded-lg transition-colors border border-outline-variant hover:border-primary">Redeem Points</button>
+</div>
+</div>
+<!-- Product Card -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden group hover:border-primary transition-colors flex flex-col">
+<div class="h-40 bg-surface-container-highest relative overflow-hidden">
+<img alt="Free Americano" class="w-full h-full object-cover" data-alt="A close-up, high-quality photograph of a steaming cup of freshly brewed Americano coffee sitting on a clean, modern cafe table. The lighting is bright and natural, casting soft shadows that highlight the rich, dark crema of the espresso. The setting is a sophisticated, contemporary space with a minimalist, premium aesthetic. The color palette focuses on deep browns of the coffee contrasting against pristine whites and subtle grays of the surroundings, reflecting a professional and inviting atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfxXfz_ETgLqjSXjna67E6LNegi3xRAo9hw3KVfGv8E7Al4oY8GNDMZ8-3wZR2XK4P1q6OievAHY4Lbi0230_s_BIsUsJtBoFDpGVCDnLj7gfvMszdDv7EDubRUc29vAyRjzbHJJY3Do92EKOB6vBL6HB90d0LgpMlU4gfikJfkzgsMgEpY9OTTG6EyEqk4NQVdjMt7x4JVCUYa_pCmOmqZa5oZ4ZfmbNI2vEzT0ZgoqUGaJ2J32el4GuXr_Bey4Jx2vKNrxk8zq4"/>
+<div class="absolute top-sm right-sm bg-surface-container-lowest text-primary font-label-xs text-label-xs px-sm py-xs rounded-full shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="stars">stars</span>
+                        500 pts
+                    </div>
+</div>
+<div class="p-md flex-1 flex flex-col justify-between">
+<div>
+<div class="font-caption text-caption text-primary mb-xs">Drink</div>
+<h3 class="font-card-title text-card-title text-on-surface">Free Americano</h3>
+<p class="font-body text-body text-on-surface-variant mt-xs line-clamp-2">Enjoy a complimentary hot or iced Americano (Regular size).</p>
+</div>
+<button class="mt-md w-full bg-surface-container-high hover:bg-primary hover:text-on-primary text-primary font-body-semibold text-body-semibold py-sm rounded-lg transition-colors border border-outline-variant hover:border-primary">Redeem Points</button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden group hover:border-primary transition-colors flex flex-col">
+<div class="h-40 bg-surface-container-highest relative overflow-hidden">
+<img alt="Croissant" class="w-full h-full object-cover" data-alt="A macro shot of a beautifully flaky, golden-brown croissant displayed on a sleek, minimalist ceramic plate. The pastry looks incredibly fresh and appetizing, with visible layers and a delicate texture. The lighting is soft and directional, emphasizing the contours and buttery sheen of the pastry. The environment is a clean, modern bakery or cafe setting, utilizing a bright, airy light-mode color scheme with subtle cool tones to contrast the warmth of the food." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1EL-cjeXutuMC5yLAXhmj_Ku9OYaur1z5JDXGkxl7TkS0zN1PQWdc6eQBgl_M4O5Ley5p8gSZwDAGRW66uCWCWYxnDDJXza3teEJ3ogwArAKEGnQIl_EMG1qEBIYYE6uJe0jAJKaXy0CVIfR81twA23TS2VOScmqxvFExhlhEgy6_Hk4CvAjS8eywQ33OqU-sM-xRv-Fb2chRfC8kVq_copct9MSB-SsHLvG6QoAVcS0vSz_3RzaWqM2Th0g4bc9RM9-cPsqQaQw"/>
+<div class="absolute top-sm right-sm bg-surface-container-lowest text-primary font-label-xs text-label-xs px-sm py-xs rounded-full shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="stars">stars</span>
+                        300 pts
+                    </div>
+</div>
+<div class="p-md flex-1 flex flex-col justify-between">
+<div>
+<div class="font-caption text-caption text-primary mb-xs">Pastry</div>
+<h3 class="font-card-title text-card-title text-on-surface">Butter Croissant</h3>
+<p class="font-body text-body text-on-surface-variant mt-xs line-clamp-2">Freshly baked, flaky butter croissant. Perfect with coffee.</p>
+</div>
+<button class="mt-md w-full bg-surface-container-high hover:bg-primary hover:text-on-primary text-primary font-body-semibold text-body-semibold py-sm rounded-lg transition-colors border border-outline-variant hover:border-primary">Redeem Points</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="md:hidden bg-on-secondary-fixed dark:bg-on-background fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] rounded-full shadow-lg z-50 flex justify-around items-center px-4 py-2">
+<!-- Home -->
+<div class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all cursor-pointer scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-xs text-label-xs mt-1">Home</span>
+</div>
+<!-- Wallet -->
+<div class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all cursor-pointer scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-xs text-label-xs mt-1">Wallet</span>
+</div>
+<!-- Rewards (Active) -->
+<div class="flex flex-col items-center justify-center text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full p-2 hover:text-primary-fixed transition-all cursor-pointer scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="stars" data-weight="fill" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-label-xs text-label-xs mt-1">Rewards</span>
+</div>
+<!-- Profile -->
+<div class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 hover:text-primary-fixed transition-all cursor-pointer scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-xs text-label-xs mt-1">Profile</span>
+</div>
+</nav>
+</body></html>
+

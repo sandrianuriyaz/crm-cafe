@@ -4,7 +4,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCw, History, MapPin, QrCode, Star, Sparkles, CreditCard, Coffee } from "lucide-react";
+import {
+  ArrowLeft, RefreshCw, QrCode, Coffee,
+  ChevronRight, History, MapPin, Shield,
+} from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -14,31 +17,32 @@ export default function MemberCardPage() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const name = user?.name || "Member";
-  const memberId = user?.memberCode || "—";
-  const points = user?.pointBalance ?? 0;
+  const name     = user?.name        || "Member";
+  const memberId = user?.memberCode  || "—";
+  const points   = user?.pointBalance ?? 0;
   const tierMeta = TIER_META[user?.tier ?? "bronze"];
 
-  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrImage,   setQrImage]   = useState<string | null>(null);
   const [loadingQr, setLoadingQr] = useState(true);
+  const [qrError,   setQrError]   = useState(false);
 
   const loadQr = useCallback(() => {
     setLoadingQr(true);
+    setQrError(false);
     api<{ image_data_url: string }>("/member/qr")
       .then((res) => setQrImage(res.image_data_url))
-      .catch(() => setQrImage(null))
+      .catch(() => { setQrImage(null); setQrError(true); })
       .finally(() => setLoadingQr(false));
   }, []);
 
-  useEffect(() => {
-    loadQr();
-  }, [loadQr]);
+  useEffect(() => { loadQr(); }, [loadQr]);
 
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
       <div className="min-h-screen bg-polks-bg pb-28">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-5 pt-4">
+
+        {/* ── Top bar ── */}
+        <div className="flex items-center justify-between px-5 pb-3 pt-4">
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
@@ -51,132 +55,151 @@ export default function MemberCardPage() {
             type="button"
             onClick={loadQr}
             disabled={loadingQr}
-            className="flex items-center gap-1.5 text-xs font-medium text-polks-muted disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl border border-polks-border bg-white px-3 py-1.5 text-xs font-semibold text-polks-text disabled:opacity-50"
           >
-            <RefreshCw size={13} className={loadingQr ? "animate-spin" : ""} />
-            {loadingQr ? "Memuat…" : "Refresh"}
+            <RefreshCw size={12} className={loadingQr ? "animate-spin" : ""} />
+            Refresh
           </button>
         </div>
 
-        {/* Card */}
-        <div className="mx-5 mt-5 overflow-hidden rounded-[28px] shadow-[0_18px_48px_rgba(37,52,63,0.22)]">
+        {/* ── Page title ── */}
+        <div className="px-5 pb-4">
+          <h1 className="text-[24px] font-black tracking-[-0.02em] text-polks-text">QR Code</h1>
+          <p className="text-[13px] text-polks-muted">Tunjukkan QR ini ke kasir saat transaksi</p>
+        </div>
 
-          {/* ── Top: cream section ── */}
-          <div style={{ background: "#EDE8DC" }} className="px-6 pb-6 pt-6">
-            {/* Logo — teks navy langsung, logo PNG putih tidak kontras di krem */}
-            <div className="mb-5 flex flex-col items-center gap-0.5">
-              <Coffee size={22} className="text-polks-brand" strokeWidth={1.8} />
-              <p className="text-[22px] font-black tracking-[-0.04em] text-polks-brand">POLKS</p>
-            </div>
-
-            {/* Labels */}
-            <div className="mb-5 text-center">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-polks-muted">
+        {/* ── QR Card ── */}
+        <div
+          className="mx-5 overflow-hidden rounded-[24px] shadow-[0_12px_40px_rgba(37,52,63,0.18)]"
+          style={{ background: "#1C2B36" }}
+        >
+          {/* Gold badge */}
+          <div className="flex justify-center pb-2 pt-3">
+            <div className="rounded-full px-4 py-1.5" style={{ background: "#B07C35" }}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-white">
                 MEMBER QR CODE
               </p>
-              <p className="mt-1 text-[24px] font-black leading-none tracking-[-0.02em] text-polks-text">
-                SCAN TO EARN
-              </p>
-              <p className="mt-1.5 text-[12px] text-polks-muted">
-                Tunjukkan QR ini ke kasir saat transaksi
-              </p>
             </div>
+          </div>
 
-            {/* QR */}
-            <div className="flex justify-center">
-              <div className="rounded-2xl bg-white p-3.5 shadow-sm">
-                <div className="flex size-[164px] items-center justify-center">
-                  {loadingQr ? (
-                    <span className="text-xs font-medium text-polks-muted">Memuat QR…</span>
-                  ) : qrImage ? (
-                    <img src={qrImage} alt={`QR member ${memberId}`} className="size-full object-contain" />
-                  ) : (
-                    <QrCode size={144} color="#17212A" strokeWidth={1} />
-                  )}
-                </div>
+          {/* Logo */}
+          <div className="flex flex-col items-center gap-0.5 pb-2">
+            <Coffee size={22} className="text-white" strokeWidth={1.8} />
+            <p className="text-[18px] font-black tracking-[-0.04em] text-white">POLKS</p>
+            <div className="mt-1 h-[2px] w-8 rounded-full" style={{ background: "#B07C35" }} />
+          </div>
+
+          {/* Scan label */}
+          <p className="pb-5 pt-2 text-center text-[10px] font-bold uppercase tracking-[0.22em] text-white/50">
+            SCAN TO EARN
+          </p>
+
+          {/* QR */}
+          <div className="flex justify-center pb-5">
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <div className="flex size-[180px] items-center justify-center">
+                {loadingQr ? (
+                  <span className="text-xs font-medium text-polks-muted">Memuat QR…</span>
+                ) : qrImage ? (
+                  <img src={qrImage} alt={`QR member ${memberId}`} className="size-full object-contain" />
+                ) : qrError ? (
+                  <div className="flex flex-col items-center gap-2 px-2 text-center">
+                    <QrCode size={36} color="#C0CBD3" strokeWidth={1.2} />
+                    <p className="text-[11px] font-semibold leading-snug text-polks-muted">
+                      QR gagal dimuat
+                    </p>
+                    <button
+                      type="button"
+                      onClick={loadQr}
+                      className="rounded-lg bg-polks-brand px-3 py-1.5 text-[11px] font-bold text-white"
+                    >
+                      Coba lagi
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Member code */}
-            <p className="mt-4 text-center font-mono text-[13px] font-semibold tracking-[0.12em] text-polks-text">
-              {memberId}
+        {/* ── Member info ── */}
+        <div className="mx-5 mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex size-10 items-center justify-center rounded-full text-[16px] font-black text-white"
+              style={{ background: "#1C2B36" }}
+            >
+              {name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-[14px] font-bold text-polks-text">{name}</p>
+              <p className="text-[12px] font-semibold" style={{ color: "#B07C35" }}>
+                {tierMeta.label} Member
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-polks-muted" />
+        </div>
+
+        {/* ── Stats row ── */}
+        <div className="mx-5 mt-3 grid grid-cols-3 divide-x divide-polks-surface rounded-2xl bg-white py-3">
+          <div className="flex flex-col items-center gap-1 px-2">
+            <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-polks-muted">MEMBER LEVEL</p>
+            <p className="text-[13px] font-bold" style={{ color: tierMeta.badgeText }}>
+              {(user?.tier ?? "bronze").toUpperCase()}
             </p>
           </div>
-
-          {/* Wave: cream → dark navy */}
-          <div style={{ background: "#EDE8DC" }}>
-            <svg viewBox="0 0 390 32" preserveAspectRatio="none" className="block w-full">
-              <path d="M0,0 Q195,32 390,0 L390,32 L0,32 Z" fill="#25343F" />
-            </svg>
+          <div className="flex flex-col items-center gap-1 px-2">
+            <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-polks-muted">POINTS BALANCE</p>
+            <p className="text-[13px] font-bold text-polks-text">
+              {points.toLocaleString("id-ID")}
+              <span className="ml-0.5 text-[10px] font-medium text-polks-muted"> PTS</span>
+            </p>
           </div>
+          <div className="flex flex-col items-center gap-1 px-2">
+            <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-polks-muted">MEMBER ID</p>
+            <p className="font-mono text-[10px] font-bold text-polks-text">{memberId}</p>
+          </div>
+        </div>
 
-          {/* ── Bottom: dark navy section ── */}
-          <div className="bg-polks-brand px-6 py-5">
-            <div className="flex items-start justify-between">
-              {/* Member Level */}
-              <div className="flex flex-col items-center gap-1.5">
-                <Star size={16} color="#F6B84B" fill="#F6B84B" />
-                <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/40">
-                  MEMBER LEVEL
-                </p>
-                <p className="text-[13px] font-bold" style={{ color: tierMeta.badgeText }}>
-                  {tierMeta.label.toUpperCase()}
-                </p>
-              </div>
-
-              <div className="mt-1 h-10 w-px bg-white/10" />
-
-              {/* Points Balance */}
-              <div className="flex flex-col items-center gap-1.5">
-                <Sparkles size={16} className="text-white/60" />
-                <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/40">
-                  POINTS BALANCE
-                </p>
-                <p className="text-[13px] font-bold text-white">
-                  {points.toLocaleString("id-ID")}
-                  <span className="ml-0.5 text-[10px] font-medium text-white/50"> PTS</span>
-                </p>
-              </div>
-
-              <div className="mt-1 h-10 w-px bg-white/10" />
-
-              {/* Member name */}
-              <div className="flex max-w-[80px] flex-col items-center gap-1.5">
-                <CreditCard size={16} className="text-white/60" />
-                <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/40">
-                  NAMA
-                </p>
-                <p className="line-clamp-1 text-center text-[11px] font-bold text-white">
-                  {name}
-                </p>
-              </div>
+        {/* ── Action tiles ── */}
+        <div className="mx-5 mt-3 grid grid-cols-2 gap-3">
+          <Link href="/history" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-brand">
+              <History size={16} color="#fff" />
             </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[12px] font-bold text-polks-text">Riwayat</p>
+              <p className="text-[10px] leading-snug text-polks-muted">Lihat transaksi sebelumnya</p>
+            </div>
+            <ChevronRight size={13} className="shrink-0 text-polks-muted" />
+          </Link>
+          <Link href="/outlets" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-brand">
+              <MapPin size={16} color="#fff" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[12px] font-bold text-polks-text">Outlet</p>
+              <p className="text-[10px] leading-snug text-polks-muted">Temukan outlet terdekat</p>
+            </div>
+            <ChevronRight size={13} className="shrink-0 text-polks-muted" />
+          </Link>
+        </div>
+
+        {/* ── Security row ── */}
+        <div className="mx-5 mt-3 flex items-center gap-3 rounded-2xl bg-white px-4 py-4">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-surface">
+            <Shield size={16} className="text-polks-muted" />
           </div>
+          <div className="flex-1">
+            <p className="text-[12px] font-bold text-polks-text">Keamanan & Privasi</p>
+            <p className="text-[10px] leading-relaxed text-polks-muted">
+              QR Code ini bersifat dinamis dan akan berubah secara berkala untuk keamanan akun Anda.
+            </p>
+          </div>
+          <ChevronRight size={13} className="shrink-0 text-polks-muted" />
         </div>
 
-        {/* Note */}
-        <p className="flex items-center gap-1.5 px-6 pt-4 text-[11px] text-polks-muted">
-          <MapPin size={12} className="shrink-0" />
-          Berlaku di semua outlet POLKS
-        </p>
-
-        {/* Actions */}
-        <div className="flex gap-2.5 px-5 pt-4">
-          <Link
-            href="/history"
-            className="flex h-[46px] flex-1 items-center justify-center gap-1.5 rounded-2xl border border-polks-border bg-white text-[13px] font-semibold text-polks-text"
-          >
-            <History size={15} />
-            Riwayat
-          </Link>
-          <Link
-            href="/outlets"
-            className="flex h-[46px] flex-1 items-center justify-center gap-1.5 rounded-2xl border border-polks-border bg-white text-[13px] font-semibold text-polks-text"
-          >
-            <MapPin size={15} />
-            Outlet
-          </Link>
-        </div>
       </div>
     </CustomerShell>
   );

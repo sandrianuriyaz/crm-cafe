@@ -14,7 +14,16 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pwTouched, setPwTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const pwLen = form.password.length;
+  const pwOk  = pwLen >= 6;
+  const pwErr = pwTouched && !pwOk
+    ? pwLen === 0
+      ? "Password wajib diisi."
+      : `Minimal 6 karakter (${6 - pwLen} lagi).`
+    : null;
 
   function update(field: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -26,6 +35,10 @@ export default function RegisterPage() {
     setError(null);
     if (form.phone.trim().length < 8) {
       setError("Masukkan nomor HP yang valid.");
+      return;
+    }
+    if (!pwOk) {
+      setPwTouched(true);
       return;
     }
     setLoading(true);
@@ -116,16 +129,31 @@ export default function RegisterPage() {
             <label htmlFor="password" className="text-xs font-semibold text-[#374151]">Password</label>
             <div className="relative flex items-center">
               <Lock size={18} className="absolute left-4 text-[#9CA3AF]" />
-              <input id="password" type={showPassword ? "text" : "password"} required minLength={6}
-                autoComplete="new-password" placeholder="Buat password (min. 6)"
-                value={form.password} onChange={update("password")}
-                className={fieldClass.replace("pr-4", "pr-12")} />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="new-password"
+                placeholder="Buat password (min. 6 karakter)"
+                value={form.password}
+                onChange={update("password")}
+                onBlur={() => setPwTouched(true)}
+                className={
+                  fieldClass.replace("pr-4", "pr-12") +
+                  (pwErr ? " border-polks-error" : pwTouched && pwOk ? " border-green-500" : "")
+                }
+              />
               <button type="button" onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                 className="absolute right-4 text-[#9CA3AF]">
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {pwErr ? (
+              <p className="text-[12px] text-polks-error">{pwErr}</p>
+            ) : pwLen > 0 && !pwOk ? (
+              <p className="text-[12px] text-polks-muted">{6 - pwLen} karakter lagi</p>
+            ) : null}
           </div>
 
           {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}

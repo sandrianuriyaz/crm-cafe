@@ -5,19 +5,40 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 
-const initial = [
-  { key: "promo", label: "Promo & Penawaran", desc: "Info promo terbaru di outlet POLKS", on: true },
-  { key: "points", label: "Poin Masuk", desc: "Notifikasi saat poin bertambah", on: true },
-  { key: "reward", label: "Reward Tersedia", desc: "Reward baru yang bisa ditukar", on: true },
-  { key: "trx", label: "Update Transaksi", desc: "Status transaksi & sinkronisasi POS", on: false },
+const DEFAULTS = [
+  { key: "promo",  label: "Promo & Penawaran", desc: "Info promo terbaru di outlet POLKS", on: true },
+  { key: "points", label: "Poin Masuk",         desc: "Notifikasi saat poin bertambah",    on: true },
+  { key: "reward", label: "Reward Tersedia",    desc: "Reward baru yang bisa ditukar",     on: true },
+  { key: "trx",   label: "Update Transaksi",    desc: "Status transaksi & sinkronisasi POS", on: false },
 ];
+
+const STORAGE_KEY = "polks_notif_prefs";
+
+function loadPrefs() {
+  try {
+    const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+    if (!raw) return DEFAULTS;
+    const saved: Record<string, boolean> = JSON.parse(raw);
+    return DEFAULTS.map((it) => ({ ...it, on: it.key in saved ? saved[it.key] : it.on }));
+  } catch {
+    return DEFAULTS;
+  }
+}
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [items, setItems] = useState(initial);
+  const [items, setItems] = useState(loadPrefs);
 
   function toggle(key: string) {
-    setItems((prev) => prev.map((i) => (i.key === key ? { ...i, on: !i.on } : i)));
+    setItems((prev) => {
+      const next = prev.map((i) => (i.key === key ? { ...i, on: !i.on } : i));
+      try {
+        const prefs: Record<string, boolean> = {};
+        next.forEach((i) => { prefs[i.key] = i.on; });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+      } catch {}
+      return next;
+    });
   }
 
   return (
@@ -76,7 +97,7 @@ export default function NotificationsPage() {
           ))}
         </div>
         <p className="mt-3 px-1 text-[11px] leading-relaxed text-polks-muted">
-          Preferensi disimpan di perangkat ini (pengaturan penuh tersedia setelah layanan notifikasi aktif).
+          Preferensi disimpan di perangkat ini. Sinkronisasi antar perangkat tersedia setelah layanan notifikasi aktif.
         </p>
       </div>
     </CustomerShell>

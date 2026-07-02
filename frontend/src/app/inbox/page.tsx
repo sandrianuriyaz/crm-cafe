@@ -48,7 +48,7 @@ export default function InboxPage() {
 
   return (
     <CustomerShell showHeader={false} showBottomNav={false} topbarRight={null}>
-      <div className="bg-polks-brand px-5 pb-7 pt-4">
+      <div className="bg-polks-brand px-5 pb-5 pt-4">
         <button
           type="button"
           onClick={() => router.push("/dashboard")}

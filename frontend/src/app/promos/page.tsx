@@ -50,7 +50,7 @@ export default function PromoListPage() {
   return (
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header */}
-      <div className="bg-polks-brand px-5 pb-6 pt-4">
+      <div className="bg-polks-brand px-5 pb-4 pt-4">
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
@@ -118,7 +118,7 @@ export default function PromoListPage() {
                     Promo
                   </span>
                   <span className="rounded-full bg-polks-brand px-2 py-0.5 text-[10px] font-bold text-white">
-                    Active
+                    Aktif
                   </span>
                 </div>
                 <div className="p-4">
@@ -131,7 +131,7 @@ export default function PromoListPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-[11px] text-[#8A959D]">
                       <MapPin size={10} color="#8A959D" />
-                      All Outlets
+                      Semua Outlet
                       <span className="mx-1 text-[#C0CBD3]">·</span>
                       {formatPeriod(p.startAt, p.endAt)}
                     </div>

@@ -1,0 +1,345 @@
+<!-- Loyalty Configuration -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Loyalty Config - POLKS GROUP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3d1ff",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-fixed": "#001551",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline": "#747686",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-background": "#1a1b23",
+                        "on-surface": "#1a1b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-container": "#4b41e1",
+                        "outline-variant": "#c4c5d7",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#1d4ed8",
+                        "tertiary-fixed": "#e2dfff",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-high": "#e8e7f3",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-primary": "#b7c4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#2151da",
+                        "surface-variant": "#e2e1ed",
+                        "on-primary-container": "#cad3ff",
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#2e3039",
+                        "tertiary": "#311fca",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "primary-fixed-dim": "#b7c4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "app-name": ["Inter"],
+                        "body": ["Inter"],
+                        "card-title": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "page-title": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Inter"],
+                        "body-semibold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "app-name": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "card-title": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "section-title": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-semibold": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body text-body antialiased selection:bg-primary/20">
+<!-- Desktop Layout Wrapper -->
+<div class="flex min-h-screen">
+<!-- NavigationDrawer (Desktop Only) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-lg px-md w-[280px] border-r border-outline-variant/10 bg-on-secondary-fixed dark:bg-on-background z-40">
+<!-- Header -->
+<div class="flex items-center gap-4 mb-xl px-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img alt="Admin User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0F1BWe8I-NtbGSF2ClW3GeLVSMT3xM_1zSWPfFsqhhhS8ylsyZnzZ6D75vLFlDrZz_JfO_ak-loAhlXPJM6r0_EGHyC3H4bTTgyCr2JVc54aaEpBeRe1nI1Kh5idSd1y2d4NRhmgPJwj423XPVVy9BOcwQW2tLMhj81dljORLZSiMlMIQWfjJ2hQXH4tA2EyD6vQBrqs0tkBI3lMWIptVDVbwrpiJ8B6dzwCoTA_RR09UAS6ykSK1G_sfZmJc0rdA6VQmzpt7otw"/>
+</div>
+<div>
+<h2 class="font-app-name text-app-name text-primary-fixed">Admin Panel</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Manage Loyalty</p>
+</div>
+</div>
+<!-- Nav Items -->
+<nav class="flex-1 flex flex-col gap-2">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-body-semibold text-body-semibold text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Members -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-body-semibold text-body-semibold text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Members</span>
+</a>
+<!-- Transactions -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-body-semibold text-body-semibold text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span>Transactions</span>
+</a>
+<!-- Campaigns -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-body-semibold text-body-semibold text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span>Campaigns</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-body-semibold text-body-semibold text-secondary-fixed-dim hover:text-primary-fixed hover:bg-on-secondary-fixed-variant/50 transition-colors cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- Settings (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-body-semibold text-body-semibold text-primary-fixed bg-primary/20 border-l-4 border-primary-fixed cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full top-0 border-b border-outline-variant dark:border-outline bg-surface dark:bg-background z-30 sticky">
+<div class="flex items-center justify-between px-md h-16 w-full max-w-7xl mx-auto">
+<!-- Leading Icon -->
+<button class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Headline -->
+<div class="flex-1 md:flex-none flex justify-center md:justify-start">
+<h1 class="font-app-name text-app-name text-primary dark:text-primary-fixed tracking-tight">POLKS GROUP</h1>
+</div>
+<!-- Actions (Empty placeholder to balance flex-between) -->
+<div class="w-10 md:hidden"></div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<div class="flex-1 p-md md:p-lg lg:p-gutter max-w-5xl mx-auto w-full">
+<!-- Page Title -->
+<div class="mb-xl">
+<h1 class="font-page-title text-page-title text-on-surface mb-2">Loyalty Config</h1>
+<p class="font-body text-body text-on-surface-variant">Manage global point rules, tier thresholds, and developer API settings.</p>
+</div>
+<!-- Main Configuration Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Left Column: Business Logic -->
+<div class="lg:col-span-2 flex flex-col gap-lg">
+<!-- Point Calculation Rules -->
+<section class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant/50 flex justify-between items-center bg-surface-bright">
+<h2 class="font-card-title text-card-title text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">stars</span>
+                                    Point Calculation
+                                </h2>
+<span class="bg-[#FFF3C4] text-[#F5B82E] font-caption text-caption px-2 py-1 rounded-full font-bold">Active</span>
+</div>
+<div class="p-lg space-y-6">
+<!-- Base Rate -->
+<div>
+<label class="block font-caption text-caption text-on-surface-variant mb-2">Base Conversion Rate</label>
+<div class="flex items-center gap-4">
+<div class="flex-1 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="text-on-surface-variant font-body">Rp</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface focus:ring-2 focus:ring-inverse-primary focus:border-primary transition-all font-body" type="text" value="1.000"/>
+</div>
+<span class="font-body-semibold text-body-semibold text-on-surface-variant">=</span>
+<div class="flex-1 relative">
+<input class="block w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface focus:ring-2 focus:ring-inverse-primary focus:border-primary transition-all font-body text-right" type="text" value="1"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<span class="text-on-surface-variant font-body text-sm">pt</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Expiry -->
+<div>
+<label class="block font-caption text-caption text-on-surface-variant mb-2">Point Expiry Rule</label>
+<select class="block w-full pl-3 pr-10 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface focus:ring-2 focus:ring-inverse-primary focus:border-primary transition-all font-body appearance-none">
+<option value="12m">12 Months from earning date</option>
+<option value="6m">6 Months from earning date</option>
+<option value="end_of_year">End of Calendar Year</option>
+<option value="never">Never Expire</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Tier Thresholds -->
+<section class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant/50 bg-surface-bright">
+<h2 class="font-card-title text-card-title text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+                                    Tier Thresholds
+                                </h2>
+</div>
+<div class="p-0">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/50">
+<th class="px-lg py-3 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Tier Level</th>
+<th class="px-lg py-3 font-caption text-caption text-on-surface-variant uppercase tracking-wider">Points Required</th>
+<th class="px-lg py-3 font-caption text-caption text-on-surface-variant uppercase tracking-wider text-right">Multiplier</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-lg py-4 font-body-semibold text-body-semibold text-on-surface">Member</td>
+<td class="px-lg py-4 font-body text-body text-on-surface-variant">0</td>
+<td class="px-lg py-4 font-body text-body text-on-surface text-right">1.0x</td>
+</tr>
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-lg py-4 font-body-semibold text-body-semibold text-on-surface text-primary">Silver</td>
+<td class="px-lg py-4 font-body text-body text-on-surface-variant">10,000</td>
+<td class="px-lg py-4 font-body text-body text-on-surface text-right">1.2x</td>
+</tr>
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-lg py-4 font-body-semibold text-body-semibold text-on-surface text-tertiary">Gold</td>
+<td class="px-lg py-4 font-body text-body text-on-surface-variant">50,000</td>
+<td class="px-lg py-4 font-body text-body text-on-surface text-right">1.5x</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-lg py-3 bg-surface-bright border-t border-outline-variant/50">
+<button class="text-primary font-body-semibold text-body-semibold hover:text-primary-fixed-variant transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span> Add Tier
+                                </button>
+</div>
+</section>
+</div>
+<!-- Right Column: Developer / Technical -->
+<div class="flex flex-col gap-lg">
+<!-- Webhooks & API -->
+<section class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
+<div class="px-lg py-md border-b border-outline-variant/50 bg-[#0F172A] text-white">
+<h2 class="font-card-title text-card-title flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">terminal</span>
+                                    Developer API
+                                </h2>
+</div>
+<div class="p-lg space-y-6">
+<!-- Webhook URL -->
+<div>
+<label class="block font-caption text-caption text-on-surface-variant mb-2">POS Webhook URL</label>
+<div class="flex rounded-lg shadow-sm">
+<span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-outline-variant bg-surface-container-low text-on-surface-variant font-body text-sm">
+                                            POST
+                                        </span>
+<input class="flex-1 block w-full px-3 py-2 border border-outline-variant rounded-none rounded-r-lg bg-surface-container-lowest text-on-surface focus:ring-2 focus:ring-inverse-primary focus:border-primary transition-all font-body text-sm font-mono" type="text" value="https://api.polksgroup.com/v1/pos/events"/>
+</div>
+</div>
+<!-- HMAC Secret -->
+<div>
+<label class="block font-caption text-caption text-on-surface-variant mb-2 flex justify-between">
+<span>HMAC Secret</span>
+<button class="text-primary hover:underline">Rotate</button>
+</label>
+<div class="relative">
+<input class="block w-full px-3 py-2 pr-10 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface focus:ring-2 focus:ring-inverse-primary focus:border-primary transition-all font-mono text-sm" readonly="" type="password" value="sk_test_xxxxxxxxxxxxxxxxxxxx"/>
+<button class="absolute inset-y-0 right-0 px-3 flex items-center text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+</button>
+</div>
+<p class="mt-2 font-caption text-caption text-on-surface-variant">Used to verify webhook payloads.</p>
+</div>
+<hr class="border-outline-variant/50"/>
+<!-- Idempotency -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<label class="font-body-semibold text-body-semibold text-on-surface">Require Idempotency Keys</label>
+<!-- Toggle switch styling -->
+<button aria-checked="true" class="bg-primary relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" role="switch" type="button">
+<span class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</button>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Enforce `Idempotency-Key` headers on all point creation requests to prevent double-crediting.</p>
+</div>
+</div>
+</section>
+<!-- Save Actions -->
+<div class="flex gap-4 justify-end mt-4">
+<button class="px-6 py-2 rounded-lg font-body-semibold text-body-semibold bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">Cancel</button>
+<button class="px-6 py-2 rounded-lg font-body-semibold text-body-semibold bg-primary text-white hover:bg-primary-container transition-colors shadow-sm">Save Config</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-base left-1/2 -translate-x-1/2 w-[320px] z-50 flex justify-around items-center px-4 py-2 bg-on-secondary-fixed dark:bg-on-background shadow-lg rounded-full">
+<!-- Dashboard (Inactive) -->
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 scale-95 active:scale-90 transition-transform hover:text-primary-fixed transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-xs text-label-xs mt-1">Dash</span>
+</a>
+<!-- Members (Inactive) -->
+<a class="flex flex-col items-center justify-center text-secondary-fixed-dim p-2 scale-95 active:scale-90 transition-transform hover:text-primary-fixed transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-xs text-label-xs mt-1">Users</span>
+</a>
+<!-- Settings (Active) -->
+<a class="flex flex-col items-center justify-center text-tertiary-fixed-dim bg-on-tertiary-fixed-variant rounded-full p-2 scale-95 active:scale-90 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-xs text-label-xs mt-1">Config</span>
+</a>
+</nav>
