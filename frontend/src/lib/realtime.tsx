@@ -1,0 +1,184 @@
+"use client";
+
+// Koneksi WebSocket (Socket.IO) global ke backend untuk update realtime tanpa
+// refresh: status voucher saat di-scan kasir, saldo poin & tier saat transaksi
+// / penyesuaian admin, dan notifikasi/inbox baru.
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { io, type Socket } from "socket.io-client";
+import { Star, PartyPopper, Bell } from "lucide-react";
+import { api, getToken } from "./api";
+import { useAuth } from "./auth";
+import { TIER_META, type Tier } from "./loyalty/tier";
+
+// Socket.IO listen di root server, bukan di bawah prefix REST (/api/v1).
+function socketBaseUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return "http://localhost:3000";
+  }
+}
+
+// Buka koneksi tersautentikasi (token JWT dikirim di handshake auth).
+// Kembalikan null bila belum login. Pemanggil wajib socket.disconnect() saat
+// unmount.
+export function connectRealtime(): Socket | null {
+  const token = getToken();
+  if (!token) return null;
+
+  return io(socketBaseUrl(), {
+    auth: { token },
+    transports: ["websocket"],
+  });
+}
+
+// ── Payload event (samakan dengan RealtimeGateway backend) ──────────────────
+type PointsChanged = {
+  pointBalance: number;
+  pointsDelta: number;
+  source: "transaction" | "adjustment";
+};
+type TierUp = { from: Tier; to: Tier };
+type NotificationNew = { title: string; message: string; createdAt: string };
+
+// ── Toast ringan untuk feedback realtime ────────────────────────────────────
+type Tone = "point" | "tier" | "notif";
+type Toast = { id: number; title: string; body: string; tone: Tone };
+
+type RealtimeContextValue = {
+  // Jumlah notifikasi belum dibaca — untuk badge bell.
+  unreadCount: number;
+  // Naik tiap ada notifikasi baru; halaman inbox memakainya untuk refetch.
+  notificationNonce: number;
+  // Dipanggil saat inbox dibuka (semua ditandai dibaca) → reset badge.
+  markAllNotificationsRead: () => void;
+};
+
+const RealtimeContext = createContext<RealtimeContextValue | undefined>(undefined);
+
+export function RealtimeProvider({ children }: { children: ReactNode }) {
+  const { user, refreshProfile } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationNonce, setNotificationNonce] = useState(0);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastSeq = useRef(0);
+
+  const pushToast = useCallback((t: Omit<Toast, "id">) => {
+    const id = ++toastSeq.current;
+    setToasts((prev) => [...prev, { ...t, id }]);
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((x) => x.id !== id));
+    }, 4500);
+  }, []);
+
+  const markAllNotificationsRead = useCallback(() => setUnreadCount(0), []);
+
+  // Seed unread + buka socket saat user terautentikasi. Reconnect saat user
+  // berganti (login/logout).
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+
+    let alive = true;
+    api<{ count: number }>("/member/notifications/unread-count")
+      .then((r) => alive && setUnreadCount(r.count))
+      .catch(() => {});
+
+    const socket = connectRealtime();
+    if (!socket) return;
+
+    socket.on("points:changed", (p: PointsChanged) => {
+      // Tarik ulang profil → saldo & tier sinkron di semua halaman.
+      void refreshProfile();
+      if (p.pointsDelta > 0) {
+        pushToast({
+          tone: "point",
+          title: `+${p.pointsDelta.toLocaleString("id-ID")} poin`,
+          body:
+            p.source === "transaction"
+              ? "Poin dari transaksimu sudah masuk."
+              : "Saldo poinmu diperbarui.",
+        });
+      }
+    });
+
+    socket.on("tier:up", (t: TierUp) => {
+      void refreshProfile();
+      pushToast({
+        tone: "tier",
+        title: `Selamat, naik ke ${TIER_META[t.to]?.label ?? t.to}!`,
+        body: "Tier-mu naik — nikmati benefit barunya.",
+      });
+    });
+
+    socket.on("notification:new", (n: NotificationNew) => {
+      setUnreadCount((c) => c + 1);
+      setNotificationNonce((v) => v + 1);
+      pushToast({ tone: "notif", title: n.title, body: n.message });
+    });
+
+    return () => {
+      alive = false;
+      socket.disconnect();
+    };
+    // user?.id sebagai kunci sesi; refreshProfile & pushToast stabil.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  return (
+    <RealtimeContext.Provider
+      value={{ unreadCount, notificationNonce, markAllNotificationsRead }}
+    >
+      {children}
+      <ToastStack toasts={toasts} />
+    </RealtimeContext.Provider>
+  );
+}
+
+export function useRealtime() {
+  const ctx = useContext(RealtimeContext);
+  if (!ctx) throw new Error("useRealtime harus di dalam <RealtimeProvider>");
+  return ctx;
+}
+
+// ── UI toast ────────────────────────────────────────────────────────────────
+const TONE_ICON = {
+  point: <Star size={18} color="#F6B84B" fill="#F6B84B" />,
+  tier: <PartyPopper size={18} color="#9B7BE8" />,
+  notif: <Bell size={18} color="#25343F" />,
+} as const;
+
+function ToastStack({ toasts }: { toasts: Toast[] }) {
+  if (toasts.length === 0) return null;
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-3 z-[60] flex flex-col items-center gap-2 px-4">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className="pointer-events-auto flex w-full max-w-[360px] items-start gap-3 rounded-2xl border border-polks-border bg-white p-3.5 shadow-lg"
+        >
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
+            {TONE_ICON[t.tone]}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-bold text-polks-text">{t.title}</p>
+            <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-polks-muted">
+              {t.body}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

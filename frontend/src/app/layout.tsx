@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { montserrat } from "@/lib/fonts";
 import { AuthProvider } from "@/lib/auth";
+import { RealtimeProvider } from "@/lib/realtime";
 import { SplashGate } from "@/components/layout/splash-gate";
 
 export const metadata: Metadata = {
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="id" className={montserrat.variable}>
       <body className="font-body bg-background text-on-background antialiased">
         <AuthProvider>
-          <SplashGate>{children}</SplashGate>
+          <RealtimeProvider>
+            <SplashGate>{children}</SplashGate>
+          </RealtimeProvider>
         </AuthProvider>
       </body>
     </html>

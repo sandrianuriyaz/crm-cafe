@@ -6,6 +6,7 @@ import { ArrowLeft, Gift, Copy, Check, QrCode } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api, ApiError } from "@/lib/api";
+import { connectRealtime } from "@/lib/realtime";
 import { type Voucher } from "@/lib/loyalty/types";
 
 const STATUS_META: Record<Voucher["status"], { label: string; dot: string; bg: string; text: string }> = {
@@ -22,7 +23,10 @@ function formatDate(iso: string | null): string {
 }
 
 function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
-  const meta = STATUS_META[v.status];
+  // Fallback bila status di luar dugaan (mis. enum backend bertambah) supaya
+  // `meta.bg` dkk tidak pernah membaca undefined → mencegah crash/blank.
+  const meta = STATUS_META[v.status] ?? STATUS_META.USED;
+  const rewardName = v.reward?.name ?? "Reward";
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -57,7 +61,7 @@ function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
           <Gift size={18} color={isActive ? "#F6B84B" : "#8A959D"} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold text-polks-text">{v.reward.name}</p>
+          <p className="truncate text-[13px] font-semibold text-polks-text">{rewardName}</p>
           <p className="mt-0.5 text-[11px] text-[#8A959D]">
             Ditukar {formatDate(v.createdAt)} · s/d {formatDate(v.expiredAt)}
           </p>
@@ -116,7 +120,9 @@ export default function RedeemHistoryPage() {
   useEffect(() => {
     let alive = true;
     api<Voucher[]>("/vouchers")
-      .then((d) => alive && setVouchers(d))
+      // Jaga-jaga bila respons bukan array (mis. perubahan kontrak backend) —
+      // jangan biarkan setState non-array bikin .filter() melempar → blank.
+      .then((d) => alive && setVouchers(Array.isArray(d) ? d : []))
       .catch((err) => {
         if (!alive) return;
         if (err instanceof ApiError && err.status === 401) {
@@ -130,6 +136,38 @@ export default function RedeemHistoryPage() {
       alive = false;
     };
   }, [router]);
+
+  // Realtime: begitu kasir POS scan & redeem voucher, backend push
+  // "voucher:updated" → langsung perbarui kartu jadi "Digunakan" tanpa refresh.
+  useEffect(() => {
+    const socket = connectRealtime();
+    if (!socket) return;
+
+    // Payload bisa saja parsial / kehilangan field saat transport. Merge dengan
+    // aman: hanya timpa field yang ada, dan jangan pernah hapus `reward` yang
+    // sudah kita punya (VoucherCard mengakses reward.name → kalau hilang, blank).
+    socket.on("voucher:updated", (updated: Partial<Voucher> & { id?: string }) => {
+      if (!updated?.id) return;
+      setVouchers((prev) =>
+        prev.map((v) =>
+          v.id === updated.id
+            ? { ...v, ...updated, reward: updated.reward ?? v.reward }
+            : v,
+        ),
+      );
+      // Bila QR voucher yang sedang dibuka ternyata baru saja dipakai,
+      // tutup modal-nya — sudah tidak relevan ditunjukkan ke kasir.
+      setQrVoucher((cur) =>
+        cur && cur.id === updated.id && updated.status && updated.status !== "ACTIVE"
+          ? null
+          : cur,
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const activeList = useMemo(() => vouchers.filter((v) => v.status === "ACTIVE"), [vouchers]);
   const pastList = useMemo(() => vouchers.filter((v) => v.status !== "ACTIVE"), [vouchers]);

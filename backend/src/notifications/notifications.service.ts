@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   BroadcastTarget,
   CreateBroadcastDto,
@@ -13,14 +14,17 @@ const INACTIVE_DAYS = 30;
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtime: RealtimeGateway,
+  ) {}
 
   // ── Admin: broadcast ke member target ────────────────────────────────────
   async broadcast(dto: CreateBroadcastDto) {
     const where = this.targetWhere(dto.target);
     const members = await this.prisma.member.findMany({
       where,
-      select: { id: true },
+      select: { id: true, userId: true },
     });
 
     const title = dto.title.trim();
@@ -34,6 +38,17 @@ export class NotificationsService {
         data: members.map((m) => ({ memberId: m.id, title, message })),
       }),
     ]);
+
+    // Push realtime ke tiap member yang punya akun → badge inbox naik instan.
+    const createdAt = new Date().toISOString();
+    for (const m of members) {
+      if (!m.userId) continue;
+      try {
+        this.realtime.emitNotification(m.userId, { title, message, createdAt });
+      } catch {
+        // best-effort per member
+      }
+    }
 
     return { recipientCount: members.length };
   }

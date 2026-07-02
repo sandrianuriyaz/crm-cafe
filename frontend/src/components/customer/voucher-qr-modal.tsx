@@ -35,7 +35,9 @@ export function VoucherQrModal({ voucher, onClose }: { voucher: Voucher; onClose
             <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-polks-brand">
               Voucher Reward
             </p>
-            <p className="mt-0.5 text-[15px] font-bold text-polks-text">{voucher.reward.name}</p>
+            <p className="mt-0.5 text-[15px] font-bold text-polks-text">
+              {voucher.reward?.name ?? "Reward"}
+            </p>
           </div>
           <button
             type="button"
