@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, User, Mail, Phone, IdCard, Award, Calendar } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, IdCard, Award, Calendar, ShieldCheck } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -15,6 +15,7 @@ type MemberProfile = {
   phone: string | null;
   pointBalance: number;
   createdAt: string;
+  emailVerified?: boolean;
 };
 
 function formatJoined(iso: string) {
@@ -26,9 +27,11 @@ function formatJoined(iso: string) {
 export default function AccountInfoPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [p, setP]           = useState<MemberProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [p, setP]               = useState<MemberProfile | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
+  const [sendingVerif, setSendingVerif] = useState(false);
+  const [verifSent, setVerifSent]       = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -127,6 +130,34 @@ export default function AccountInfoPage() {
             ))}
           </div>
         )}
+        {/* Email verification banner */}
+        {!loading && !error && p && p.email && p.emailVerified === false && (
+          <div className="mt-3 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-500" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-amber-800">Email belum diverifikasi</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-amber-700">
+                Verifikasi email untuk mengamankan akun kamu.
+              </p>
+              <button
+                type="button"
+                disabled={sendingVerif || verifSent}
+                onClick={async () => {
+                  setSendingVerif(true);
+                  try {
+                    await api("/auth/verify-email/send", { method: "POST" });
+                    setVerifSent(true);
+                  } catch {}
+                  finally { setSendingVerif(false); }
+                }}
+                className="mt-2 text-[12px] font-bold text-amber-800 underline underline-offset-2 disabled:opacity-60"
+              >
+                {verifSent ? "Email terkirim — cek inbox kamu" : sendingVerif ? "Mengirim…" : "Kirim email verifikasi"}
+              </button>
+            </div>
+          </div>
+        )}
+
         <p className="mt-3 px-1 text-[11px] leading-relaxed text-polks-muted">
           Untuk mengubah data akun, hubungi admin POLKS atau pusat bantuan.
         </p>

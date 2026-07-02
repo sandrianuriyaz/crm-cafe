@@ -204,7 +204,12 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-xs font-semibold text-[#374151]">Password</label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="text-xs font-semibold text-[#374151]">Password</label>
+              <Link href="/forgot-password" className="text-xs font-semibold text-polks-brand">
+                Lupa kata sandi?
+              </Link>
+            </div>
             <div className="relative flex items-center">
               <Lock size={18} className="absolute left-4 text-[#9CA3AF]" />
               <input
