@@ -37,7 +37,10 @@ export default function MemberDashboardPage() {
   const loading      = pending > 0;
   const animatedPts  = useCountUp(points, 900);
   const tierMeta     = TIER_META[user?.tier ?? "bronze"];
-  const nextTier     = user?.nextTier ?? null;
+  // nextTier null hanya valid kalau tier memang "platinum"; selain itu tunggu profil lengkap
+  const nextTier = user?.nextTier !== undefined
+    ? user.nextTier
+    : user?.tier === "platinum" ? null : undefined;
   const monthlySpend = user?.monthlySpend ?? 0;
   const progress     = nextTier ? Math.min(100, (monthlySpend / nextTier.min) * 100) : 100;
 
@@ -177,7 +180,7 @@ export default function MemberDashboardPage() {
             onClick={() => setTierSheet(true)}
             className="w-full rounded-xl border border-polks-border bg-white p-3 text-left"
           >
-            {nextTier ? (
+            {nextTier !== null && nextTier !== undefined ? (
               <>
                 <div className="flex items-center justify-between">
                   <p className="text-[12px] font-bold text-polks-text">

@@ -107,6 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setToken(res.access_token);
       setUser(res.user);
+      // Lengkapi profil (tier, nextTier, monthlySpend) yang tidak ada di JWT
+      api<MemberProfile>("/member/profile")
+        .then((p) => setUser((prev) => prev ? { ...prev, name: p.name, memberCode: p.memberCode, pointBalance: p.pointBalance, tier: p.tier, monthlySpend: p.monthlySpend, nextTier: p.nextTier } : prev))
+        .catch(() => {});
       return { status: "ok" };
     },
     [],
@@ -121,6 +125,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setToken(res.access_token);
       setUser(res.user);
+      api<MemberProfile>("/member/profile")
+        .then((p) => setUser((prev) => prev ? { ...prev, name: p.name, memberCode: p.memberCode, pointBalance: p.pointBalance, tier: p.tier, monthlySpend: p.monthlySpend, nextTier: p.nextTier } : prev))
+        .catch(() => {});
     },
     [],
   );
@@ -139,6 +146,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setToken(res.access_token);
       setUser(res.user);
+      api<MemberProfile>("/member/profile")
+        .then((p) => setUser((prev) => prev ? { ...prev, name: p.name, memberCode: p.memberCode, pointBalance: p.pointBalance, tier: p.tier, monthlySpend: p.monthlySpend, nextTier: p.nextTier } : prev))
+        .catch(() => {});
     },
     [],
   );
