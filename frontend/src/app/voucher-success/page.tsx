@@ -70,7 +70,7 @@ export default function VoucherSuccessPage() {
 
         <div className="flex flex-col gap-4 bg-polks-bg px-5 pb-10">
           {/* Voucher ticket */}
-          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
             <div className="flex items-center justify-between px-5 pb-4 pt-5">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-polks-brand">
@@ -119,7 +119,7 @@ export default function VoucherSuccessPage() {
           </div>
 
           {/* Notice */}
-          <div className="flex items-center gap-3 rounded-2xl border border-polks-border bg-white px-4 py-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-polks-border bg-polks-card px-4 py-3">
             <ShoppingBag size={15} color="#25343F" className="shrink-0" />
             <p className="text-xs font-medium text-polks-muted">
               Tunjukkan voucher ke kasir sebelum transaksi dimulai.
@@ -135,7 +135,7 @@ export default function VoucherSuccessPage() {
           </Link>
           <Link
             href="/dashboard"
-            className="flex h-[50px] w-full items-center justify-center rounded-[14px] border-[1.5px] border-polks-border bg-white text-sm font-semibold text-polks-brand"
+            className="flex h-[50px] w-full items-center justify-center rounded-[14px] border-[1.5px] border-polks-border bg-polks-card text-sm font-semibold text-polks-brand"
           >
             Kembali ke Beranda
           </Link>

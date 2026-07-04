@@ -172,7 +172,7 @@ export function PromoBanner() {
                   onClick={() => goTo(i)}
                   className={
                     i === idx
-                      ? "h-1.5 w-4 rounded-full bg-white shadow-sm"
+                      ? "h-1.5 w-4 rounded-full bg-polks-card shadow-sm"
                       : "size-1.5 rounded-full bg-white/50"
                   }
                 />

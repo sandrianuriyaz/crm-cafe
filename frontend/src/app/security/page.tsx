@@ -142,10 +142,10 @@ export default function SecurityPage() {
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Keamanan</h1>
         <p className="mt-1 text-[13px] text-white/50">Pengaturan keamanan akun POLKS kamu.</p>
@@ -171,7 +171,7 @@ export default function SecurityPage() {
         </div>
 
         {/* Metode login */}
-        <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+        <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
               <Mail size={16} className="text-polks-brand" />
@@ -189,7 +189,7 @@ export default function SecurityPage() {
         </div>
 
         {/* Verifikasi 2 Langkah (2FA) */}
-        <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+        <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
               {enabled ? (
@@ -277,7 +277,7 @@ export default function SecurityPage() {
                 <img
                   src={setup.qrCode}
                   alt="QR kode 2FA"
-                  className="size-44 rounded-xl border border-polks-border bg-white p-2"
+                  className="size-44 rounded-xl border border-polks-border bg-polks-card p-2"
                 />
               </div>
               <div className="mt-3 rounded-xl bg-polks-surface px-3 py-2.5 text-center">
@@ -323,7 +323,7 @@ export default function SecurityPage() {
                     )
                   }
                   placeholder="xxxxx-xxxxx"
-                  className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-white text-center font-mono text-[18px] font-bold tracking-[0.15em] text-polks-text outline-none transition-colors focus:border-polks-brand"
+                  className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-polks-card text-center font-mono text-[18px] font-bold tracking-[0.15em] text-polks-text outline-none transition-colors focus:border-polks-brand"
                 />
               ) : (
                 <input
@@ -333,7 +333,7 @@ export default function SecurityPage() {
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="••••••"
-                  className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-white text-center text-[22px] font-bold tracking-[0.4em] text-polks-text outline-none transition-colors focus:border-polks-brand"
+                  className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-polks-card text-center text-[22px] font-bold tracking-[0.4em] text-polks-text outline-none transition-colors focus:border-polks-brand"
                 />
               )}
 
@@ -395,7 +395,7 @@ export default function SecurityPage() {
               </div>
             </div>
 
-            <div className="mx-4 grid grid-cols-2 gap-2 rounded-xl bg-white px-3 py-3">
+            <div className="mx-4 grid grid-cols-2 gap-2 rounded-xl bg-polks-card px-3 py-3">
               {recoveryCodes.map((c) => (
                 <span
                   key={c}
@@ -410,7 +410,7 @@ export default function SecurityPage() {
               <button
                 type="button"
                 onClick={() => copyCodes(recoveryCodes)}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-polks-border bg-white py-2.5 text-[12px] font-bold text-polks-text"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-polks-border bg-polks-card py-2.5 text-[12px] font-bold text-polks-text"
               >
                 {copied ? (
                   <>
@@ -425,7 +425,7 @@ export default function SecurityPage() {
               <button
                 type="button"
                 onClick={() => downloadCodes(recoveryCodes)}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-polks-border bg-white py-2.5 text-[12px] font-bold text-polks-text"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-polks-border bg-polks-card py-2.5 text-[12px] font-bold text-polks-text"
               >
                 <Download size={14} /> Unduh
               </button>
@@ -450,7 +450,7 @@ export default function SecurityPage() {
             logout();
             router.replace("/login");
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-white py-4"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-polks-card py-4"
         >
           <LogOut size={16} className="text-polks-error" />
           <span className="text-sm font-bold text-polks-error">Keluar dari Akun</span>

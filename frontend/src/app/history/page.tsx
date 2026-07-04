@@ -111,6 +111,14 @@ export default function HistoryPage() {
     <CustomerShell showHeader={false} topbarRight={null}>
       {/* Header navy + ringkasan */}
       <div className="bg-polks-brand px-5 pb-4 pt-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
+        >
+          <Icon name="arrow_back" className="size-[18px]" />
+        </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Riwayat Poin</h1>
         <p className="mt-1 text-[13px] text-white/50">Semua mutasi poin kamu di POLKS.</p>
 
@@ -153,7 +161,7 @@ export default function HistoryPage() {
               "relative flex size-8 shrink-0 items-center justify-center rounded-full border transition-colors",
               filterActive
                 ? "border-polks-brand bg-polks-brand text-white"
-                : "border-polks-border bg-white text-polks-muted",
+                : "border-polks-border bg-polks-card text-polks-muted",
             )}
           >
             <Icon name="filter_list" className="size-4" />
@@ -171,7 +179,7 @@ export default function HistoryPage() {
                   "h-8 shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-semibold transition-colors",
                   filter === f.value
                     ? "bg-polks-brand text-white"
-                    : "border border-polks-border bg-white text-polks-muted",
+                    : "border border-polks-border bg-polks-card text-polks-muted",
                 )}
               >
                 {f.label}
@@ -189,7 +197,7 @@ export default function HistoryPage() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="flex animate-pulse items-center gap-3 rounded-2xl border border-polks-border bg-white p-4"
+                className="flex animate-pulse items-center gap-3 rounded-2xl border border-polks-border bg-polks-card p-4"
               >
                 <div className="size-10 shrink-0 rounded-xl bg-polks-surface" />
                 <div className="flex-1">
@@ -200,7 +208,7 @@ export default function HistoryPage() {
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-white p-5 text-center">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-polks-card p-5 text-center">
             <Icon name="error" className="size-10 text-polks-error" />
             <p className="text-sm text-polks-muted">{error}</p>
             <Button variant="outline" onClick={load}>
@@ -209,7 +217,7 @@ export default function HistoryPage() {
             </Button>
           </div>
         ) : visible.length === 0 ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-5 text-center">
+          <div className="rounded-2xl border border-polks-border bg-polks-card p-5 text-center">
             <p className="text-sm text-polks-muted">
               {entries.length === 0
                 ? "Belum ada riwayat poin."
@@ -227,7 +235,7 @@ export default function HistoryPage() {
               return (
                 <div
                   key={e.id}
-                  className="rounded-2xl border border-polks-border bg-white p-4"
+                  className="rounded-2xl border border-polks-border bg-polks-card p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">

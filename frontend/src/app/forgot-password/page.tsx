@@ -30,8 +30,8 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
-      <div className="polks-phone flex min-h-screen w-full flex-col bg-white">
+    <main className="flex min-h-screen justify-center bg-polks-card font-body text-polks-text md:bg-transparent">
+      <div className="polks-phone flex min-h-screen w-full flex-col bg-polks-card">
         <div className="px-5 pt-5">
           <Link href="/login" aria-label="Kembali" className="inline-flex p-1">
             <ArrowLeft size={22} color="#17212A" />
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="hello@example.com"
-                    className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-white pl-11 pr-4 text-sm text-polks-text outline-none transition-colors focus:border-polks-brand"
+                    className="h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-polks-card pl-11 pr-4 text-sm text-polks-text outline-none transition-colors focus:border-polks-brand"
                   />
                 </div>
               </div>

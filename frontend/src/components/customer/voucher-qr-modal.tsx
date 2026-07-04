@@ -27,7 +27,7 @@ export function VoucherQrModal({ voucher, onClose }: { voucher: Voucher; onClose
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[340px] rounded-[24px] bg-white p-6 text-center"
+        className="w-full max-w-[340px] rounded-[24px] bg-polks-card p-6 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between">

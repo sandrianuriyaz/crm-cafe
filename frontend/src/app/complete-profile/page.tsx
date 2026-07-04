@@ -54,11 +54,11 @@ export default function CompleteProfilePage() {
   }
 
   const field =
-    "h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-white pl-11 pr-4 text-sm text-polks-text outline-none transition-colors focus:border-polks-brand";
+    "h-14 w-full rounded-2xl border-[1.5px] border-polks-border bg-polks-card pl-11 pr-4 text-sm text-polks-text outline-none transition-colors focus:border-polks-brand";
 
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
-      <div className="polks-phone flex min-h-screen w-full flex-col bg-white">
+    <main className="flex min-h-screen justify-center bg-polks-card font-body text-polks-text md:bg-transparent">
+      <div className="polks-phone flex min-h-screen w-full flex-col bg-polks-card">
         {/* Logo mark */}
         <div className="flex flex-col items-center px-8 pb-5 pt-10">
           <div className="flex size-[88px] items-center justify-center rounded-[26px] bg-polks-brand shadow-[0_12px_40px_rgba(37,52,63,0.2)]">

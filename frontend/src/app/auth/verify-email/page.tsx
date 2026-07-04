@@ -73,8 +73,8 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
-      <div className="polks-phone flex min-h-screen w-full flex-col bg-white">
+    <main className="flex min-h-screen justify-center bg-polks-card font-body text-polks-text md:bg-transparent">
+      <div className="polks-phone flex min-h-screen w-full flex-col bg-polks-card">
         <Suspense>
           <VerifyEmailContent />
         </Suspense>

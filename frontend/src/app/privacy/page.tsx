@@ -37,9 +37,9 @@ const sections = [
 export default function PrivacyPage() {
   const router = useRouter();
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
-      <div className="polks-phone min-h-screen w-full bg-white">
-        <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-polks-surface bg-white px-5 py-4">
+    <main className="flex min-h-screen justify-center bg-polks-card font-body text-polks-text md:bg-transparent">
+      <div className="polks-phone min-h-screen w-full bg-polks-card">
+        <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-polks-surface bg-polks-card px-5 py-4">
           <button type="button" onClick={() => router.back()} aria-label="Kembali" className="text-polks-text">
             <ArrowLeft size={20} />
           </button>

@@ -90,7 +90,7 @@ function ResetPasswordForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimal 6 karakter"
               className={
-                "h-14 w-full rounded-2xl border-[1.5px] bg-white pl-11 pr-12 text-sm text-polks-text outline-none transition-colors focus:border-polks-brand " +
+                "h-14 w-full rounded-2xl border-[1.5px] bg-polks-card pl-11 pr-12 text-sm text-polks-text outline-none transition-colors focus:border-polks-brand " +
                 (pwLen > 0 && !pwOk ? "border-polks-error" : pwOk ? "border-green-400" : "border-polks-border")
               }
             />
@@ -124,8 +124,8 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="flex min-h-screen justify-center bg-white font-body text-polks-text md:bg-transparent">
-      <div className="polks-phone flex min-h-screen w-full flex-col bg-white">
+    <main className="flex min-h-screen justify-center bg-polks-card font-body text-polks-text md:bg-transparent">
+      <div className="polks-phone flex min-h-screen w-full flex-col bg-polks-card">
         <div className="px-5 pt-5">
           <Link href="/login" aria-label="Kembali" className="inline-flex p-1">
             <ArrowLeft size={22} color="#17212A" />

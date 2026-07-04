@@ -90,10 +90,10 @@ export default function RewardDetailPage() {
         <button
           type="button"
           onClick={() => router.push("/rewards")}
-          className="mb-5 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali ke Catalog"
+          className="mb-5 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali ke Catalog
+          <ArrowLeft size={18} />
         </button>
 
         {loading ? (
@@ -141,13 +141,13 @@ export default function RewardDetailPage() {
 
       <div className="flex flex-col gap-4 bg-polks-bg px-5 pb-10">
         {error ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center">
+          <div className="rounded-2xl border border-polks-border bg-polks-card p-6 text-center">
             <p className="text-sm text-polks-muted">{error}</p>
           </div>
         ) : reward ? (
           <>
             {/* Meta */}
-            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+            <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
               {[
                 { Icon: MapPin, label: "Outlet", value: "All Outlets" },
                 { Icon: Calendar, label: "Sisa stok", value: `${reward.stock}` },
@@ -172,7 +172,7 @@ export default function RewardDetailPage() {
 
             {/* Description */}
             {reward.description ? (
-              <div className="rounded-2xl border border-polks-border bg-white p-4">
+              <div className="rounded-2xl border border-polks-border bg-polks-card p-4">
                 <div className="mb-3 flex items-center gap-2">
                   <Info size={14} color="#25343F" />
                   <span className="text-[13px] font-semibold text-polks-text">Deskripsi</span>
@@ -182,7 +182,7 @@ export default function RewardDetailPage() {
             ) : null}
 
             {/* Terms */}
-            <div className="rounded-2xl border border-polks-border bg-white p-4">
+            <div className="rounded-2xl border border-polks-border bg-polks-card p-4">
               <span className="mb-3 block text-[13px] font-semibold text-polks-text">
                 Syarat &amp; Ketentuan
               </span>
@@ -197,7 +197,7 @@ export default function RewardDetailPage() {
             </div>
 
             {/* Balance summary */}
-            <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-white p-4">
+            <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-polks-card p-4">
               <p className="text-[13px] font-semibold text-polks-text">Ringkasan Poin</p>
               <div className="flex justify-between text-[13px]">
                 <span className="text-polks-muted">Saldo saat ini</span>

@@ -34,10 +34,10 @@ export default function HelpPage() {
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Pusat Bantuan</h1>
         <p className="mt-1 text-[13px] text-white/50">Pertanyaan umum & cara menghubungi kami.</p>
@@ -59,7 +59,7 @@ export default function HelpPage() {
             {faqs.map((f, i) => {
               const isOpen = open === i;
               return (
-                <div key={f.q} className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+                <div key={f.q} className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
                   <button
                     type="button"
                     onClick={() => setOpen(isOpen ? null : i)}
@@ -92,7 +92,7 @@ export default function HelpPage() {
               href="https://wa.me/6281200000000"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 rounded-2xl border border-polks-border bg-white px-4 py-3.5"
+              className="flex items-center gap-3 rounded-2xl border border-polks-border bg-polks-card px-4 py-3.5"
             >
               <div className="flex size-10 items-center justify-center rounded-xl bg-[#25D366]/10">
                 <MessageCircle size={18} className="text-[#25D366]" />
@@ -104,7 +104,7 @@ export default function HelpPage() {
             </a>
             <a
               href="mailto:support@polksgroup.com"
-              className="flex items-center gap-3 rounded-2xl border border-polks-border bg-white px-4 py-3.5"
+              className="flex items-center gap-3 rounded-2xl border border-polks-border bg-polks-card px-4 py-3.5"
             >
               <div className="flex size-10 items-center justify-center rounded-xl bg-polks-surface">
                 <Mail size={18} className="text-polks-brand" />

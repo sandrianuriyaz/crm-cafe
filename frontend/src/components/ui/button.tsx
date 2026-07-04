@@ -14,7 +14,7 @@ const buttonVariants = cva(
         destructive:
           "bg-error text-on-error font-body-semibold text-body-semibold shadow-sm hover:bg-error/90 active:scale-[0.98]",
         outline:
-          "border border-polks-border bg-white text-polks-brand font-body-semibold text-body-semibold hover:bg-polks-surface",
+          "border border-polks-border bg-polks-card text-polks-brand font-body-semibold text-body-semibold hover:bg-polks-surface",
         secondary:
           "bg-polks-surface text-polks-brand font-body-semibold text-body-semibold hover:bg-polks-border",
         ghost: "text-polks-brand font-body-semibold text-body-semibold hover:bg-polks-surface",

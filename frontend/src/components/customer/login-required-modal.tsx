@@ -29,7 +29,7 @@ export function LoginRequiredModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="flex w-full max-w-[430px] flex-col rounded-t-3xl bg-white px-5 pb-9 pt-5">
+      <div className="flex w-full max-w-[430px] flex-col rounded-t-3xl bg-polks-card px-5 pb-9 pt-5">
         <div className="mb-5 flex justify-center">
           <div className="h-1 w-9 rounded-full bg-polks-border" />
         </div>
@@ -72,7 +72,7 @@ export function LoginRequiredModal({
           <button
             type="button"
             onClick={() => router.push("/register")}
-            className="h-[50px] rounded-[14px] border-[1.5px] border-polks-border bg-white text-sm font-bold text-polks-brand"
+            className="h-[50px] rounded-[14px] border-[1.5px] border-polks-border bg-polks-card text-sm font-bold text-polks-brand"
           >
             Daftar Gratis
           </button>

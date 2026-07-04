@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { TIER_META, formatRupiah, type Tier } from "@/lib/loyalty/tier";
+import { TIER_META, TIER_ICON, formatRupiah, type Tier } from "@/lib/loyalty/tier";
 
 type Props = {
   currentTier: Tier;
@@ -16,19 +16,14 @@ const TIERS: { name: Tier; min: number; rate: number }[] = [
   { name: "platinum", min: 1_500_000, rate: 850  },
 ];
 
-const TIER_ICON: Record<Tier, string> = {
-  bronze:   "🥉",
-  silver:   "🥈",
-  gold:     "🥇",
-  platinum: "💎",
-};
-
 export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
   const currentIdx  = TIERS.findIndex((t) => t.name === currentTier);
   const nextTierDef = TIERS[currentIdx + 1] ?? null;
   const progress    = nextTierDef
     ? Math.min(100, (monthlySpend / nextTierDef.min) * 100)
     : 100;
+  const CurrentIcon = TIER_ICON[currentTier];
+  const NextIcon    = nextTierDef ? TIER_ICON[nextTierDef.name] : null;
 
   return (
     <div
@@ -36,7 +31,7 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[430px] rounded-t-[28px] bg-white pb-10"
+        className="w-full max-w-[430px] rounded-t-[28px] bg-polks-card pb-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
@@ -61,7 +56,7 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
         <div className="mx-5 rounded-2xl border border-polks-border bg-polks-bg px-4 py-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-[22px]">{TIER_ICON[currentTier]}</span>
+              <CurrentIcon size={22} color={TIER_META[currentTier].badgeText} strokeWidth={1.8} />
               <div>
                 <p className="text-[11px] text-polks-muted">Tier kamu saat ini</p>
                 <p
@@ -84,8 +79,12 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
           {nextTierDef ? (
             <div className="mt-3">
               <div className="mb-1.5 flex items-center justify-between">
-                <p className="text-[11px] text-polks-muted">
-                  Menuju {TIER_ICON[nextTierDef.name]} {TIER_META[nextTierDef.name].label}
+                <p className="flex items-center gap-1 text-[11px] text-polks-muted">
+                  Menuju
+                  {NextIcon && (
+                    <NextIcon size={12} color={TIER_META[nextTierDef.name].badgeText} strokeWidth={1.8} />
+                  )}
+                  {TIER_META[nextTierDef.name].label}
                 </p>
                 <p className="text-[11px] font-semibold text-polks-text">
                   {formatRupiah(monthlySpend)} / {formatRupiah(nextTierDef.min)}
@@ -105,8 +104,12 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
               </p>
             </div>
           ) : (
-            <p className="mt-2 text-[11px] font-semibold" style={{ color: TIER_META.platinum.badgeText }}>
-              💎 Kamu sudah di tier tertinggi!
+            <p
+              className="mt-2 flex items-center gap-1 text-[11px] font-semibold"
+              style={{ color: TIER_META.platinum.badgeText }}
+            >
+              <CurrentIcon size={13} strokeWidth={1.8} />
+              Kamu sudah di tier tertinggi!
             </p>
           )}
         </div>
@@ -115,11 +118,12 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
         <p className="mx-5 mb-2.5 mt-4 text-[11px] font-bold uppercase tracking-[0.08em] text-polks-muted">
           Semua Tier
         </p>
-        <div className="mx-5 overflow-hidden rounded-2xl border border-polks-border bg-white">
+        <div className="mx-5 overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
           {TIERS.map((t, i) => {
             const meta      = TIER_META[t.name];
             const isCurrent = t.name === currentTier;
             const isLast    = i === TIERS.length - 1;
+            const RowIcon   = TIER_ICON[t.name];
             return (
               <div
                 key={t.name}
@@ -129,7 +133,7 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
                   (isCurrent ? "bg-polks-bg" : "")
                 }
               >
-                <span className="text-[20px]">{TIER_ICON[t.name]}</span>
+                <RowIcon size={20} color={meta.badgeText} strokeWidth={1.8} />
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5">
                     <p

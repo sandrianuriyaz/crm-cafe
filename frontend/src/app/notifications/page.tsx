@@ -94,10 +94,10 @@ export default function NotificationsPage() {
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Notifikasi</h1>
         <p className="mt-1 text-[13px] text-white/50">Atur notifikasi yang ingin kamu terima.</p>
@@ -111,7 +111,7 @@ export default function NotificationsPage() {
 
       <div className="bg-polks-bg px-5 pb-10">
         {loading ? (
-          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
             {DEFAULTS.map((_, i) => (
               <div key={i} className={"flex items-center justify-between gap-3 px-4 py-3.5 " + (i > 0 ? "border-t border-polks-surface" : "")}>
                 <div className="flex-1">
@@ -123,7 +123,7 @@ export default function NotificationsPage() {
             ))}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
             {items.map((it, i) => (
               <div
                 key={it.key}
@@ -146,7 +146,7 @@ export default function NotificationsPage() {
                 >
                   <span
                     className={
-                      "absolute top-0.5 size-5 rounded-full bg-white shadow transition-all " +
+                      "absolute top-0.5 size-5 rounded-full bg-polks-card shadow transition-all " +
                       (it.on ? "left-[22px]" : "left-0.5")
                     }
                   />

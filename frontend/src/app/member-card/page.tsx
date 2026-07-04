@@ -46,16 +46,16 @@ export default function MemberCardPage() {
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-polks-muted"
+            aria-label="Kembali"
+            className="flex size-9 items-center justify-center rounded-full bg-polks-surface text-polks-muted"
           >
             <ArrowLeft size={18} />
-            Kembali
           </button>
           <button
             type="button"
             onClick={loadQr}
             disabled={loadingQr}
-            className="flex items-center gap-1.5 rounded-xl border border-polks-border bg-white px-3 py-1.5 text-xs font-semibold text-polks-text disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl border border-polks-border bg-polks-card px-3 py-1.5 text-xs font-semibold text-polks-text disabled:opacity-50"
           >
             <RefreshCw size={12} className={loadingQr ? "animate-spin" : ""} />
             Refresh
@@ -123,7 +123,7 @@ export default function MemberCardPage() {
         </div>
 
         {/* ── Member info ── */}
-        <div className="mx-5 mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3">
+        <div className="mx-5 mt-3 flex items-center justify-between rounded-2xl bg-polks-card px-4 py-3">
           <div className="flex items-center gap-3">
             <div
               className="flex size-10 items-center justify-center rounded-full text-[16px] font-black text-white"
@@ -142,7 +142,7 @@ export default function MemberCardPage() {
         </div>
 
         {/* ── Stats row ── */}
-        <div className="mx-5 mt-3 grid grid-cols-3 divide-x divide-polks-surface rounded-2xl bg-white py-3">
+        <div className="mx-5 mt-3 grid grid-cols-3 divide-x divide-polks-surface rounded-2xl bg-polks-card py-3">
           <div className="flex flex-col items-center gap-1 px-2">
             <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-polks-muted">MEMBER LEVEL</p>
             <p className="text-[13px] font-bold" style={{ color: tierMeta.badgeText }}>
@@ -164,7 +164,7 @@ export default function MemberCardPage() {
 
         {/* ── Action tiles ── */}
         <div className="mx-5 mt-3 grid grid-cols-2 gap-3">
-          <Link href="/history" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4">
+          <Link href="/history" className="flex items-center gap-3 rounded-2xl bg-polks-card px-4 py-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-brand">
               <History size={16} color="#fff" />
             </div>
@@ -174,7 +174,7 @@ export default function MemberCardPage() {
             </div>
             <ChevronRight size={13} className="shrink-0 text-polks-muted" />
           </Link>
-          <Link href="/outlets" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4">
+          <Link href="/outlets" className="flex items-center gap-3 rounded-2xl bg-polks-card px-4 py-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-brand">
               <MapPin size={16} color="#fff" />
             </div>
@@ -187,7 +187,7 @@ export default function MemberCardPage() {
         </div>
 
         {/* ── Security row ── */}
-        <div className="mx-5 mt-3 flex items-center gap-3 rounded-2xl bg-white px-4 py-4">
+        <div className="mx-5 mt-3 flex items-center gap-3 rounded-2xl bg-polks-card px-4 py-4">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-surface">
             <Shield size={16} className="text-polks-muted" />
           </div>

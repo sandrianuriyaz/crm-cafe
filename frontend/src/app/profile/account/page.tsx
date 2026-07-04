@@ -67,10 +67,10 @@ export default function AccountInfoPage() {
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Informasi Akun</h1>
         <p className="mt-1 text-[13px] text-white/50">Detail data membership kamu.</p>
@@ -84,7 +84,7 @@ export default function AccountInfoPage() {
 
       <div className="bg-polks-bg px-5 pb-10">
         {loading ? (
-          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -99,7 +99,7 @@ export default function AccountInfoPage() {
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-polks-border bg-white p-6 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-polks-border bg-polks-card p-6 text-center">
             <p className="text-sm text-polks-muted">{error}</p>
             <button
               type="button"
@@ -110,7 +110,7 @@ export default function AccountInfoPage() {
             </button>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+          <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
             {rows.map(({ Icon, label, value }, i) => (
               <div
                 key={label}
@@ -124,7 +124,7 @@ export default function AccountInfoPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] text-[#8A959D]">{label}</p>
-                  <p className="truncate text-[14px] font-semibold text-polks-text">{value}</p>
+                  <p className="truncate text-[14px] font-semibold text-polks-text-soft">{value}</p>
                 </div>
               </div>
             ))}

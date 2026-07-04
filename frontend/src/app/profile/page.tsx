@@ -174,7 +174,7 @@ export default function ProfilePage() {
             <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A959D]">
               {section.title}
             </p>
-            <div className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+            <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
               {section.items.map(({ label, Icon, href }, i) => (
                 <Link
                   key={label}
@@ -188,7 +188,7 @@ export default function ProfilePage() {
                     <div className="flex size-8 items-center justify-center rounded-lg bg-polks-surface">
                       <Icon size={15} color="#25343F" />
                     </div>
-                    <span className="text-[13px] font-semibold text-polks-text">{label}</span>
+                    <span className="text-[13px] font-semibold text-polks-text-soft">{label}</span>
                   </div>
                   <ChevronRight size={16} color="#C0CBD3" />
                 </Link>
@@ -201,7 +201,7 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-white py-3"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-polks-error bg-polks-card py-3"
         >
           <LogOut size={16} color="#E04F4F" />
           <span className="text-sm font-bold text-polks-error">Keluar</span>

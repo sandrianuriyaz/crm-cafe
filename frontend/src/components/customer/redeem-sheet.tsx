@@ -50,13 +50,13 @@ export function RedeemSheet({
             </div>
           </div>
           {reward.description ? (
-            <div className="bg-white px-[18px] py-3.5">
+            <div className="bg-polks-card px-[18px] py-3.5">
               <p className="text-xs leading-relaxed text-polks-muted">{reward.description}</p>
             </div>
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-white p-4">
+        <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-polks-card p-4">
           <p className="text-[13px] font-semibold text-polks-text">Detail Poin</p>
           <div className="flex justify-between text-[13px]">
             <span className="text-polks-muted">Saldo saat ini</span>
@@ -110,7 +110,7 @@ export function RedeemSheet({
             type="button"
             disabled={redeeming}
             onClick={onCancel}
-            className="h-[50px] w-full rounded-[14px] border-[1.5px] border-polks-border bg-white text-sm font-semibold text-polks-brand disabled:opacity-50"
+            className="h-[50px] w-full rounded-[14px] border-[1.5px] border-polks-border bg-polks-card text-sm font-semibold text-polks-brand disabled:opacity-50"
           >
             Batal
           </button>

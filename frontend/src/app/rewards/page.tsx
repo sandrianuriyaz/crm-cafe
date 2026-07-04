@@ -49,10 +49,10 @@ export default function RewardCatalogPage() {
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+            aria-label="Kembali"
+            className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
           >
-            <ArrowLeft size={16} />
-            Kembali
+            <ArrowLeft size={18} />
           </button>
           <Link
             href="/redeem-history"
@@ -91,7 +91,7 @@ export default function RewardCatalogPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="flex h-44 animate-pulse flex-col gap-3 rounded-2xl border border-polks-border bg-white p-4"
+                className="flex h-44 animate-pulse flex-col gap-3 rounded-2xl border border-polks-border bg-polks-card p-4"
               >
                 <div className="size-10 rounded-xl bg-polks-surface" />
                 <div className="h-3 w-2/3 rounded bg-polks-surface" />
@@ -100,7 +100,7 @@ export default function RewardCatalogPage() {
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-white p-5 text-center">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-polks-border bg-polks-card p-5 text-center">
             <AlertCircle size={36} color="#E04F4F" />
             <p className="text-sm text-polks-muted">{error}</p>
             <button
@@ -113,7 +113,7 @@ export default function RewardCatalogPage() {
             </button>
           </div>
         ) : rewards.length === 0 ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-5 text-center">
+          <div className="rounded-2xl border border-polks-border bg-polks-card p-5 text-center">
             <p className="text-sm text-polks-muted">Belum ada reward yang tersedia.</p>
           </div>
         ) : (
@@ -125,7 +125,7 @@ export default function RewardCatalogPage() {
                 <Link
                   key={reward.id}
                   href={`/rewards/${reward.id}`}
-                  className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-white p-4"
+                  className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-polks-card p-4"
                 >
                   <div
                     className={

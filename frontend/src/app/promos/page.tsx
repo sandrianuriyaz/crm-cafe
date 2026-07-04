@@ -54,10 +54,10 @@ export default function PromoListPage() {
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Promo</h1>
         <p className="mt-2 text-[13px] text-white/50">Penawaran spesial untuk member POLKS.</p>
@@ -79,18 +79,18 @@ export default function PromoListPage() {
             placeholder="Cari promo..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-11 w-full rounded-xl border-[1.5px] border-polks-border bg-white pl-10 pr-4 text-[13px] text-polks-text outline-none focus:border-polks-brand"
+            className="h-11 w-full rounded-xl border-[1.5px] border-polks-border bg-polks-card pl-10 pr-4 text-[13px] text-polks-text outline-none focus:border-polks-brand"
           />
         </div>
 
         {loading ? (
           <div className="flex flex-col gap-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-28 animate-pulse rounded-2xl border border-polks-border bg-white" />
+              <div key={i} className="h-28 animate-pulse rounded-2xl border border-polks-border bg-polks-card" />
             ))}
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center">
+          <div className="rounded-2xl border border-polks-border bg-polks-card p-6 text-center">
             <p className="text-sm text-polks-muted">{error}</p>
           </div>
         ) : filtered.length === 0 ? (
@@ -105,7 +105,7 @@ export default function PromoListPage() {
               <Link
                 key={p.id}
                 href={`/promos/${p.id}`}
-                className="overflow-hidden rounded-2xl border border-polks-border bg-white"
+                className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card"
               >
                 {p.imageUrl ? (
                   <div className="aspect-[16/9] w-full">

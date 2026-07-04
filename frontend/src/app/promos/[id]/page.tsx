@@ -52,10 +52,10 @@ export default function PromoDetailPage() {
         <button
           type="button"
           onClick={() => router.push("/promos")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali ke Promo"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali ke Promo
+          <ArrowLeft size={18} />
         </button>
         <div className="mb-3 flex items-start justify-between">
           <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-white/40">
@@ -79,7 +79,7 @@ export default function PromoDetailPage() {
 
       <div className="flex flex-col gap-4 bg-polks-bg px-5 pb-10">
         {error ? (
-          <div className="rounded-2xl border border-polks-border bg-white p-6 text-center">
+          <div className="rounded-2xl border border-polks-border bg-polks-card p-6 text-center">
             <p className="text-sm text-polks-muted">{error}</p>
           </div>
         ) : (
@@ -91,7 +91,7 @@ export default function PromoDetailPage() {
               </div>
             ) : null}
             {/* Meta */}
-            <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-white p-4">
+            <div className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-polks-card p-4">
               <div className="flex items-center gap-3">
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-polks-surface">
                   <MapPin size={14} color="#25343F" />
@@ -116,7 +116,7 @@ export default function PromoDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="rounded-2xl border border-polks-border bg-white p-4">
+            <div className="rounded-2xl border border-polks-border bg-polks-card p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Info size={14} color="#25343F" />
                 <span className="text-[13px] font-semibold text-polks-text">Deskripsi Promo</span>
@@ -127,7 +127,7 @@ export default function PromoDetailPage() {
             </div>
 
             {/* Terms */}
-            <div className="rounded-2xl border border-polks-border bg-white p-4">
+            <div className="rounded-2xl border border-polks-border bg-polks-card p-4">
               <span className="mb-3 block text-[13px] font-semibold text-polks-text">
                 Syarat &amp; Ketentuan
               </span>
@@ -142,7 +142,7 @@ export default function PromoDetailPage() {
             </div>
 
             {/* Notice */}
-            <div className="flex items-start gap-3 rounded-2xl border border-polks-border bg-white px-4 py-3">
+            <div className="flex items-start gap-3 rounded-2xl border border-polks-border bg-polks-card px-4 py-3">
               <Info size={14} color="#25343F" className="mt-0.5 shrink-0" />
               <p className="text-xs leading-relaxed text-polks-muted">
                 Tunjukkan member QR ke kasir saat bertransaksi di outlet untuk menikmati promo ini.

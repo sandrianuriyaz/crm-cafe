@@ -80,7 +80,7 @@ export default function GuestHomePage() {
       </div>
 
       {/* ── Join CTA ── */}
-      <div className="bg-white px-5 py-5">
+      <div className="bg-polks-card px-5 py-5">
         <p className="text-[19px] font-black leading-[1.2] tracking-[-0.02em] text-polks-text">
           Kumpulkan poin dari<br />setiap cangkir.
         </p>
@@ -109,7 +109,7 @@ export default function GuestHomePage() {
       <div className="flex flex-col gap-5 pb-28 pt-5">
 
         {/* Cara Kerjanya */}
-        <div className="mx-4 rounded-2xl bg-white px-5 py-5">
+        <div className="mx-4 rounded-2xl bg-polks-card px-5 py-5">
           <h2 className="mb-4 text-[14px] font-bold text-polks-text">Cara Kerjanya</h2>
           <div className="flex flex-col gap-3.5">
             {HOW_IT_WORKS.map(({ text }, i) => (
@@ -173,7 +173,7 @@ export default function GuestHomePage() {
                   key={r.id}
                   type="button"
                   onClick={gate("Login untuk menukar poin dengan reward.")}
-                  className="flex w-[130px] shrink-0 flex-col gap-2.5 rounded-2xl border border-polks-border bg-white p-3.5 text-left"
+                  className="flex w-[130px] shrink-0 flex-col gap-2.5 rounded-2xl border border-polks-border bg-polks-card p-3.5 text-left"
                 >
                   <div className="flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
                     <Gift size={14} color="#C99A2E" />
@@ -190,7 +190,7 @@ export default function GuestHomePage() {
 
         {/* Outlet */}
         {outlets.length > 0 && (
-          <div className="mx-4 rounded-2xl bg-white px-5 py-4">
+          <div className="mx-4 rounded-2xl bg-polks-card px-5 py-4">
             <h2 className="mb-3 text-[14px] font-bold text-polks-text">Outlet Kami</h2>
             {outlets.map((o, i) => (
               <div
@@ -213,7 +213,7 @@ export default function GuestHomePage() {
         )}
 
         {/* Value props */}
-        <div className="mx-4 rounded-2xl bg-white px-5 py-4">
+        <div className="mx-4 rounded-2xl bg-polks-card px-5 py-4">
           {VALUE_PROPS.map((text, i) => (
             <div
               key={text}

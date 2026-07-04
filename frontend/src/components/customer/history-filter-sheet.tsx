@@ -89,7 +89,7 @@ export function HistoryFilterSheet({
                   "flex h-11 items-center justify-center gap-2 rounded-2xl border text-sm font-semibold transition-colors",
                   sort === o.value
                     ? "border-polks-brand bg-polks-brand text-white"
-                    : "border-polks-border bg-white text-polks-muted",
+                    : "border-polks-border bg-polks-card text-polks-muted",
                 )}
               >
                 <Icon name={o.icon} className="size-4" />
@@ -112,7 +112,7 @@ export function HistoryFilterSheet({
                   "flex h-11 items-center justify-center rounded-2xl border text-sm font-semibold transition-colors",
                   range === o.value
                     ? "border-polks-brand bg-polks-brand text-white"
-                    : "border-polks-border bg-white text-polks-muted",
+                    : "border-polks-border bg-polks-card text-polks-muted",
                 )}
               >
                 {o.label}

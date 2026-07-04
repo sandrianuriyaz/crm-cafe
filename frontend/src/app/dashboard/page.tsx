@@ -12,7 +12,7 @@ import { TierInfoSheet } from "@/components/customer/tier-info-sheet";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useCountUp } from "@/lib/hooks";
-import { TIER_META, formatRupiah } from "@/lib/loyalty/tier";
+import { TIER_META, TIER_ICON, formatRupiah } from "@/lib/loyalty/tier";
 import { type Promo, type Reward, type Voucher } from "@/lib/loyalty/types";
 
 function cap(s: string) {
@@ -97,14 +97,14 @@ export default function MemberDashboardPage() {
             >
               <Bell size={14} className="text-white" strokeWidth={1.8} />
               {unread > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border border-white/60 bg-white" />
+                <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border border-white/60 bg-polks-card" />
               )}
             </Link>
           </div>
         </div>
 
         {/* ── White section ── */}
-        <div className="bg-white">
+        <div className="bg-polks-card">
 
           {/* Member info row */}
           <div className="flex items-center justify-between px-4 pb-3 pt-4">
@@ -164,7 +164,7 @@ export default function MemberDashboardPage() {
               { href: "/help",    Icon: Headphones, label: "Bantuan" },
             ] as const).map(({ href, Icon, label }) => (
               <Link key={label} href={href} className="flex flex-col items-center gap-1.5 py-3">
-                <Icon size={18} className="text-polks-text" strokeWidth={1.5} />
+                <Icon size={18} className="text-polks-text" strokeWidth={1.8} />
                 <p className="text-[10px] font-semibold text-polks-text">{label}</p>
               </Link>
             ))}
@@ -172,15 +172,24 @@ export default function MemberDashboardPage() {
         </div>
 
         {/* ── Content sections ── */}
-        <div className="flex flex-col gap-4 px-4 pt-4">
+        <div className="flex flex-col gap-5 px-4 pt-4">
 
           {/* Tier progress — selalu tampil, bisa diklik untuk info lengkap */}
           <button
             type="button"
             onClick={() => setTierSheet(true)}
-            className="w-full rounded-xl border border-polks-border bg-white p-3 text-left"
+            className="w-full rounded-xl border border-polks-border bg-polks-card p-3 text-left"
           >
-            {nextTier !== null && nextTier !== undefined ? (
+            {nextTier === undefined ? (
+              // Profil (tier/nextTier) belum selesai di-fetch setelah login —
+              // JANGAN samakan dengan "null" (platinum beneran), tampilkan skeleton.
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1.5">
+                  <div className="skeleton h-3 w-24 rounded" />
+                  <div className="skeleton h-2.5 w-32 rounded" />
+                </div>
+              </div>
+            ) : nextTier !== null ? (
               <>
                 <div className="flex items-center justify-between">
                   <p className="text-[12px] font-bold text-polks-text">
@@ -209,10 +218,11 @@ export default function MemberDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p
-                    className="text-[12px] font-bold"
+                    className="flex items-center gap-1 text-[12px] font-bold"
                     style={{ color: tierMeta.badgeText }}
                   >
-                    💎 Platinum Member
+                    <TIER_ICON.platinum size={13} strokeWidth={1.8} />
+                    Platinum Member
                   </p>
                   <p className="mt-0.5 text-[10px] text-polks-muted">
                     Tier tertinggi · 1 poin per Rp 850
@@ -249,7 +259,7 @@ export default function MemberDashboardPage() {
                 {vouchers.slice(0, 2).map((v) => (
                   <div
                     key={v.id}
-                    className="flex overflow-hidden rounded-xl border border-polks-border bg-white"
+                    className="flex overflow-hidden rounded-xl border border-polks-border bg-polks-card"
                   >
                     <div className="flex w-[54px] shrink-0 flex-col items-center justify-center bg-polks-brand px-2 py-3">
                       <p className="text-center text-[13px] font-black leading-none text-white">
@@ -300,10 +310,10 @@ export default function MemberDashboardPage() {
                   <Link
                     key={r?.id ?? i}
                     href="/rewards"
-                    className="rounded-xl border border-polks-border bg-white p-3"
+                    className="rounded-xl border border-polks-border bg-polks-card p-3"
                   >
                     <div className="mb-2.5 flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
-                      <Gift size={14} color="#C99A2E" />
+                      <Gift size={14} color="#C99A2E" strokeWidth={1.8} />
                     </div>
                     {r ? (
                       <>

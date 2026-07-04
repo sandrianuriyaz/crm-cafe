@@ -41,10 +41,10 @@ export default function OutletListPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Lokasi Outlet</h1>
         <p className="mt-2 text-[13px] leading-relaxed text-white/50">
@@ -72,7 +72,7 @@ export default function OutletListPage() {
         {loading ? (
           /* Skeleton cards */
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+            <div key={i} className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
               <div className="skeleton h-11 w-full rounded-none" />
               <div className="flex flex-col gap-2.5 px-4 py-3">
                 <div className="skeleton h-3 w-3/4 rounded" />
@@ -96,7 +96,7 @@ export default function OutletListPage() {
           <p className="py-8 text-center text-xs font-medium text-polks-muted">Belum ada outlet.</p>
         ) : (
           outlets.map((o) => (
-            <div key={o.id} className="overflow-hidden rounded-2xl border border-polks-border bg-white">
+            <div key={o.id} className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
               <div className="flex items-center justify-between bg-polks-brand px-4 py-3">
                 <div className="flex items-baseline gap-2">
                   <span className="text-[15px] font-bold text-white">{o.name}</span>

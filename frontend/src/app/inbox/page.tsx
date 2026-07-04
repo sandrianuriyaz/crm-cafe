@@ -57,10 +57,10 @@ export default function InboxPage() {
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-white/50"
+          aria-label="Kembali"
+          className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
-          <ArrowLeft size={16} />
-          Kembali
+          <ArrowLeft size={18} />
         </button>
         <h1 className="text-[22px] font-bold tracking-[-0.02em] text-white">Notifikasi</h1>
         <p className="mt-1 text-[13px] text-white/50">Pengumuman & info terbaru dari POLKS.</p>
@@ -88,7 +88,7 @@ export default function InboxPage() {
             {items.map((n) => (
               <div
                 key={n.id}
-                className="rounded-2xl border border-polks-border bg-white p-4"
+                className="rounded-2xl border border-polks-border bg-polks-card p-4"
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">

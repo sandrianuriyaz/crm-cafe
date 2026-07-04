@@ -21,7 +21,13 @@ const config: Config = {
         "polks-bg": "#F6F8FA",
         "polks-surface": "#EEF2F4",
         "polks-border": "#E6EAED",
+        // Putih kartu — sengaja bukan #FFFFFF murni ("kaget"/kontras keras),
+        // tapi masih cukup beda dari polks-bg/polks-surface untuk pemisah kartu.
+        "polks-card": "#FCFDFD",
         "polks-text": "#17212A",
+        // Varian teks hitam yang lebih soft, dipakai di Profile & Informasi
+        // Akun — polks-text dianggap terlalu pekat di halaman itu.
+        "polks-text-soft": "#2A363F",
         "polks-muted": "#66737D",
         "polks-success": "#38A169",
         "polks-error": "#E04F4F",

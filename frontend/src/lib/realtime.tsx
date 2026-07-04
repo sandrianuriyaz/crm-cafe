@@ -17,6 +17,7 @@ import { Star, PartyPopper, Bell } from "lucide-react";
 import { api, getToken } from "./api";
 import { useAuth } from "./auth";
 import { TIER_META, type Tier } from "./loyalty/tier";
+import { cn } from "./utils";
 
 // Socket.IO listen di root server, bukan di bawah prefix REST (/api/v1).
 function socketBaseUrl(): string {
@@ -153,32 +154,59 @@ export function useRealtime() {
 }
 
 // ── UI toast ────────────────────────────────────────────────────────────────
-const TONE_ICON = {
-  point: <Star size={18} color="#F6B84B" fill="#F6B84B" />,
-  tier: <PartyPopper size={18} color="#9B7BE8" />,
-  notif: <Bell size={18} color="#25343F" />,
+// Tone "point" dibuat lebih menonjol (icon lebih besar + aksen gold) —
+// mirip notifikasi penambahan poin di Gopay — tone lain tetap netral.
+const TONE_STYLE = {
+  point: {
+    icon: <Star size={20} color="#B9862E" fill="#F6B84B" />,
+    card: "border-[rgba(246,184,75,0.35)] bg-polks-point-soft/40",
+    iconBg: "size-11 bg-polks-point-soft",
+  },
+  tier: {
+    icon: <PartyPopper size={18} color="#9B7BE8" />,
+    card: "border-polks-border bg-polks-card",
+    iconBg: "size-9 bg-polks-surface",
+  },
+  notif: {
+    icon: <Bell size={18} color="#25343F" />,
+    card: "border-polks-border bg-polks-card",
+    iconBg: "size-9 bg-polks-surface",
+  },
 } as const;
 
 function ToastStack({ toasts }: { toasts: Toast[] }) {
   if (toasts.length === 0) return null;
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-[60] flex flex-col items-center gap-2 px-4">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          className="pointer-events-auto flex w-full max-w-[360px] items-start gap-3 rounded-2xl border border-polks-border bg-white p-3.5 shadow-lg"
-        >
-          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
-            {TONE_ICON[t.tone]}
+      {toasts.map((t) => {
+        const style = TONE_STYLE[t.tone];
+        return (
+          <div
+            key={t.id}
+            className={cn(
+              "toast-in pointer-events-auto flex w-full max-w-[360px] items-start gap-3 rounded-2xl border p-3.5 shadow-lg",
+              style.card,
+            )}
+          >
+            <div className={cn("mt-0.5 flex shrink-0 items-center justify-center rounded-xl", style.iconBg)}>
+              {style.icon}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p
+                className={cn(
+                  "truncate font-bold text-polks-text",
+                  t.tone === "point" ? "text-[14px]" : "text-[13px]",
+                )}
+              >
+                {t.title}
+              </p>
+              <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-polks-muted">
+                {t.body}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-bold text-polks-text">{t.title}</p>
-            <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-polks-muted">
-              {t.body}
-            </p>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
