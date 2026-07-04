@@ -38,9 +38,16 @@ export function RedeemSheet({
             className="flex items-center gap-3.5 px-[18px] py-4"
             style={{ background: "linear-gradient(135deg,#25343F 0%,#3a5068 100%)" }}
           >
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[rgba(246,184,75,0.2)]">
-              <Gift size={20} color="#F6B84B" />
-            </div>
+            {reward.imageUrl ? (
+              <div className="size-11 shrink-0 overflow-hidden rounded-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={reward.imageUrl} alt={reward.name} className="size-full object-cover" />
+              </div>
+            ) : (
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[rgba(246,184,75,0.2)]">
+                <Gift size={20} color="#F6B84B" />
+              </div>
+            )}
             <div>
               <p className="text-[15px] font-bold text-white">{reward.name}</p>
               <div className="mt-1 flex items-center gap-1.5 text-[11px] text-white/40">

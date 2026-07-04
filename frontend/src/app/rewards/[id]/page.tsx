@@ -101,9 +101,16 @@ export default function RewardDetailPage() {
         ) : reward ? (
           <>
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-white/10">
-                <Gift size={22} color="#F6B84B" />
-              </div>
+              {reward.imageUrl ? (
+                <div className="size-12 shrink-0 overflow-hidden rounded-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={reward.imageUrl} alt={reward.name} className="size-full object-cover" />
+                </div>
+              ) : (
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/10">
+                  <Gift size={22} color="#F6B84B" />
+                </div>
+              )}
               <div>
                 <p className="text-[11px] uppercase tracking-[0.07em] text-white/40">Reward</p>
                 <h1 className="text-xl font-bold tracking-[-0.02em] text-white">{reward.name}</h1>
@@ -146,6 +153,13 @@ export default function RewardDetailPage() {
           </div>
         ) : reward ? (
           <>
+            {reward.imageUrl ? (
+              <div className="aspect-[16/9] w-full overflow-hidden rounded-2xl border border-polks-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={reward.imageUrl} alt={reward.name} className="size-full object-cover" />
+              </div>
+            ) : null}
+
             {/* Meta */}
             <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
               {[

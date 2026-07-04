@@ -127,14 +127,21 @@ export default function RewardCatalogPage() {
                   href={`/rewards/${reward.id}`}
                   className="flex flex-col gap-3 rounded-2xl border border-polks-border bg-polks-card p-4"
                 >
-                  <div
-                    className={
-                      "flex size-10 items-center justify-center rounded-xl " +
-                      (affordable && !soldOut ? "bg-polks-point-soft" : "bg-polks-surface")
-                    }
-                  >
-                    <Gift size={18} color={affordable && !soldOut ? "#F6B84B" : "#8A959D"} />
-                  </div>
+                  {reward.imageUrl ? (
+                    <div className="aspect-square w-full overflow-hidden rounded-xl bg-polks-surface">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={reward.imageUrl} alt={reward.name} className="size-full object-cover" />
+                    </div>
+                  ) : (
+                    <div
+                      className={
+                        "flex size-10 items-center justify-center rounded-xl " +
+                        (affordable && !soldOut ? "bg-polks-point-soft" : "bg-polks-surface")
+                      }
+                    >
+                      <Gift size={18} color={affordable && !soldOut ? "#F6B84B" : "#8A959D"} />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <p className="mb-1.5 line-clamp-2 text-[13px] font-semibold text-polks-text">
                       {reward.name}

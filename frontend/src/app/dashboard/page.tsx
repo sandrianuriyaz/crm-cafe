@@ -312,9 +312,16 @@ export default function MemberDashboardPage() {
                     href="/rewards"
                     className="rounded-xl border border-polks-border bg-polks-card p-3"
                   >
-                    <div className="mb-2.5 flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
-                      <Gift size={14} color="#C99A2E" strokeWidth={1.8} />
-                    </div>
+                    {r?.imageUrl ? (
+                      <div className="mb-2.5 aspect-square w-full overflow-hidden rounded-lg bg-polks-surface">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={r.imageUrl} alt={r.name} className="size-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="mb-2.5 flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
+                        <Gift size={14} color="#C99A2E" strokeWidth={1.8} />
+                      </div>
+                    )}
                     {r ? (
                       <>
                         <p className="line-clamp-1 text-[11px] font-semibold text-polks-text">{r.name}</p>
