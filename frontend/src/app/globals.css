@@ -119,6 +119,32 @@ a:active {
   animation: toast-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* ── Overlay "poin masuk" full-screen (gaya coin Gopay) ──────────────────── */
+@keyframes points-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.points-overlay-in {
+  animation: points-overlay-in 0.25s ease both;
+}
+
+@keyframes coin-pop {
+  0%   { opacity: 0; transform: scale(0.4) translateY(20px); }
+  60%  { opacity: 1; transform: scale(1.12) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.coin-pop {
+  animation: coin-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes coin-pop-text {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.coin-pop-text {
+  animation: coin-pop-text 0.4s ease 0.15s both;
+}
+
 .polks-phone {
   min-height: 100vh;
   width: 100%;

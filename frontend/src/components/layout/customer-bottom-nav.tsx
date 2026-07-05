@@ -48,7 +48,7 @@ export function CustomerBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="relative flex h-full flex-1 flex-col items-center justify-end gap-1 pb-1.5 transition-transform active:scale-95"
+              className="relative flex h-full flex-1 flex-col items-center justify-center gap-1 transition-transform active:scale-95"
             >
               <span
                 className={cn(
@@ -58,6 +58,10 @@ export function CustomerBottomNav() {
               >
                 <Icon size={22} className="text-polks-brand" strokeWidth={NAV_ICON_STROKE} />
               </span>
+              {/* Spacer transparan seukuran icon tab lain — icon asli ada di
+                  bubble absolute di atas, ini cuma supaya label "Card" ikut
+                  ke-center persis sejajar dengan label tab lain. */}
+              <span className="size-[19px]" aria-hidden="true" />
               <span className={cn("text-[9px] leading-none", active ? "font-bold text-white" : "font-medium text-white/55")}>
                 {item.label}
               </span>

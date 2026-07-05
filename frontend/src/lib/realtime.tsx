@@ -18,6 +18,7 @@ import { api, getToken } from "./api";
 import { useAuth } from "./auth";
 import { TIER_META, type Tier } from "./loyalty/tier";
 import { cn } from "./utils";
+import { PointsEarnedOverlay } from "@/components/customer/points-earned-overlay";
 
 // Socket.IO listen di root server, bukan di bawah prefix REST (/api/v1).
 function socketBaseUrl(): string {
@@ -71,6 +72,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationNonce, setNotificationNonce] = useState(0);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const toastSeq = useRef(0);
 
   const pushToast = useCallback((t: Omit<Toast, "id">) => {
@@ -102,14 +104,18 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     socket.on("points:changed", (p: PointsChanged) => {
       // Tarik ulang profil → saldo & tier sinkron di semua halaman.
       void refreshProfile();
-      if (p.pointsDelta > 0) {
+      if (p.pointsDelta <= 0) return;
+
+      if (p.source === "transaction") {
+        // Poin dari transaksi POS → overlay full-screen (gaya coin Gopay),
+        // bukan toast kecil, karena ini momen yang mau "dirayakan".
+        setPointsEarned(p.pointsDelta);
+      } else {
+        // Penyesuaian admin → tetap toast biasa, tidak perlu overlay besar.
         pushToast({
           tone: "point",
           title: `+${p.pointsDelta.toLocaleString("id-ID")} poin`,
-          body:
-            p.source === "transaction"
-              ? "Poin dari transaksimu sudah masuk."
-              : "Saldo poinmu diperbarui.",
+          body: "Saldo poinmu diperbarui.",
         });
       }
     });
@@ -143,6 +149,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     >
       {children}
       <ToastStack toasts={toasts} />
+      {pointsEarned !== null && (
+        <PointsEarnedOverlay amount={pointsEarned} onClose={() => setPointsEarned(null)} />
+      )}
     </RealtimeContext.Provider>
   );
 }

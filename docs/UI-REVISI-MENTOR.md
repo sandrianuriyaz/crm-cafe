@@ -37,7 +37,7 @@
 | 12 | Tier | Info tier masih salah/tidak akurat | `app/dashboard/page.tsx`, `components/customer/tier-info-sheet.tsx` | Tinggi | ☑ (root cause ditemukan & diperbaiki; ada 1 follow-up arsitektur belum dikerjakan, lihat detail) |
 | 13 | Navigasi | Halaman Riwayat Poin (`/history`) tidak ada tombol back | `app/history/page.tsx` | Tinggi | ☑ |
 | 14 | Layout | Tambah sedikit spacing di bawah kartu (gaya Dana) | `app/dashboard/page.tsx` | Rendah | ☑ |
-| 15 | Notifikasi | Toast penambahan poin setelah transaksi — sudah ada, tapi perlu dipertegas gaya Gopay | `lib/realtime.tsx` | Sedang | ☑ |
+| 15 | Notifikasi | Overlay full-screen "poin masuk" saat transaksi POS, gaya coin Gopay (bukan toast) | `components/customer/points-earned-overlay.tsx`, `lib/realtime.tsx` | Sedang | ☑ |
 
 ---
 
@@ -199,14 +199,16 @@ Commit `149c6d5` mengubah **cara `nextTier` dihitung** (baris 41-44) supaya beda
 - Frontend `lib/realtime.tsx:101-114` sudah listen event ini dan menampilkan toast "+X poin" via `pushToast` saat `pointsDelta > 0`.
 - Komponen visualnya: `ToastStack` di `lib/realtime.tsx:162-184` — toast kecil di atas layar (`fixed inset-x-0 top-3`), card putih dengan icon `Star` kuning, auto-hilang 4.5 detik.
 
-**Kemungkinan maksud mentor:** toast yang ada sekarang terlalu "kecil/flat" dan kurang terasa seperti notifikasi khas Gopay (yang biasanya lebih besar, ada animasi masuk yang lebih hidup/"celebratory", warna lebih mencolok positif). Ini soal **penguatan visual & animasi**, bukan membangun ulang mekanismenya.
+**Iterasi 1 (❌ kurang tepat):** awalnya cuma dipertegas visual toast-nya (icon lebih besar, tint gold, animasi bounce) — lihat commit sebelumnya. User klarifikasi ulang: **"itu ketika ada poin masuk tuh dari POS, akan muncul halaman pemberitahuan poin masuk kaya gopay coin"** — maksudnya bukan toast kecil yang dipercantik, tapi **halaman/overlay full-screen** khusus, mirip animasi "coin masuk" Gopay.
 
-**✅ Dikerjakan:**
-- Animasi entrance baru `.toast-in` (`globals.css`) — slide-down + sedikit bounce (`cubic-bezier(0.34,1.56,0.64,1)`), dipakai semua toast (poin/tier/notif).
-- Toast bertipe `point` dibuat lebih menonjol dari tone lain: icon lebih besar (`size-11` vs `size-9`), background kartu bertint gold lembut (`bg-polks-point-soft/40` + border gold), judul sedikit lebih besar (`14px` vs `13px`).
-- Tone `tier`/`notif` tetap netral (`bg-polks-card`), cuma ikut dapat animasi entrance baru.
+**✅ Dikerjakan (state final) — komponen baru, bukan toast:**
+- `components/customer/points-earned-overlay.tsx` — overlay full-screen (`fixed inset-0 z-[70]`), background gradient navy-brand, animasi coin (icon `Coins` lucide) muncul dengan efek pop/bounce (`.coin-pop`), lalu teks besar `+X` gold (40px) & keterangan. Auto-tutup 3.2 detik, atau ketuk di mana saja untuk lanjut lebih cepat.
+- `lib/realtime.tsx` — event `points:changed` sekarang dipecah berdasarkan `source`:
+  - `source: "transaction"` (poin dari transaksi POS) → trigger `PointsEarnedOverlay` (halaman penuh, sesuai instruksi user).
+  - `source: "adjustment"` (koreksi manual admin) → tetap toast biasa (`ToastStack`), karena ini bukan momen "dirayakan".
+- Toast tone `point` (untuk kasus adjustment) tetap pakai polish visual dari iterasi 1 (icon lebih besar, tint gold, animasi bounce) — tidak dibuang, cuma tidak lagi dipakai untuk kasus transaksi POS.
 
-**[perlu konfirmasi]** ini best-effort tanpa referensi visual Gopay yang eksak dari mentor — kalau masih dianggap kurang "Gopay-like", perlu screenshot pembanding untuk iterasi lanjut.
+**[perlu konfirmasi]** desain overlay (warna gradient, durasi 3.2 detik, teks) masih best-effort tanpa referensi visual Gopay yang eksak — kalau ada screenshot pembanding, bisa disempurnakan lagi.
 
 ---
 
