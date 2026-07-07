@@ -9,6 +9,7 @@ import {
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { PromoBanner } from "@/components/customer/promo-banner";
 import { TierInfoSheet } from "@/components/customer/tier-info-sheet";
+import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useCountUp } from "@/lib/hooks";
@@ -31,6 +32,7 @@ export default function MemberDashboardPage() {
   const [unread,      setUnread]      = useState(0);
   const [pending,     setPending]     = useState(3);
   const [tierSheet,   setTierSheet]   = useState(false);
+  const [qrVoucher,   setQrVoucher]   = useState<Voucher | null>(null);
 
   const firstName    = cap((user?.name || "Member").split(" ")[0]);
   const points       = user?.pointBalance ?? 0;
@@ -280,12 +282,13 @@ export default function MemberDashboardPage() {
                       )}
                     </div>
                     <div className="flex shrink-0 items-center px-3">
-                      <Link
-                        href="/member-card"
+                      <button
+                        type="button"
+                        onClick={() => setQrVoucher(v)}
                         className="rounded-lg bg-polks-brand px-2.5 py-1.5 text-[10px] font-bold text-white"
                       >
                         Gunakan
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -379,6 +382,10 @@ export default function MemberDashboardPage() {
           monthlySpend={monthlySpend}
           onClose={() => setTierSheet(false)}
         />
+      )}
+
+      {qrVoucher && (
+        <VoucherQrModal voucher={qrVoucher} onClose={() => setQrVoucher(null)} />
       )}
     </CustomerShell>
   );
