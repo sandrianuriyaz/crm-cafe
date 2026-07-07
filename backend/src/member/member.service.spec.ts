@@ -92,3 +92,126 @@ describe('MemberService.updateProfile', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 });
+
+describe('MemberService.getTransactions', () => {
+  let service: MemberService;
+  let prisma: {
+    member: { findUnique: jest.Mock };
+    transaction: { findMany: jest.Mock; count: jest.Mock };
+    outlet: { findMany: jest.Mock };
+    $transaction: jest.Mock;
+  };
+
+  const member = {
+    id: 'm1',
+    userId: 'u1',
+    memberCode: 'MBR-1',
+    name: 'Zia',
+    phone: '081111',
+    pointBalance: 100,
+    createdAt: new Date(),
+    user: { email: null },
+    tier: null,
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      member: { findUnique: jest.fn().mockResolvedValue(member) },
+      transaction: {
+        findMany: jest.fn(),
+        count: jest.fn().mockResolvedValue(1),
+      },
+      outlet: {
+        findMany: jest
+          .fn()
+          .mockResolvedValue([{ storeId: 'store-1', name: 'Cafe A' }]),
+      },
+      $transaction: jest
+        .fn()
+        .mockImplementation((arr: Promise<unknown>[]) => Promise.all(arr)),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        MemberService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: TierService, useValue: { statusForMember: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(MemberService);
+  });
+
+  it('resolves outletName from the matching outlet storeId', async () => {
+    prisma.transaction.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        posOrderNumber: 'ORD-1',
+        storeId: 'store-1',
+        status: 'selesai',
+        grandTotal: 55000,
+        paymentMethod: 'QRIS',
+        pointsAwarded: 55,
+        occurredAt: new Date('2026-06-12'),
+        createdAt: new Date('2026-06-12'),
+        items: [
+          { name: 'Cookies & Cream', qty: 1, lineTotal: 55000, isReward: false },
+        ],
+      },
+    ]);
+
+    const result = await service.getTransactions('u1', 0, 20);
+
+    expect(prisma.outlet.findMany).toHaveBeenCalledWith({
+      where: { storeId: { in: ['store-1'] } },
+      select: { storeId: true, name: true },
+    });
+    expect(result.items[0]).toMatchObject({
+      id: 't1',
+      outletName: 'Cafe A',
+      status: 'selesai',
+    });
+    expect(result.items[0]).not.toHaveProperty('storeId');
+  });
+
+  it('falls back to null outletName when storeId has no matching outlet', async () => {
+    prisma.transaction.findMany.mockResolvedValue([
+      {
+        id: 't2',
+        posOrderNumber: 'ORD-2',
+        storeId: 'store-unknown',
+        status: 'selesai',
+        grandTotal: 10000,
+        paymentMethod: 'Cash',
+        pointsAwarded: 10,
+        occurredAt: null,
+        createdAt: new Date('2026-06-01'),
+        items: [],
+      },
+    ]);
+    prisma.outlet.findMany.mockResolvedValue([]);
+
+    const result = await service.getTransactions('u1', 0, 20);
+    expect(result.items[0].outletName).toBeNull();
+  });
+
+  it('skips the outlet lookup entirely when no transaction has a storeId', async () => {
+    prisma.transaction.findMany.mockResolvedValue([
+      {
+        id: 't3',
+        posOrderNumber: null,
+        storeId: null,
+        status: null,
+        grandTotal: 20000,
+        paymentMethod: null,
+        pointsAwarded: 0,
+        occurredAt: null,
+        createdAt: new Date('2026-05-01'),
+        items: [],
+      },
+    ]);
+
+    const result = await service.getTransactions('u1', 0, 20);
+    expect(prisma.outlet.findMany).not.toHaveBeenCalled();
+    expect(result.items[0].outletName).toBeNull();
+  });
+});

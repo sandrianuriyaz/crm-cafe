@@ -118,6 +118,8 @@ export class MemberService {
         select: {
           id: true,
           posOrderNumber: true,
+          storeId: true,
+          status: true,
           grandTotal: true,
           paymentMethod: true,
           pointsAwarded: true,
@@ -130,7 +132,34 @@ export class MemberService {
       }),
       this.prisma.transaction.count({ where: { memberId: m.id } }),
     ]);
-    return { total, skip, take, items };
+
+    // storeId mentah dari POS; Outlet.storeId unik jadi lookup manual (bukan FK).
+    const storeIds = [
+      ...new Set(
+        items
+          .map((t) => t.storeId)
+          .filter((id): id is string => typeof id === 'string'),
+      ),
+    ];
+    const outlets = storeIds.length
+      ? await this.prisma.outlet.findMany({
+          where: { storeId: { in: storeIds } },
+          select: { storeId: true, name: true },
+        })
+      : [];
+    const outletNameByStoreId = new Map(
+      outlets.map((o) => [o.storeId as string, o.name]),
+    );
+
+    return {
+      total,
+      skip,
+      take,
+      items: items.map(({ storeId, ...t }) => ({
+        ...t,
+        outletName: storeId ? (outletNameByStoreId.get(storeId) ?? null) : null,
+      })),
+    };
   }
 
   async getPointHistories(userId: string, skip = 0, take = 20) {
