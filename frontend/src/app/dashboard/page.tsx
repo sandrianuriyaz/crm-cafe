@@ -56,7 +56,7 @@ export default function MemberDashboardPage() {
       .catch(() => setVouchers([]))
       .finally(done);
     api<Reward[]>("/rewards")
-      .then((d) => setRewards(d.filter((r) => r.status === "ACTIVE").slice(0, 2)))
+      .then((d) => setRewards(d.filter((r) => r.status === "ACTIVE").slice(0, 5)))
       .catch(() => setRewards([]))
       .finally(done);
     api<{ count: number }>("/member/notifications/unread-count")
@@ -305,36 +305,34 @@ export default function MemberDashboardPage() {
                   Semua <ChevronRight size={12} />
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex gap-2.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
                 {(rewards.length > 0 ? rewards : [null, null]).map((r, i) => (
                   <Link
                     key={r?.id ?? i}
                     href="/rewards"
-                    className="rounded-xl border border-polks-border bg-polks-card p-3"
+                    className="relative w-[120px] shrink-0 overflow-hidden rounded-xl"
                   >
                     {r?.imageUrl ? (
-                      <div className="mb-2.5 aspect-square w-full overflow-hidden rounded-lg bg-polks-surface">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={r.imageUrl} alt={r.name} className="size-full object-cover" />
-                      </div>
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.imageUrl} alt={r.name} className="aspect-square w-full object-cover" />
                     ) : (
-                      <div className="mb-2.5 flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
-                        <Gift size={14} color="#C99A2E" strokeWidth={1.8} />
+                      <div className="flex aspect-square w-full items-center justify-center bg-polks-surface">
+                        <Gift size={20} color="#C99A2E" strokeWidth={1.8} />
                       </div>
                     )}
-                    {r ? (
-                      <>
-                        <p className="line-clamp-1 text-[11px] font-semibold text-polks-text">{r.name}</p>
-                        <p className="mt-0.5 text-[10px] font-semibold text-polks-muted">
-                          {r.pointCost.toLocaleString("id-ID")} pts
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="mb-1.5 h-2.5 w-3/4 rounded bg-polks-surface" />
-                        <div className="h-2.5 w-1/2 rounded bg-polks-surface" />
-                      </>
-                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-2">
+                      {r ? (
+                        <>
+                          <p className="line-clamp-1 text-[11px] font-black leading-tight text-white">{r.name}</p>
+                          <p className="mt-0.5 text-[10px] font-semibold text-white/80">
+                            {r.pointCost.toLocaleString("id-ID")} pts
+                          </p>
+                        </>
+                      ) : (
+                        <div className="h-2.5 w-3/4 rounded bg-white/30" />
+                      )}
+                    </div>
                   </Link>
                 ))}
               </div>

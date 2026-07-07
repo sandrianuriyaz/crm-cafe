@@ -33,7 +33,7 @@ export default function HelpPage() {
       <div className="bg-polks-brand px-5 pb-7 pt-4">
         <button
           type="button"
-          onClick={() => router.push("/profile")}
+          onClick={() => router.back()}
           aria-label="Kembali"
           className="mb-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-colors active:bg-white/20"
         >
