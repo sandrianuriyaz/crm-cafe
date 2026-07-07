@@ -11,6 +11,7 @@ import {
   Bell,
   HelpCircle,
   LogOut,
+  Receipt,
   Shield,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
@@ -45,7 +46,10 @@ const menuSections = [
   },
   {
     title: "Bantuan",
-    items: [{ label: "Pusat Bantuan", Icon: HelpCircle, href: "/help" }],
+    items: [
+      { label: "Riwayat Pesanan", Icon: Receipt, href: "/order-history" },
+      { label: "Pusat Bantuan", Icon: HelpCircle, href: "/help" },
+    ],
   },
 ];
 
