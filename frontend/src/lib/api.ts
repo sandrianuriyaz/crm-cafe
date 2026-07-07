@@ -3,18 +3,29 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
 const TOKEN_KEY = "crm_token";
+const ADMIN_TOKEN_KEY = "crm_admin_token";
+
+// Admin (/admin/**) dan customer berbagi origin & AuthProvider yang sama, tapi
+// harus punya sesi terpisah — tanpa ini, login admin di satu tab menimpa token
+// customer di tab lain (dan sebaliknya). Key ditentukan dari path tab saat ini,
+// bukan endpoint yang dipanggil, supaya panggilan non-/admin dari dalam admin
+// (mis. hitung jumlah reward/outlet di Overview) tetap pakai sesi admin.
+function activeTokenKey(): string {
+  if (typeof window === "undefined") return TOKEN_KEY;
+  return window.location.pathname.startsWith("/admin") ? ADMIN_TOKEN_KEY : TOKEN_KEY;
+}
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+  return window.localStorage.getItem(activeTokenKey());
 }
 
 export function setToken(token: string) {
-  window.localStorage.setItem(TOKEN_KEY, token);
+  window.localStorage.setItem(activeTokenKey(), token);
 }
 
 export function clearToken() {
-  window.localStorage.removeItem(TOKEN_KEY);
+  window.localStorage.removeItem(activeTokenKey());
 }
 
 export class ApiError extends Error {
