@@ -31,7 +31,7 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[430px] rounded-t-[28px] bg-polks-card pb-10"
+        className="max-h-[85vh] w-full max-w-[430px] overflow-y-auto rounded-t-[28px] bg-polks-card pb-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
