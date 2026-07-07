@@ -81,3 +81,17 @@ export type PointHistory = {
   note: string | null;
   createdAt: string;
 };
+
+// Transaksi POS milik member — GET /member/transactions
+export type Transaction = {
+  id: string;
+  posOrderNumber: string | null;
+  outletName: string | null;
+  status: string | null;
+  grandTotal: number;
+  paymentMethod: string | null;
+  pointsAwarded: number;
+  occurredAt: string | null;
+  createdAt: string;
+  items: { name: string; qty: number; lineTotal: number; isReward: boolean }[];
+};
