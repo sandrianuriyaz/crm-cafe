@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  CheckCircle2, ChevronRight, Gift, Home, LogIn, MapPin, Smartphone, Star, Store,
+  CheckCircle2, ChevronRight, Gift, MapPin, Smartphone, Star,
 } from "lucide-react";
+import { CustomerBottomNav } from "@/components/layout/customer-bottom-nav";
 import { LoginRequiredModal } from "@/components/customer/login-required-modal";
 import { PromoBanner } from "@/components/customer/promo-banner";
 import { api } from "@/lib/api";
@@ -27,12 +28,6 @@ const VALUE_PROPS = [
   "Daftar gratis — tanpa kartu fisik",
   "Berlaku di semua outlet POLKS",
   "Poin otomatis update setelah transaksi",
-];
-
-const navItems = [
-  { label: "Home",   Icon: Home,   href: "/" as const   },
-  { label: "Outlet", Icon: Store,  href: "/outlets" as const },
-  { label: "Daftar", Icon: LogIn,  href: "/register" as const },
 ];
 
 export default function GuestHomePage() {
@@ -175,9 +170,16 @@ export default function GuestHomePage() {
                   onClick={gate("Login untuk menukar poin dengan reward.")}
                   className="flex w-[130px] shrink-0 flex-col gap-2.5 rounded-2xl border border-polks-border bg-polks-card p-3.5 text-left"
                 >
-                  <div className="flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
-                    <Gift size={14} color="#C99A2E" />
-                  </div>
+                  {r.imageUrl ? (
+                    <div className="size-8 overflow-hidden rounded-lg bg-polks-surface">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={r.imageUrl} alt={r.name} className="size-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
+                      <Gift size={14} color="#C99A2E" />
+                    </div>
+                  )}
                   <p className="line-clamp-2 text-[11px] font-semibold text-polks-text">{r.name}</p>
                   <span className="text-[10px] font-semibold text-polks-muted">
                     {r.pointCost.toLocaleString("id-ID")} pts
@@ -230,37 +232,7 @@ export default function GuestHomePage() {
 
       </div>
 
-      {/* ── Bottom nav (3 item pill) ── */}
-      <nav className="fixed bottom-5 left-1/2 z-50 flex h-[60px] w-[280px] max-w-[calc(100%-32px)] -translate-x-1/2 items-center justify-around rounded-full bg-polks-brand px-2 shadow-[0_8px_24px_rgba(37,52,63,0.3)]">
-        {navItems.map(({ label, Icon, href }, i) => {
-          const active = i === 0;
-          return (
-            <Link key={label} href={href} className="flex flex-1 flex-col items-center gap-1">
-              <span
-                className={
-                  "flex size-9 items-center justify-center rounded-full " +
-                  (active ? "bg-white/15" : "")
-                }
-              >
-                <Icon
-                  size={20}
-                  color={active ? "#ffffff" : "rgba(255,255,255,0.5)"}
-                  strokeWidth={active ? 2.4 : 1.8}
-                />
-              </span>
-              <span
-                className={
-                  active
-                    ? "text-[9px] font-bold text-white"
-                    : "text-[9px] font-medium text-white/40"
-                }
-              >
-                {label}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
+      <CustomerBottomNav />
 
       <LoginRequiredModal
         open={modalReason !== null}
