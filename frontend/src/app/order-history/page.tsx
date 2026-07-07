@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Store } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { api, ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/loyalty/tier";
 import { type Paginated, type Transaction } from "@/lib/loyalty/types";
 
@@ -29,11 +30,18 @@ export default function OrderHistoryPage() {
   const [entries, setEntries] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filterOutlet, setFilterOutlet] = useState("Semua");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   async function load() {
     setLoading(true);
     setError(null);
+    setLoadMoreFailed(false);
     try {
       const data = await api<Paginated<Transaction>>(
         `/member/transactions?take=${PAGE_SIZE}`,
@@ -51,10 +59,59 @@ export default function OrderHistoryPage() {
     }
   }
 
+  async function loadMore() {
+    if (loading || loadingMore || loadMoreFailed || entries.length >= total) return;
+    setLoadingMore(true);
+    try {
+      const data = await api<Paginated<Transaction>>(
+        `/member/transactions?skip=${entries.length}&take=${PAGE_SIZE}`,
+      );
+      setEntries((prev) => [...prev, ...data.items]);
+      setTotal(data.total);
+    } catch {
+      // Diamkan di list: gagal muat halaman berikutnya tidak boleh menghapus
+      // data yang sudah tampil. Tandai gagal supaya sentinel berhenti auto-retry.
+      setLoadMoreFailed(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  const loadMoreRef = useRef(loadMore);
+  loadMoreRef.current = loadMore;
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Infinite scroll: muat halaman berikutnya saat sentinel di bawah list terlihat.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || loading || error || entries.length >= total) return;
+    const observer = new IntersectionObserver(
+      (observed) => {
+        if (observed[0]?.isIntersecting) loadMoreRef.current();
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading, error, entries.length, total]);
+
+  const outletNames = useMemo(
+    () => [...new Set(entries.map((t) => t.outletName).filter((n): n is string => !!n))],
+    [entries],
+  );
+  const filters = ["Semua", ...outletNames];
+
+  const visible = useMemo(
+    () =>
+      filterOutlet === "Semua"
+        ? entries
+        : entries.filter((t) => t.outletName === filterOutlet),
+    [entries, filterOutlet],
+  );
 
   const totalSpend = entries.reduce((s, t) => s + t.grandTotal, 0);
 
@@ -98,6 +155,26 @@ export default function OrderHistoryPage() {
       </div>
 
       <div className="flex flex-col gap-5 bg-polks-bg px-5 pb-28">
+        {!loading && !error && entries.length > 0 ? (
+          <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+            {filters.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFilterOutlet(f)}
+                className={cn(
+                  "h-8 shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-semibold transition-colors",
+                  filterOutlet === f
+                    ? "bg-polks-brand text-white"
+                    : "border border-polks-border bg-polks-card text-polks-muted",
+                )}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         {loading ? (
           <div className="flex flex-col gap-3">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -120,54 +197,103 @@ export default function OrderHistoryPage() {
           <div className="rounded-2xl border border-polks-border bg-polks-card p-5 text-center">
             <p className="text-sm text-polks-muted">Belum ada riwayat pesanan.</p>
           </div>
+        ) : visible.length === 0 ? (
+          <div className="rounded-2xl border border-polks-border bg-polks-card p-5 text-center">
+            <p className="text-sm text-polks-muted">Tidak ada pesanan di outlet ini.</p>
+          </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {entries.map((t) => (
-              <div key={t.id} className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
-                <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
-                      <Store size={16} className="text-polks-text" />
+            {visible.map((t) => {
+              const expanded = expandedId === t.id;
+              return (
+                <div
+                  key={t.id}
+                  className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(expanded ? null : t.id)}
+                    className="flex w-full items-center justify-between gap-3 px-4 pb-3 pt-4 text-left"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
+                        <Store size={16} className="text-polks-text" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold text-polks-text">
+                          {t.outletName ?? "Outlet tidak diketahui"}
+                        </p>
+                        <p className="text-[11px] text-polks-muted">
+                          {formatDate(t.occurredAt ?? t.createdAt)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold text-polks-text">
-                        {t.outletName ?? "Outlet tidak diketahui"}
-                      </p>
-                      <p className="text-[11px] text-polks-muted">
-                        {formatDate(t.occurredAt ?? t.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="shrink-0 text-sm font-bold text-polks-success">
-                    +{t.pointsAwarded.toLocaleString("id-ID")}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-t border-polks-border bg-polks-bg px-4 py-2.5">
-                  <div className="flex min-w-0 items-center gap-2">
-                    {t.posOrderNumber ? (
-                      <span className="truncate text-[11px] text-polks-muted">{t.posOrderNumber}</span>
-                    ) : null}
-                    {t.paymentMethod ? (
-                      <span className="rounded-md bg-polks-surface px-1.5 py-0.5 text-[10px] font-semibold text-polks-muted">
-                        {t.paymentMethod}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-[12px] font-semibold text-polks-text">
-                      {formatRupiah(t.grandTotal)}
+                    <span className="shrink-0 text-sm font-bold text-polks-success">
+                      +{t.pointsAwarded.toLocaleString("id-ID")}
                     </span>
-                    {t.status ? (
-                      <span className="rounded-md bg-polks-point-soft px-1.5 py-0.5 text-[10px] font-semibold text-polks-success">
-                        {t.status}
+                  </button>
+
+                  <div className="flex items-center justify-between border-t border-polks-border bg-polks-bg px-4 py-2.5">
+                    <div className="flex min-w-0 items-center gap-2">
+                      {t.posOrderNumber ? (
+                        <span className="truncate text-[11px] text-polks-muted">{t.posOrderNumber}</span>
+                      ) : null}
+                      {t.paymentMethod ? (
+                        <span className="rounded-md bg-polks-surface px-1.5 py-0.5 text-[10px] font-semibold text-polks-muted">
+                          {t.paymentMethod}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-[12px] font-semibold text-polks-text">
+                        {formatRupiah(t.grandTotal)}
                       </span>
-                    ) : null}
+                      {t.status ? (
+                        <span className="rounded-md bg-polks-point-soft px-1.5 py-0.5 text-[10px] font-semibold text-polks-success">
+                          {t.status}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
+
+                  {expanded && t.items.length > 0 ? (
+                    <div className="flex flex-col gap-1.5 border-t border-polks-border px-4 py-3">
+                      {t.items.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between text-[12px]">
+                          <span className="text-polks-muted">
+                            {item.qty}x {item.name}
+                          </span>
+                          <span className="font-semibold text-polks-text">
+                            {item.isReward ? "Gratis" : formatRupiah(item.lineTotal)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+
+        {!loading && !error && entries.length < total ? (
+          <div ref={sentinelRef} className="flex justify-center py-2">
+            {loadingMore ? (
+              <Icon name="refresh" className="size-5 animate-spin text-polks-muted" />
+            ) : loadMoreFailed ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setLoadMoreFailed(false);
+                  loadMore();
+                }}
+                className="text-xs font-semibold text-polks-brand"
+              >
+                Gagal memuat, coba lagi
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </CustomerShell>
   );
