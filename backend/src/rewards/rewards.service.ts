@@ -37,17 +37,23 @@ export class RewardsService {
     return this.prisma.reward.create({ data: dto });
   }
 
-  // Cari (nama/deskripsi) + paginated.
+  // Cari (nama/deskripsi) + filter status/tipe + paginated.
   async listAll(q: ListRewardsQueryDto) {
     const skip = q.skip ?? 0;
     const take = q.take ?? 20;
-    const where: Prisma.RewardWhereInput = q.search
-      ? {
-          OR: [
-            { name: { contains: q.search, mode: 'insensitive' } },
-            { description: { contains: q.search, mode: 'insensitive' } },
-          ],
-        }
+    const conditions: Prisma.RewardWhereInput[] = [];
+    if (q.search) {
+      conditions.push({
+        OR: [
+          { name: { contains: q.search, mode: 'insensitive' } },
+          { description: { contains: q.search, mode: 'insensitive' } },
+        ],
+      });
+    }
+    if (q.status) conditions.push({ status: q.status });
+    if (q.type) conditions.push({ type: q.type });
+    const where: Prisma.RewardWhereInput = conditions.length
+      ? { AND: conditions }
       : {};
 
     const [items, total] = await this.prisma.$transaction([

@@ -41,6 +41,18 @@ const TYPE_OPTIONS: { value: RewardType; label: string }[] = [
   { value: "MANUAL", label: "Manual (hadiah fisik)" },
 ];
 
+const STATUS_FILTERS = ["Semua", "ACTIVE", "INACTIVE"] as const;
+type StatusFilter = (typeof STATUS_FILTERS)[number];
+
+function chipClass(active: boolean) {
+  return (
+    "h-8 rounded-full px-3 text-xs font-semibold transition-colors " +
+    (active
+      ? "bg-polks-brand text-white"
+      : "border-[1.5px] border-polks-border bg-white text-polks-muted")
+  );
+}
+
 // Label tipe reward untuk tabel (termasuk nilai/item-nya).
 function rewardTypeLabel(r: Reward): string {
   switch (r.type) {
@@ -56,7 +68,15 @@ function rewardTypeLabel(r: Reward): string {
 }
 
 export default function AdminRewardsPage() {
-  const list = useAdminList<Reward>("/admin/rewards", { searchable: true });
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("Semua");
+  const [typeFilter, setTypeFilter] = useState<RewardType | "Semua">("Semua");
+  const list = useAdminList<Reward>("/admin/rewards", {
+    searchable: true,
+    params: {
+      status: statusFilter !== "Semua" ? statusFilter : undefined,
+      type: typeFilter !== "Semua" ? typeFilter : undefined,
+    },
+  });
   const [editing, setEditing] = useState<Reward | "new" | null>(null);
 
   async function remove(r: Reward) {
@@ -72,6 +92,38 @@ export default function AdminRewardsPage() {
   return (
     <AdminShell title="Rewards">
       <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setStatusFilter(f)}
+              className={chipClass(statusFilter === f)}
+            >
+              {f === "Semua" ? "Semua" : f === "ACTIVE" ? "Aktif" : "Nonaktif"}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setTypeFilter("Semua")}
+            className={chipClass(typeFilter === "Semua")}
+          >
+            Semua Tipe
+          </button>
+          {TYPE_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setTypeFilter(o.value)}
+              className={chipClass(typeFilter === o.value)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+
         <SectionHeader
           title={`Katalog Reward (${list.total})`}
           action={

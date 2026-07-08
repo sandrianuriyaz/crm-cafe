@@ -1,12 +1,23 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { RewardStatus, RewardType } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class ListRewardsQueryDto {
   @ApiPropertyOptional({ description: 'Cari di nama / deskripsi' })
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({ enum: RewardStatus })
+  @IsOptional()
+  @IsEnum(RewardStatus)
+  status?: RewardStatus;
+
+  @ApiPropertyOptional({ enum: RewardType })
+  @IsOptional()
+  @IsEnum(RewardType)
+  type?: RewardType;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
