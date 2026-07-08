@@ -34,10 +34,19 @@ export class RewardsService {
 
   // ── CRUD (admin) ────────────────────────────────────────────────────────
   create(dto: CreateRewardDto) {
-    return this.prisma.reward.create({ data: dto });
+    const { outletIds, ...rest } = dto;
+    return this.prisma.reward.create({
+      data: {
+        ...rest,
+        outlets: outletIds?.length
+          ? { create: outletIds.map((outletId) => ({ outletId })) }
+          : undefined,
+      },
+    });
   }
 
-  // Cari (nama/deskripsi) + filter status/tipe + paginated.
+  // Cari (nama/deskripsi) + filter status/tipe + paginated. outlets di-include
+  // agar form edit admin tahu tag outlet yang sudah dipilih tanpa fetch tambahan.
   async listAll(q: ListRewardsQueryDto) {
     const skip = q.skip ?? 0;
     const take = q.take ?? 20;
@@ -62,15 +71,29 @@ export class RewardsService {
         orderBy: { createdAt: 'desc' },
         skip,
         take,
+        include: { outlets: { include: { outlet: { select: { id: true, name: true } } } } },
       }),
       this.prisma.reward.count({ where }),
     ]);
     return { total, skip, take, items };
   }
 
+  // outletIds tidak dikirim (undefined) → tag outlet tidak diubah.
+  // outletIds dikirim (termasuk []) → ganti seluruh tag jadi daftar ini.
   async update(id: string, dto: UpdateRewardDto) {
     await this.getOne(id);
-    return this.prisma.reward.update({ where: { id }, data: dto });
+    const { outletIds, ...rest } = dto;
+    return this.prisma.$transaction(async (tx) => {
+      if (outletIds !== undefined) {
+        await tx.rewardOutlet.deleteMany({ where: { rewardId: id } });
+        if (outletIds.length) {
+          await tx.rewardOutlet.createMany({
+            data: outletIds.map((outletId) => ({ rewardId: id, outletId })),
+          });
+        }
+      }
+      return tx.reward.update({ where: { id }, data: rest });
+    });
   }
 
   async remove(id: string) {

@@ -287,6 +287,9 @@ model Outlet {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
+  promoOutlets  PromoOutlet[]
+  rewardOutlets RewardOutlet[]
+
   @@map("outlets")
 }
 
@@ -336,7 +339,23 @@ model Promo {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
+  // Tag outlet mana promo ini relevan (murni informasi admin — kosong berarti
+  // berlaku/relevan di semua outlet; belum ada filter otomatis di customer/POS).
+  outlets PromoOutlet[]
+
   @@map("promos")
+}
+
+// Baris relasi Promo ↔ Outlet (many-to-many eksplisit).
+model PromoOutlet {
+  id       String @id @default(cuid())
+  promoId  String
+  promo    Promo  @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  outletId String
+  outlet   Outlet @relation(fields: [outletId], references: [id], onDelete: Cascade)
+
+  @@unique([promoId, outletId])
+  @@map("promo_outlets")
 }
 
 // ── Reward, Voucher, Redeem ─────────────────────────────────────────────────
@@ -381,7 +400,23 @@ model Reward {
   vouchers Voucher[]
   redeems  Redeem[]
 
+  // Tag outlet mana reward ini relevan (murni informasi admin — kosong berarti
+  // berlaku/relevan di semua outlet; belum ada filter otomatis di customer/POS).
+  outlets RewardOutlet[]
+
   @@map("rewards")
+}
+
+// Baris relasi Reward ↔ Outlet (many-to-many eksplisit).
+model RewardOutlet {
+  id       String @id @default(cuid())
+  rewardId String
+  reward   Reward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  outletId String
+  outlet   Outlet @relation(fields: [outletId], references: [id], onDelete: Cascade)
+
+  @@unique([rewardId, outletId])
+  @@map("reward_outlets")
 }
 
 // Voucher hasil redeem — bukti tukar poin yang bisa dipakai pelanggan.

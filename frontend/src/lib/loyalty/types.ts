@@ -7,6 +7,10 @@ export type RewardType =
   | "FREE_ITEM"
   | "MANUAL";
 
+// Tag outlet — kosong/tidak ada berarti berlaku di semua outlet (informasi
+// admin saja, belum ada filter otomatis di customer/POS).
+export type OutletTag = { outlet: { id: string; name: string } };
+
 export type Reward = {
   id: string;
   name: string;
@@ -20,6 +24,7 @@ export type Reward = {
   freeItemName: string | null;
   createdAt: string;
   updatedAt: string;
+  outlets?: OutletTag[];
 };
 
 // Hasil POST /rewards/:id/redeem
@@ -57,6 +62,7 @@ export type Promo = {
   status: "ACTIVE" | "INACTIVE";
   createdAt: string;
   updatedAt: string;
+  outlets?: OutletTag[];
 };
 
 // Voucher milik member — GET /vouchers

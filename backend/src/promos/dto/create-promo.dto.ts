@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsOptional,
@@ -38,4 +39,11 @@ export class CreatePromoDto {
   @IsOptional()
   @IsEnum(PromoStatus)
   status?: PromoStatus;
+
+  // Outlet mana promo ini relevan — kosong/tidak dikirim = semua outlet.
+  @ApiPropertyOptional({ type: [String], description: 'Id Outlet yang relevan (kosong = semua outlet)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  outletIds?: string[];
 }

@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsOptional,
@@ -58,4 +59,11 @@ export class CreateRewardDto {
   @IsOptional()
   @IsString()
   freeItemName?: string;
+
+  // Outlet mana reward ini relevan — kosong/tidak dikirim = semua outlet.
+  @ApiPropertyOptional({ type: [String], description: 'Id Outlet yang relevan (kosong = semua outlet)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  outletIds?: string[];
 }

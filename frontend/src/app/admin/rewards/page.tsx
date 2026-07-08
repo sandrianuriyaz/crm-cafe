@@ -7,6 +7,7 @@ import { AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { AdminDataTable } from "@/components/admin/admin-data-table";
 import { useAdminList } from "@/components/admin/use-admin-list";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { OutletMultiSelect } from "@/components/admin/outlet-multi-select";
 import { api } from "@/lib/api";
 import { type Reward, type RewardType } from "@/lib/loyalty/types";
 
@@ -20,6 +21,7 @@ type Draft = {
   type: RewardType;
   value: number;
   freeItemName: string;
+  outletIds: string[];
 };
 
 const emptyDraft: Draft = {
@@ -32,6 +34,7 @@ const emptyDraft: Draft = {
   type: "MANUAL",
   value: 0,
   freeItemName: "",
+  outletIds: [],
 };
 
 const TYPE_OPTIONS: { value: RewardType; label: string }[] = [
@@ -218,6 +221,7 @@ function RewardForm({
           type: reward.type ?? "MANUAL",
           value: reward.value ?? 0,
           freeItemName: reward.freeItemName ?? "",
+          outletIds: reward.outlets?.map((o) => o.outlet.id) ?? [],
         }
       : emptyDraft,
   );
@@ -249,6 +253,7 @@ function RewardForm({
       // Selain itu dikirim null agar ter-reset saat ganti tipe.
       value: isDiscount ? Number(d.value) : null,
       freeItemName: d.type === "FREE_ITEM" ? d.freeItemName || null : null,
+      outletIds: d.outletIds,
     };
     try {
       if (reward) {
@@ -359,6 +364,14 @@ function RewardForm({
               />
             </div>
           ) : null}
+
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Outlet (opsional)</label>
+            <OutletMultiSelect value={d.outletIds} onChange={(ids) => set("outletIds", ids)} />
+            <p className="mt-1 text-[10px] text-polks-muted">
+              Tidak pilih outlet manapun = berlaku/relevan di semua outlet.
+            </p>
+          </div>
 
           {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}
 

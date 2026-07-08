@@ -7,6 +7,7 @@ import { AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
 import { AdminDataTable } from "@/components/admin/admin-data-table";
 import { useAdminList } from "@/components/admin/use-admin-list";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { OutletMultiSelect } from "@/components/admin/outlet-multi-select";
 import { api } from "@/lib/api";
 import { type Promo } from "@/lib/loyalty/types";
 
@@ -17,6 +18,7 @@ type Draft = {
   startAt: string; // yyyy-mm-dd
   endAt: string;
   status: "ACTIVE" | "INACTIVE";
+  outletIds: string[];
 };
 
 function toDateInput(iso: string | null): string {
@@ -135,8 +137,17 @@ function PromoForm({
           startAt: toDateInput(promo.startAt),
           endAt: toDateInput(promo.endAt),
           status: promo.status,
+          outletIds: promo.outlets?.map((o) => o.outlet.id) ?? [],
         }
-      : { title: "", description: "", imageUrl: "", startAt: "", endAt: "", status: "ACTIVE" },
+      : {
+          title: "",
+          description: "",
+          imageUrl: "",
+          startAt: "",
+          endAt: "",
+          status: "ACTIVE",
+          outletIds: [],
+        },
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -159,6 +170,7 @@ function PromoForm({
       startAt: d.startAt ? new Date(d.startAt).toISOString() : undefined,
       endAt: d.endAt ? new Date(d.endAt).toISOString() : undefined,
       status: d.status,
+      outletIds: d.outletIds,
     };
     try {
       if (promo) {
@@ -223,6 +235,13 @@ function PromoForm({
               <option value="ACTIVE">Aktif</option>
               <option value="INACTIVE">Nonaktif</option>
             </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Outlet (opsional)</label>
+            <OutletMultiSelect value={d.outletIds} onChange={(ids) => set("outletIds", ids)} />
+            <p className="mt-1 text-[10px] text-polks-muted">
+              Tidak pilih outlet manapun = berlaku/relevan di semua outlet.
+            </p>
           </div>
 
           {error ? <p className="text-[13px] text-polks-error">{error}</p> : null}

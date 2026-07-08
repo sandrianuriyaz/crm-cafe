@@ -34,10 +34,19 @@ export class PromosService {
 
   // ── Admin ───────────────────────────────────────────────────────────────
   create(dto: CreatePromoDto) {
-    return this.prisma.promo.create({ data: this.toData(dto) });
+    const { outletIds, ...rest } = dto;
+    return this.prisma.promo.create({
+      data: {
+        ...this.toData(rest),
+        outlets: outletIds?.length
+          ? { create: outletIds.map((outletId) => ({ outletId })) }
+          : undefined,
+      },
+    });
   }
 
-  // Cari (judul/deskripsi) + paginated.
+  // Cari (judul/deskripsi) + paginated. outlets di-include agar form edit admin
+  // tahu tag outlet yang sudah dipilih tanpa fetch tambahan.
   async listAll(q: ListPromosQueryDto) {
     const skip = q.skip ?? 0;
     const take = q.take ?? 20;
@@ -56,15 +65,29 @@ export class PromosService {
         orderBy: { createdAt: 'desc' },
         skip,
         take,
+        include: { outlets: { include: { outlet: { select: { id: true, name: true } } } } },
       }),
       this.prisma.promo.count({ where }),
     ]);
     return { total, skip, take, items };
   }
 
+  // outletIds tidak dikirim (undefined) → tag outlet tidak diubah.
+  // outletIds dikirim (termasuk []) → ganti seluruh tag jadi daftar ini.
   async update(id: string, dto: UpdatePromoDto) {
     await this.getOne(id);
-    return this.prisma.promo.update({ where: { id }, data: this.toData(dto) });
+    const { outletIds, ...rest } = dto;
+    return this.prisma.$transaction(async (tx) => {
+      if (outletIds !== undefined) {
+        await tx.promoOutlet.deleteMany({ where: { promoId: id } });
+        if (outletIds.length) {
+          await tx.promoOutlet.createMany({
+            data: outletIds.map((outletId) => ({ promoId: id, outletId })),
+          });
+        }
+      }
+      return tx.promo.update({ where: { id }, data: this.toData(rest) });
+    });
   }
 
   async remove(id: string) {
