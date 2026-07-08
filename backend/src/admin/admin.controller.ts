@@ -16,6 +16,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { AdminService } from './admin.service';
 import { LoyaltyConfigService } from './loyalty-config.service';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
+import { ListAdminTransactionsQueryDto } from './dto/list-admin-transactions-query.dto';
 import { ListMembersQueryDto } from './dto/list-members-query.dto';
 import { ListQueryDto } from '../member/dto/list-query.dto';
 import {
@@ -74,8 +75,8 @@ export class AdminController {
 
   @Get('transactions')
   @ApiOperation({ summary: '[Admin] Semua transaksi POS (audit)' })
-  transactions(@Query() q: ListQueryDto) {
-    return this.admin.listTransactions(q.skip, q.take);
+  transactions(@Query() q: ListAdminTransactionsQueryDto) {
+    return this.admin.listTransactions(q.skip, q.take, q.outletId);
   }
 
   @Get('vouchers')

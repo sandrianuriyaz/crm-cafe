@@ -138,10 +138,26 @@ export class AdminService {
     return response;
   }
 
-  // Audit semua transaksi POS yang masuk.
-  async listTransactions(skip = 0, take = 20) {
+  // Audit semua transaksi POS yang masuk. outletId opsional untuk scope ke 1 outlet
+  // (di-resolve ke storeId — Transaction disimpan dengan storeId mentah dari POS,
+  // bukan relasi ke Outlet). Outlet tanpa storeId belum bisa dipetakan → 0 hasil,
+  // bukan diam-diam menampilkan semua transaksi.
+  async listTransactions(skip = 0, take = 20, outletId?: string) {
+    let where: Prisma.TransactionWhereInput = {};
+    if (outletId) {
+      const outlet = await this.prisma.outlet.findUnique({
+        where: { id: outletId },
+        select: { storeId: true },
+      });
+      if (!outlet?.storeId) {
+        return { total: 0, skip, take, items: [] };
+      }
+      where = { storeId: outlet.storeId };
+    }
+
     const [items, total] = await this.prisma.$transaction([
       this.prisma.transaction.findMany({
+        where,
         orderBy: { createdAt: 'desc' },
         skip,
         take,
@@ -157,7 +173,7 @@ export class AdminService {
           createdAt: true,
         },
       }),
-      this.prisma.transaction.count(),
+      this.prisma.transaction.count({ where }),
     ]);
     return { total, skip, take, items };
   }

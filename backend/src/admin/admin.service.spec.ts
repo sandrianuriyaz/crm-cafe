@@ -109,3 +109,60 @@ describe('AdminService.stats', () => {
     expect(res.pointsRedeemed).toBe(0);
   });
 });
+
+describe('AdminService.listTransactions', () => {
+  let service: AdminService;
+  let prisma: {
+    transaction: { findMany: jest.Mock; count: jest.Mock };
+    outlet: { findUnique: jest.Mock };
+    $transaction: jest.Mock;
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      transaction: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
+      },
+      outlet: { findUnique: jest.fn() },
+      $transaction: jest
+        .fn()
+        .mockImplementation((arr: Promise<unknown>[]) => Promise.all(arr)),
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AdminService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: RealtimeGateway, useValue: realtimeMock },
+      ],
+    }).compile();
+    service = module.get(AdminService);
+  });
+
+  it('lists all transactions unfiltered when no outletId is given', async () => {
+    await service.listTransactions(0, 20);
+    expect(prisma.outlet.findUnique).not.toHaveBeenCalled();
+    expect(prisma.transaction.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: {} }),
+    );
+  });
+
+  it('resolves outletId to storeId and filters by it', async () => {
+    prisma.outlet.findUnique.mockResolvedValue({ storeId: 'store-a' });
+    await service.listTransactions(0, 20, 'outlet-1');
+    expect(prisma.outlet.findUnique).toHaveBeenCalledWith({
+      where: { id: 'outlet-1' },
+      select: { storeId: true },
+    });
+    expect(prisma.transaction.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { storeId: 'store-a' } }),
+    );
+  });
+
+  it('returns an empty result without querying transactions when the outlet has no storeId', async () => {
+    prisma.outlet.findUnique.mockResolvedValue({ storeId: null });
+    const res = await service.listTransactions(0, 20, 'outlet-1');
+    expect(prisma.transaction.findMany).not.toHaveBeenCalled();
+    expect(res).toEqual({ total: 0, skip: 0, take: 20, items: [] });
+  });
+});

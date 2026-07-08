@@ -24,6 +24,7 @@ type AdminTxn = {
   paymentMethod: string | null;
   createdAt: string;
 };
+type Outlet = { id: string; name: string };
 
 function rp(v: string | number) {
   return "Rp" + Number(v).toLocaleString("id-ID");
@@ -36,14 +37,20 @@ export default function AdminOverviewPage() {
   const [members, setMembers] = useState<Paginated<AdminMember> | null>(null);
   const [txns, setTxns] = useState<Paginated<AdminTxn> | null>(null);
   const [rewardCount, setRewardCount] = useState<number | null>(null);
-  const [outletCount, setOutletCount] = useState<number | null>(null);
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
+  const [outletFilter, setOutletFilter] = useState("");
 
   useEffect(() => {
     api<Paginated<AdminMember>>("/admin/members?take=5").then(setMembers).catch(() => {});
-    api<Paginated<AdminTxn>>("/admin/transactions?take=5").then(setTxns).catch(() => {});
     api<unknown[]>("/rewards").then((r) => setRewardCount(r.length)).catch(() => {});
-    api<unknown[]>("/outlets").then((r) => setOutletCount(r.length)).catch(() => {});
+    api<Outlet[]>("/outlets").then(setOutlets).catch(() => {});
   }, []);
+
+  // Terpisah dari effect di atas: transaksi ikut re-fetch saat filter outlet berubah.
+  useEffect(() => {
+    const qs = outletFilter ? `?take=5&outletId=${outletFilter}` : "?take=5";
+    api<Paginated<AdminTxn>>(`/admin/transactions${qs}`).then(setTxns).catch(() => {});
+  }, [outletFilter]);
 
   return (
     <AdminShell title="Overview">
@@ -51,7 +58,7 @@ export default function AdminOverviewPage() {
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           <MetricCard label="Total Members" value={members?.total ?? "—"} Icon={Users} accent sub="Member terdaftar" />
           <MetricCard label="POS Transactions" value={txns?.total ?? "—"} Icon={Zap} sub="Total transaksi masuk" />
-          <MetricCard label="Active Outlets" value={outletCount ?? "—"} Icon={Store} sub="Outlet POLKS" />
+          <MetricCard label="Active Outlets" value={outlets.length} Icon={Store} sub="Outlet POLKS" />
           <MetricCard label="Reward Aktif" value={rewardCount ?? "—"} Icon={Gift} sub="Katalog reward" />
         </div>
 
@@ -83,9 +90,21 @@ export default function AdminOverviewPage() {
           <SectionHeader
             title="Transaksi Terbaru"
             action={
-              <Link href="/admin/transactions" className="text-xs font-semibold text-polks-brand">
-                Lihat semua
-              </Link>
+              <div className="flex items-center gap-3">
+                <select
+                  value={outletFilter}
+                  onChange={(e) => setOutletFilter(e.target.value)}
+                  className="h-8 rounded-lg border-[1.5px] border-polks-border bg-white px-2 text-xs text-polks-text outline-none focus:border-polks-brand"
+                >
+                  <option value="">Semua Outlet</option>
+                  {outlets.map((o) => (
+                    <option key={o.id} value={o.id}>{o.name}</option>
+                  ))}
+                </select>
+                <Link href="/admin/transactions" className="text-xs font-semibold text-polks-brand">
+                  Lihat semua
+                </Link>
+              </div>
             }
           />
           <AdminTable
