@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Store, Tag, Gift, Ticket, Webhook,
   RefreshCw, History, Settings, Radio, LogOut, Bell, Search,
-  Menu, X, Layers, Zap, ChevronRight,
+  Menu, X, Zap, ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,6 @@ const GROUPS: NavGroup[] = [
     label: "Manajemen",
     items: [
       { label: "Members", href: "/admin/members", Icon: Users },
-      { label: "Group", href: "/admin/group", Icon: Layers },
       { label: "Outlets", href: "/admin/outlets", Icon: Store },
     ],
   },
