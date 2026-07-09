@@ -54,6 +54,14 @@ export class CreateRewardDto {
   @Min(0)
   value?: number;
 
+  // Minimal total belanja (Rp) agar diskon berlaku — informasi saja untuk
+  // kasir/POS baca manual, tidak divalidasi otomatis oleh server.
+  @ApiPropertyOptional({ example: 50000, description: 'Minimal belanja (Rp) — informasi saja' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minPurchase?: number;
+
   // Hanya untuk FREE_ITEM.
   @ApiPropertyOptional({ example: 'Americano' })
   @IsOptional()

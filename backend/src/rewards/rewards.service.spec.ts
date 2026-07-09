@@ -171,3 +171,51 @@ describe('RewardsService outlet tagging', () => {
     });
   });
 });
+
+describe('RewardsService.minPurchase', () => {
+  let service: RewardsService;
+  let prisma: {
+    reward: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
+    $transaction: jest.Mock;
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      reward: {
+        create: jest.fn().mockResolvedValue({ id: 'r1' }),
+        findUnique: jest.fn().mockResolvedValue({ id: 'r1' }),
+        update: jest.fn().mockResolvedValue({ id: 'r1' }),
+      },
+      $transaction: jest.fn().mockImplementation((arg) =>
+        Array.isArray(arg) ? Promise.all(arg) : arg(prisma),
+      ),
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [RewardsService, { provide: PrismaService, useValue: prisma }],
+    }).compile();
+    service = module.get(RewardsService);
+  });
+
+  it('passes minPurchase through on create', async () => {
+    await service.create({
+      name: 'Diskon',
+      pointCost: 100,
+      stock: 1,
+      minPurchase: 50000,
+    } as any);
+    expect(prisma.reward.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ minPurchase: 50000 }),
+      }),
+    );
+  });
+
+  it('passes minPurchase through on update', async () => {
+    await service.update('r1', { minPurchase: 75000 } as any);
+    expect(prisma.reward.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ minPurchase: 75000 }),
+      }),
+    );
+  });
+});

@@ -20,6 +20,7 @@ type Draft = {
   status: "ACTIVE" | "INACTIVE";
   type: RewardType;
   value: number;
+  minPurchase: number;
   freeItemName: string;
   outletIds: string[];
 };
@@ -33,6 +34,7 @@ const emptyDraft: Draft = {
   status: "ACTIVE",
   type: "MANUAL",
   value: 0,
+  minPurchase: 0,
   freeItemName: "",
   outletIds: [],
 };
@@ -220,6 +222,7 @@ function RewardForm({
           status: reward.status,
           type: reward.type ?? "MANUAL",
           value: reward.value ?? 0,
+          minPurchase: reward.minPurchase ?? 0,
           freeItemName: reward.freeItemName ?? "",
           outletIds: reward.outlets?.map((o) => o.outlet.id) ?? [],
         }
@@ -249,9 +252,10 @@ function RewardForm({
       stock: Number(d.stock),
       status: d.status,
       type: d.type,
-      // value hanya untuk tipe diskon; freeItemName hanya untuk item gratis.
-      // Selain itu dikirim null agar ter-reset saat ganti tipe.
+      // value & minPurchase hanya untuk tipe diskon; freeItemName hanya untuk
+      // item gratis. Selain itu dikirim null agar ter-reset saat ganti tipe.
       value: isDiscount ? Number(d.value) : null,
+      minPurchase: isDiscount && d.minPurchase > 0 ? Number(d.minPurchase) : null,
       freeItemName: d.type === "FREE_ITEM" ? d.freeItemName || null : null,
       outletIds: d.outletIds,
     };
@@ -350,6 +354,25 @@ function RewardForm({
                 onChange={(e) => set("value", Number(e.target.value))}
                 placeholder={d.type === "DISCOUNT_AMOUNT" ? "10000" : "0–100"}
               />
+            </div>
+          ) : null}
+
+          {(d.type === "DISCOUNT_AMOUNT" || d.type === "DISCOUNT_PERCENT") ? (
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-polks-text">
+                Minimal Belanja (Rp, opsional)
+              </label>
+              <input
+                type="number"
+                min={0}
+                className={field}
+                value={d.minPurchase}
+                onChange={(e) => set("minPurchase", Number(e.target.value))}
+                placeholder="mis. 50000"
+              />
+              <p className="mt-1 text-[10px] text-polks-muted">
+                Informasi buat kasir — dibaca manual, belum divalidasi otomatis oleh sistem.
+              </p>
             </div>
           ) : null}
 

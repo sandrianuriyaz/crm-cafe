@@ -395,6 +395,9 @@ model Reward {
   status       RewardStatus @default(ACTIVE)
   type         RewardType   @default(MANUAL)
   value        Int?
+  // Minimal total belanja (Rp) agar diskon berlaku — informasi saja, dibaca
+  // kasir/POS secara manual. Belum ada enforcement otomatis di server.
+  minPurchase  Int?
   freeItemName String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt

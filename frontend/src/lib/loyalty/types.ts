@@ -21,6 +21,7 @@ export type Reward = {
   status: "ACTIVE" | "INACTIVE";
   type: RewardType;
   value: number | null;
+  minPurchase: number | null;
   freeItemName: string | null;
   createdAt: string;
   updatedAt: string;
