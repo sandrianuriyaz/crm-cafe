@@ -152,6 +152,7 @@ model Broadcast {
   id             String   @id @default(cuid())
   title          String
   message        String
+  imageUrl       String?
   target         String // all | silver | gold | platinum | inactive
   recipientCount Int      @default(0)
   createdAt      DateTime @default(now())
@@ -166,6 +167,7 @@ model Notification {
   member    Member    @relation(fields: [memberId], references: [id])
   title     String
   message   String
+  imageUrl  String?
   readAt    DateTime?
   createdAt DateTime  @default(now())
 

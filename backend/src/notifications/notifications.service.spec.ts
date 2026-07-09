@@ -58,13 +58,49 @@ describe('NotificationsService', () => {
     expect(res).toEqual({ recipientCount: 2 });
     expect(prisma.broadcast.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ target: 'all', recipientCount: 2 }),
+        data: expect.objectContaining({
+          target: 'all',
+          recipientCount: 2,
+          imageUrl: null,
+        }),
       }),
     );
     expect(prisma.notification.createMany).toHaveBeenCalledWith({
       data: [
-        { memberId: 'm1', title: 'Promo', message: 'Halo' },
-        { memberId: 'm2', title: 'Promo', message: 'Halo' },
+        { memberId: 'm1', title: 'Promo', message: 'Halo', imageUrl: null },
+        { memberId: 'm2', title: 'Promo', message: 'Halo', imageUrl: null },
+      ],
+    });
+  });
+
+  it('broadcast passes imageUrl through to the broadcast record and every notification', async () => {
+    await service.broadcast({
+      title: 'Promo',
+      message: 'Halo',
+      target: 'all',
+      imageUrl: 'https://example.com/banner.png',
+    });
+    expect(prisma.broadcast.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          imageUrl: 'https://example.com/banner.png',
+        }),
+      }),
+    );
+    expect(prisma.notification.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          memberId: 'm1',
+          title: 'Promo',
+          message: 'Halo',
+          imageUrl: 'https://example.com/banner.png',
+        },
+        {
+          memberId: 'm2',
+          title: 'Promo',
+          message: 'Halo',
+          imageUrl: 'https://example.com/banner.png',
+        },
       ],
     });
   });

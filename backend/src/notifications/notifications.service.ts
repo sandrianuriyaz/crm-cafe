@@ -30,18 +30,20 @@ export class NotificationsService {
 
     const title = dto.title.trim();
     const message = dto.message.trim();
+    const imageUrl = dto.imageUrl?.trim() || null;
 
     await this.prisma.$transaction([
       this.prisma.broadcast.create({
         data: {
           title,
           message,
+          imageUrl,
           target: dto.target,
           recipientCount: members.length,
         },
       }),
       this.prisma.notification.createMany({
-        data: members.map((m) => ({ memberId: m.id, title, message })),
+        data: members.map((m) => ({ memberId: m.id, title, message, imageUrl })),
       }),
     ]);
 

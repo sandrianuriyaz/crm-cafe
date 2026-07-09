@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsString, Length, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsIn, IsOptional, IsString, Length, MinLength } from 'class-validator';
 
 export const BROADCAST_TARGETS = [
   'all',
@@ -24,4 +24,9 @@ export class CreateBroadcastDto {
   @ApiProperty({ enum: BROADCAST_TARGETS, example: 'all' })
   @IsIn(BROADCAST_TARGETS as unknown as string[])
   target!: BroadcastTarget;
+
+  @ApiPropertyOptional({ description: 'URL gambar (opsional), diupload lewat POST /admin/uploads' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }

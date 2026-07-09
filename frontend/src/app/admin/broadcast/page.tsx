@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Radio, Send, Users } from "lucide-react";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { MetricCard, AdminTable, AdminBadge, SectionHeader } from "@/components/admin/admin-ui";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { api, ApiError } from "@/lib/api";
 import { type Paginated } from "@/lib/loyalty/types";
 
@@ -11,6 +12,7 @@ type Broadcast = {
   id: string;
   title: string;
   message: string;
+  imageUrl: string | null;
   target: string;
   recipientCount: number;
   createdAt: string;
@@ -37,6 +39,7 @@ function fmtDate(iso: string) {
 export default function AdminBroadcastPage() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [target, setTarget] = useState(TARGETS[0].value);
   const [sending, setSending] = useState(false);
   const [sentInfo, setSentInfo] = useState<string | null>(null);
@@ -67,11 +70,17 @@ export default function AdminBroadcastPage() {
     try {
       const res = await api<{ recipientCount: number }>("/admin/broadcast", {
         method: "POST",
-        body: { title: title.trim(), message: message.trim(), target },
+        body: {
+          title: title.trim(),
+          message: message.trim(),
+          target,
+          imageUrl: imageUrl.trim() || undefined,
+        },
       });
       setSentInfo(`Terkirim ke ${res.recipientCount.toLocaleString("id-ID")} member.`);
       setTitle("");
       setMessage("");
+      setImageUrl("");
       loadHistory();
       setTimeout(() => setSentInfo(null), 4000);
     } catch (err) {
@@ -123,6 +132,10 @@ export default function AdminBroadcastPage() {
                   placeholder="Tulis pesan broadcast…"
                 />
                 <p className="mt-1 text-[10px] text-polks-muted">{message.length} / 500 karakter</p>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-polks-text">Gambar (opsional)</label>
+                <ImageUploadField value={imageUrl} onChange={setImageUrl} folder="broadcasts" />
               </div>
 
               {error ? <p className="text-[12px] font-medium text-polks-error">{error}</p> : null}

@@ -12,6 +12,7 @@ type Notif = {
   id: string;
   title: string;
   message: string;
+  imageUrl: string | null;
   readAt: string | null;
   createdAt: string;
 };
@@ -88,9 +89,13 @@ export default function InboxPage() {
             {items.map((n) => (
               <div
                 key={n.id}
-                className="rounded-2xl border border-polks-border bg-polks-card p-4"
+                className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card"
               >
-                <div className="flex items-start gap-3">
+                {n.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={n.imageUrl} alt="" className="aspect-video w-full object-cover" />
+                ) : null}
+                <div className="flex items-start gap-3 p-4">
                   <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-polks-surface">
                     <Bell size={16} className="text-polks-brand" />
                   </div>
