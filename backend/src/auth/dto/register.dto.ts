@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'Budi Santoso' })
@@ -22,4 +22,10 @@ export class RegisterDto {
   @IsString()
   @MinLength(8)
   phone!: string;
+
+  // Opsional. Buat birthday reward nanti — belum ada trigger otomatis.
+  @ApiPropertyOptional({ example: '2000-05-17' })
+  @IsOptional()
+  @IsDateString()
+  birthDate?: string;
 }

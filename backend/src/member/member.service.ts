@@ -38,6 +38,7 @@ export class MemberService {
       name: m.name,
       email: m.user?.email ?? null,
       phone: m.phone,
+      birthDate: m.birthDate,
       pointBalance: m.pointBalance,
       tier: status.tier,
       monthlySpend: status.monthlySpend,
@@ -58,6 +59,7 @@ export class MemberService {
     const m = await this.getMemberOrThrow(userId);
     const name = dto.name?.trim();
     const phone = dto.phone?.trim();
+    const birthDate = dto.birthDate;
 
     try {
       await this.prisma.$transaction(async (tx) => {
@@ -66,6 +68,7 @@ export class MemberService {
           data: {
             ...(name !== undefined ? { name } : {}),
             ...(phone !== undefined ? { phone: phone || null } : {}),
+            ...(birthDate !== undefined ? { birthDate: new Date(birthDate) } : {}),
           },
         });
         // Sinkronkan phone (dan nama) ke akun login bila ada.

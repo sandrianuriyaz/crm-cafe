@@ -4,14 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Cake, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { GoogleButton } from "@/components/auth/google-button";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
-  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", birthDate: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pwTouched, setPwTouched] = useState(false);
@@ -48,6 +48,7 @@ export default function RegisterPage() {
         email: form.email.trim(),
         password: form.password,
         phone: form.phone.trim(),
+        birthDate: form.birthDate || undefined,
       });
       router.push("/dashboard");
     } catch (err) {
@@ -123,6 +124,18 @@ export default function RegisterPage() {
               <input id="phone" type="tel" inputMode="numeric" autoComplete="tel" required minLength={8} placeholder="08xxxxxxxxxx"
                 value={form.phone} onChange={update("phone")} className={fieldClass} />
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="birthDate" className="text-xs font-semibold text-[#374151]">
+              Tanggal Lahir <span className="font-normal text-[#9CA3AF]">(opsional)</span>
+            </label>
+            <div className="relative flex items-center">
+              <Cake size={18} className="absolute left-4 text-[#9CA3AF]" />
+              <input id="birthDate" type="date" autoComplete="bday" placeholder="YYYY-MM-DD"
+                value={form.birthDate} onChange={update("birthDate")} className={fieldClass} />
+            </div>
+            <p className="text-[11px] text-[#9CA3AF]">Biar kami bisa kasih kejutan pas ulang tahunmu.</p>
           </div>
 
           <div className="flex flex-col gap-1.5">

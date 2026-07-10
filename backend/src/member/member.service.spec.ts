@@ -80,6 +80,17 @@ describe('MemberService.updateProfile', () => {
     );
   });
 
+  it('sets birthDate when provided', async () => {
+    await service.updateProfile('u1', { birthDate: '2000-05-17' });
+    expect(prisma.member.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { birthDate: new Date('2000-05-17') },
+      }),
+    );
+    // birthDate tidak ada di User — tidak boleh ikut disinkron ke akun login.
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
   it('throws 409 when the phone is already taken', async () => {
     prisma.$transaction.mockRejectedValueOnce(
       new Prisma.PrismaClientKnownRequestError('dup', {

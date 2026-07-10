@@ -41,6 +41,7 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const email = dto.email.toLowerCase().trim();
     const phone = dto.phone?.trim() || null;
+    const birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
 
     const exists = await this.prisma.user.findUnique({ where: { email } });
     if (exists) {
@@ -76,6 +77,7 @@ export class AuthService {
             data: {
               userId: user.id,
               name: existingMember.name ?? dto.name.trim(),
+              birthDate: existingMember.birthDate ?? birthDate,
             },
           });
         } else if (!existingMember) {
@@ -84,6 +86,7 @@ export class AuthService {
               memberCode: generateMemberCode(),
               name: dto.name.trim(),
               phone,
+              birthDate,
               userId: user.id,
             },
           });
@@ -93,6 +96,7 @@ export class AuthService {
             data: {
               memberCode: generateMemberCode(),
               name: dto.name.trim(),
+              birthDate,
               userId: user.id,
             },
           });

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { User, Phone } from "lucide-react";
+import { User, Phone, Cake } from "lucide-react";
 import { api, ApiError, getToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -12,6 +12,7 @@ export default function CompleteProfilePage() {
   const { user, refreshProfile } = useAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +40,7 @@ export default function CompleteProfilePage() {
     try {
       await api("/member/profile", {
         method: "PATCH",
-        body: { name: name.trim(), phone: phone.trim() },
+        body: { name: name.trim(), phone: phone.trim(), birthDate: birthDate || undefined },
       });
       await refreshProfile();
       router.replace("/dashboard");
@@ -123,6 +124,26 @@ export default function CompleteProfilePage() {
             </div>
             <p className="text-[11px] text-[#9CA3AF]">
               Dipakai untuk verifikasi member & pencatatan poin di kasir.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="birthDate" className="text-xs font-semibold text-[#374151]">
+              Tanggal Lahir <span className="font-normal text-[#9CA3AF]">(opsional)</span>
+            </label>
+            <div className="relative flex items-center">
+              <Cake size={18} className="absolute left-4 text-[#9CA3AF]" />
+              <input
+                id="birthDate"
+                type="date"
+                autoComplete="bday"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                className={field}
+              />
+            </div>
+            <p className="text-[11px] text-[#9CA3AF]">
+              Biar kami bisa kasih kejutan pas ulang tahunmu.
             </p>
           </div>
 

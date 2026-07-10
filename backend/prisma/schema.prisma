@@ -124,10 +124,14 @@ model Member {
   // customer.id dari POS dipakai sebagai external key (§11 #5).
   externalCustomerId String?  @unique
   name               String?
-  phone              String?  @unique
-  pointBalance       Int      @default(0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  phone              String?   @unique
+  // Diisi manual (register email/password atau /complete-profile setelah
+  // Google — Google OAuth tidak menyediakan tanggal lahir). Belum ada
+  // reward/notifikasi otomatis berbasis field ini.
+  birthDate          DateTime?
+  pointBalance       Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Akun login pemilik member (null = member dari POS yang belum punya akun /
   // belum diklaim lewat register by phone). Lihat alur klaim member.

@@ -53,6 +53,7 @@ type AuthContextValue = {
     email: string;
     password: string;
     phone?: string;
+    birthDate?: string;
   }) => Promise<void>;
   logout: () => void;
   // Ambil ulang profil member (mis. setelah redeem agar saldo poin terbaru).
@@ -138,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: string;
       password: string;
       phone?: string;
+      birthDate?: string;
     }) => {
       const res = await api<AuthResponse>("/auth/register", {
         method: "POST",
