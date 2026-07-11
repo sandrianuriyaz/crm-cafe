@@ -17,7 +17,7 @@ function VerifyEmailContent() {
     if (!token) { setState("error"); return; }
     api("/auth/verify-email", {
       method: "POST",
-      body: JSON.stringify({ token }),
+      body: { token },
     })
       .then(() => setState("success"))
       .catch(() => setState("error"));

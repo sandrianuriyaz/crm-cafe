@@ -78,7 +78,7 @@ export default function NotificationsPage() {
     try {
       await api("/member/notifications/settings", {
         method: "PATCH",
-        body: JSON.stringify({ [apiKey]: changed?.on }),
+        body: { [apiKey]: changed?.on },
       });
     } catch {
       // Rollback

@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
     try {
       await api("/auth/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ email: email.trim() }),
+        body: { email: email.trim() },
       });
       setState("success");
     } catch {
