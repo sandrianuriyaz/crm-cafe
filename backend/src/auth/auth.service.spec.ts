@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
-import { Prisma } from '@prisma/client';
+import { AuthTokenType, Prisma } from '@prisma/client';
 
 describe('AuthService.login', () => {
   let service: AuthService;
@@ -330,6 +330,46 @@ describe('AuthService.confirmEmailChange', () => {
 
     await expect(service.confirmEmailChange('tok')).rejects.toBeInstanceOf(
       ConflictException,
+    );
+  });
+});
+
+describe('AuthService.cancelEmailChange', () => {
+  let service: AuthService;
+  let prisma: {
+    user: { update: jest.Mock };
+    authToken: { updateMany: jest.Mock };
+    $transaction: jest.Mock;
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      user: { update: jest.fn() },
+      authToken: { updateMany: jest.fn() },
+      $transaction: jest.fn().mockResolvedValue(undefined),
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: JwtService, useValue: { signAsync: jest.fn() } },
+        { provide: MailService, useValue: {} },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(AuthService);
+  });
+
+  it('clears the pending email and invalidates outstanding tokens', async () => {
+    await service.cancelEmailChange('u1');
+
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'u1' }, data: { pendingEmail: null } }),
+    );
+    expect(prisma.authToken.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'u1', type: AuthTokenType.EMAIL_CHANGE, usedAt: null },
+      }),
     );
   });
 });

@@ -632,6 +632,20 @@ export class AuthService {
     return { message: 'Email berhasil diperbarui.', email: user.pendingEmail };
   }
 
+  async cancelEmailChange(userId: string) {
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { pendingEmail: null },
+      }),
+      this.prisma.authToken.updateMany({
+        where: { userId, type: AuthTokenType.EMAIL_CHANGE, usedAt: null },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+    return { message: 'Perubahan email dibatalkan.' };
+  }
+
   // ── Helper token sekali-pakai ───────────────────────────────────────────────
 
   // Buat token acak: `token` dikirim ke user, `tokenHash` (sha256) disimpan.

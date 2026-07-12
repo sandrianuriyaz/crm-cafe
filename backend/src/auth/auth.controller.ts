@@ -157,6 +157,15 @@ export class AuthController {
     return this.auth.confirmEmailChange(dto.token);
   }
 
+  @Post('email-change/cancel')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Batalkan perubahan email yang menunggu konfirmasi' })
+  cancelEmailChange(@CurrentUser() user: AuthUser) {
+    return this.auth.cancelEmailChange(user.id);
+  }
+
   // ── 2FA (TOTP) ──────────────────────────────────────────────────────────
 
   @Post('2fa/login')
