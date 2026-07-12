@@ -44,7 +44,7 @@ function DocketRow({
 
 export default function AccountInfoPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [p, setP]               = useState<MemberProfile | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
@@ -56,7 +56,8 @@ export default function AccountInfoPage() {
   const [phone, setPhone]         = useState("");
   const [email, setEmail]         = useState("");
   const [saving, setSaving]       = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [pendingBusy, setPendingBusy] = useState(false);
 
   const load = () => {
@@ -89,43 +90,55 @@ export default function AccountInfoPage() {
     setName(p.name);
     setPhone(p.phone ?? "");
     setEmail(p.email);
-    setSaveError(null);
+    setPhoneError(null);
+    setEmailError(null);
     setEditing(true);
   }
 
   function cancelEdit() {
     setEditing(false);
-    setSaveError(null);
+    setPhoneError(null);
+    setEmailError(null);
   }
 
   async function onSave() {
     if (!p) return;
     setSaving(true);
-    setSaveError(null);
+    setPhoneError(null);
+    setEmailError(null);
     try {
       const nameChanged  = name.trim() !== p.name;
       const phoneChanged = phone.trim() !== (p.phone ?? "");
       const emailChanged = p.hasPassword && email.trim().toLowerCase() !== p.email.toLowerCase();
 
       if (nameChanged || phoneChanged) {
-        await api("/member/profile", {
-          method: "PATCH",
-          body: {
-            ...(nameChanged ? { name: name.trim() } : {}),
-            ...(phoneChanged ? { phone: phone.trim() } : {}),
-          },
-        });
+        try {
+          await api("/member/profile", {
+            method: "PATCH",
+            body: {
+              ...(nameChanged ? { name: name.trim() } : {}),
+              ...(phoneChanged ? { phone: phone.trim() } : {}),
+            },
+          });
+        } catch (err) {
+          setPhoneError(err instanceof Error ? err.message : "Gagal menyimpan perubahan.");
+          return;
+        }
       }
       if (emailChanged) {
-        await api("/auth/email-change/request", {
-          method: "POST",
-          body: { email: email.trim() },
-        });
+        try {
+          await api("/auth/email-change/request", {
+            method: "POST",
+            body: { email: email.trim() },
+          });
+        } catch (err) {
+          setEmailError(err instanceof Error ? err.message : "Gagal menyimpan perubahan.");
+          return;
+        }
       }
       setEditing(false);
       load();
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Gagal menyimpan perubahan.");
+      await refreshProfile();
     } finally {
       setSaving(false);
     }
@@ -278,6 +291,9 @@ export default function AccountInfoPage() {
                   </span>
                 )}
               </DocketRow>
+              {editing && p.hasPassword && emailError ? (
+                <p className="-mt-1 text-right text-[10.5px] text-polks-error">{emailError}</p>
+              ) : null}
 
               <DocketRow label="No. HP" icon={Phone}>
                 {editing ? (
@@ -292,9 +308,8 @@ export default function AccountInfoPage() {
                   </span>
                 )}
               </DocketRow>
-
-              {saveError ? (
-                <p className="mt-1 text-right text-[10.5px] text-polks-error">{saveError}</p>
+              {editing && phoneError ? (
+                <p className="-mt-1 text-right text-[10.5px] text-polks-error">{phoneError}</p>
               ) : null}
 
               <div className="relative my-4 -mx-4 border-t border-dashed border-polks-border">
