@@ -19,6 +19,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { EmailChangeRequestDto } from './dto/email-change-request.dto';
 import {
   TwoFactorCodeDto,
   TwoFactorLoginDto,
@@ -130,6 +131,21 @@ export class AuthController {
   @ApiOperation({ summary: 'Verifikasi email pakai token dari email' })
   verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.auth.verifyEmail(dto.token);
+  }
+
+  // ── Ganti email ──────────────────────────────────────────────────────────
+
+  @Post('email-change/request')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Minta ganti email — kirim link konfirmasi ke email baru' })
+  requestEmailChange(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: EmailChangeRequestDto,
+  ) {
+    return this.auth.requestEmailChange(user.id, dto.email);
   }
 
   // ── 2FA (TOTP) ──────────────────────────────────────────────────────────
