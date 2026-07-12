@@ -594,6 +594,44 @@ export class AuthService {
     return { message: 'Tautan konfirmasi telah dikirim ke email baru.' };
   }
 
+  async confirmEmailChange(token: string) {
+    const record = await this.consumeToken(token, AuthTokenType.EMAIL_CHANGE);
+    const user = await this.prisma.user.findUnique({ where: { id: record.userId } });
+    if (!user?.pendingEmail) {
+      throw new BadRequestException('Tidak ada perubahan email yang menunggu');
+    }
+
+    try {
+      await this.prisma.$transaction([
+        this.prisma.user.update({
+          where: { id: record.userId },
+          data: {
+            email: user.pendingEmail,
+            pendingEmail: null,
+            emailVerified: true,
+            emailVerifiedAt: new Date(),
+          },
+        }),
+        this.prisma.authToken.update({
+          where: { id: record.id },
+          data: { usedAt: new Date() },
+        }),
+      ]);
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'Email sudah dipakai akun lain, minta ulang perubahan',
+        );
+      }
+      throw err;
+    }
+
+    return { message: 'Email berhasil diperbarui.', email: user.pendingEmail };
+  }
+
   // ── Helper token sekali-pakai ───────────────────────────────────────────────
 
   // Buat token acak: `token` dikirim ke user, `tokenHash` (sha256) disimpan.

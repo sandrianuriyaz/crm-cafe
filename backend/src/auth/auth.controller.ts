@@ -20,6 +20,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { EmailChangeRequestDto } from './dto/email-change-request.dto';
+import { EmailChangeConfirmDto } from './dto/email-change-confirm.dto';
 import {
   TwoFactorCodeDto,
   TwoFactorLoginDto,
@@ -146,6 +147,14 @@ export class AuthController {
     @Body() dto: EmailChangeRequestDto,
   ) {
     return this.auth.requestEmailChange(user.id, dto.email);
+  }
+
+  @Post('email-change/confirm')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Konfirmasi ganti email pakai token dari email' })
+  confirmEmailChange(@Body() dto: EmailChangeConfirmDto) {
+    return this.auth.confirmEmailChange(dto.token);
   }
 
   // ── 2FA (TOTP) ──────────────────────────────────────────────────────────
