@@ -45,6 +45,9 @@ export class MemberService {
       rupiahPerPoint: status.rupiahPerPoint,
       nextTier: status.nextTier,
       createdAt: m.createdAt,
+      emailVerified: m.user?.emailVerified ?? false,
+      pendingEmail: m.user?.pendingEmail ?? null,
+      hasPassword: !!m.user?.passwordHash,
     };
   }
 
