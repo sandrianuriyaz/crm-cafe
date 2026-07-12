@@ -44,6 +44,10 @@ model User {
   // emailnya. Login tetap boleh tanpa verifikasi (verifikasi bersifat informatif).
   emailVerified   Boolean   @default(false)
   emailVerifiedAt DateTime?
+  // Email baru menunggu konfirmasi lewat link (lihat AuthTokenType.EMAIL_CHANGE).
+  // Tidak unique di level DB — dicek di level aplikasi, race ditangkap via
+  // P2002 pada `email` (yang memang unique) saat konfirmasi.
+  pendingEmail    String?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -61,6 +65,7 @@ model User {
 enum AuthTokenType {
   PASSWORD_RESET
   EMAIL_VERIFY
+  EMAIL_CHANGE
 }
 
 model AuthToken {
