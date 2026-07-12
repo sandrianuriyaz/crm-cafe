@@ -36,7 +36,7 @@ function DocketRow({
     <div className="flex items-baseline gap-1.5 py-1.5">
       <Icon size={11} className="mb-0.5 shrink-0 text-polks-muted" />
       <span className="whitespace-nowrap text-[10.5px] text-polks-muted">{label}</span>
-      <span className="mb-0.5 h-px flex-1 border-b border-dotted border-[#D7DCDF]" />
+      <span className="mb-0.5 h-px flex-1 border-b border-dotted border-polks-border" />
       {children}
     </div>
   );
