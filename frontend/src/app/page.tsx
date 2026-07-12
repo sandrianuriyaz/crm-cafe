@@ -168,22 +168,23 @@ export default function GuestHomePage() {
                   key={r.id}
                   type="button"
                   onClick={gate("Login untuk menukar poin dengan reward.")}
-                  className="flex w-[130px] shrink-0 flex-col gap-2.5 rounded-2xl border border-polks-border bg-polks-card p-3.5 text-left"
+                  className="relative w-[130px] shrink-0 overflow-hidden rounded-2xl text-left"
                 >
                   {r.imageUrl ? (
-                    <div className="size-8 overflow-hidden rounded-lg bg-polks-surface">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.imageUrl} alt={r.name} className="size-full object-cover" />
-                    </div>
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.imageUrl} alt={r.name} className="aspect-square w-full object-cover" />
                   ) : (
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-polks-point-soft">
-                      <Gift size={14} color="#C99A2E" />
+                    <div className="flex aspect-square w-full items-center justify-center bg-polks-surface">
+                      <Gift size={20} color="#C99A2E" strokeWidth={1.8} />
                     </div>
                   )}
-                  <p className="line-clamp-2 text-[11px] font-semibold text-polks-text">{r.name}</p>
-                  <span className="text-[10px] font-semibold text-polks-muted">
-                    {r.pointCost.toLocaleString("id-ID")} pts
-                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-2">
+                    <p className="line-clamp-1 text-[11px] font-black leading-tight text-white">{r.name}</p>
+                    <p className="mt-0.5 text-[10px] font-semibold text-white/80">
+                      {r.pointCost.toLocaleString("id-ID")} pts
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
