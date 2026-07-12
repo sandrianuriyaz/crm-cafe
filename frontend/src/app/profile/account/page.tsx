@@ -36,7 +36,7 @@ function DocketRow({
     <div className="flex items-baseline gap-1.5 py-1.5">
       <Icon size={11} className="mb-0.5 shrink-0 text-polks-muted" />
       <span className="whitespace-nowrap text-[10.5px] text-polks-muted">{label}</span>
-      <span className="mb-0.5 h-px flex-1 border-b border-dotted border-polks-border" />
+      <span className="mb-0.5 h-px flex-1 border-b border-dotted border-polks-muted/30" />
       {children}
     </div>
   );
@@ -228,13 +228,17 @@ export default function AccountInfoPage() {
                 className="absolute right-3.5 top-3.5 flex size-[46px] -rotate-[9deg] flex-col items-center justify-center rounded-full border"
                 style={{ borderColor: tierMeta.badgeText, backgroundColor: tierMeta.badgeBg }}
               >
+                <span
+                  className="pointer-events-none absolute inset-1 rounded-full border border-dashed"
+                  style={{ borderColor: tierMeta.badgeText, opacity: 0.5 }}
+                />
                 <span className="mb-0.5 size-1 rounded-full bg-polks-point" />
                 <b className="text-[7.5px] font-bold tracking-wide" style={{ color: tierMeta.badgeText }}>
                   {tierMeta.label.toUpperCase()}
                 </b>
               </div>
 
-              <p className="text-center text-[17px] font-bold text-polks-text">{p.name}</p>
+              <p className="text-center font-serif text-[18px] font-bold text-polks-text">{p.name}</p>
               <div className="my-3 border-t border-dotted border-polks-border" />
 
               <div className="mb-1 flex items-center justify-between">
@@ -312,7 +316,7 @@ export default function AccountInfoPage() {
                 <p className="-mt-1 text-right text-[10.5px] text-polks-error">{phoneError}</p>
               ) : null}
 
-              <div className="relative my-4 -mx-4 border-t border-dashed border-polks-border">
+              <div className="relative my-4 -mx-4 border-t border-dashed border-polks-muted/30">
                 <span className="absolute -left-1.5 -top-1.5 size-3 rounded-full bg-polks-bg" />
                 <span className="absolute -right-1.5 -top-1.5 size-3 rounded-full bg-polks-bg" />
               </div>
