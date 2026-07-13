@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, RefreshCw, QrCode, Coffee,
-  ChevronRight, History, MapPin, Shield,
+  ChevronRight, History, MapPin,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
@@ -123,7 +123,10 @@ export default function MemberCardPage() {
         </div>
 
         {/* ── Member info ── */}
-        <div className="mx-5 mt-3 flex items-center justify-between rounded-2xl bg-polks-card px-4 py-3">
+        <Link
+          href="/profile"
+          className="mx-5 mt-3 flex items-center justify-between rounded-2xl bg-polks-card px-4 py-3"
+        >
           <div className="flex items-center gap-3">
             <div
               className="flex size-10 items-center justify-center rounded-full text-[16px] font-black text-white"
@@ -139,7 +142,7 @@ export default function MemberCardPage() {
             </div>
           </div>
           <ChevronRight size={16} className="text-polks-muted" />
-        </div>
+        </Link>
 
         {/* ── Stats row ── */}
         <div className="mx-5 mt-3 grid grid-cols-3 divide-x divide-polks-surface rounded-2xl bg-polks-card py-3">
@@ -184,20 +187,6 @@ export default function MemberCardPage() {
             </div>
             <ChevronRight size={13} className="shrink-0 text-polks-muted" />
           </Link>
-        </div>
-
-        {/* ── Security row ── */}
-        <div className="mx-5 mt-3 flex items-center gap-3 rounded-2xl bg-polks-card px-4 py-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-polks-surface">
-            <Shield size={16} className="text-polks-muted" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[12px] font-bold text-polks-text">Keamanan & Privasi</p>
-            <p className="text-[10px] leading-relaxed text-polks-muted">
-              QR Code ini bersifat dinamis dan akan berubah secara berkala untuk keamanan akun Anda.
-            </p>
-          </div>
-          <ChevronRight size={13} className="shrink-0 text-polks-muted" />
         </div>
 
       </div>
