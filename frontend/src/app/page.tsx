@@ -104,7 +104,7 @@ export default function GuestHomePage() {
       <div className="flex flex-col gap-5 pb-28 pt-5">
 
         {/* Cara Kerjanya */}
-        <div className="mx-4 rounded-2xl bg-polks-card px-5 py-5">
+        <div className="mx-4 rounded-2xl border border-polks-border bg-polks-card px-5 py-5">
           <h2 className="mb-4 text-[14px] font-bold text-polks-text">Cara Kerjanya</h2>
           <div className="flex flex-col gap-3.5">
             {HOW_IT_WORKS.map(({ text }, i) => (
@@ -193,7 +193,7 @@ export default function GuestHomePage() {
 
         {/* Outlet */}
         {outlets.length > 0 && (
-          <div className="mx-4 rounded-2xl bg-polks-card px-5 py-4">
+          <div className="mx-4 rounded-2xl border border-polks-border bg-polks-card px-5 py-4">
             <h2 className="mb-3 text-[14px] font-bold text-polks-text">Outlet Kami</h2>
             {outlets.map((o, i) => (
               <div
@@ -216,7 +216,7 @@ export default function GuestHomePage() {
         )}
 
         {/* Value props */}
-        <div className="mx-4 rounded-2xl bg-polks-card px-5 py-4">
+        <div className="mx-4 rounded-2xl border border-polks-border bg-polks-card px-5 py-4">
           {VALUE_PROPS.map((text, i) => (
             <div
               key={text}
