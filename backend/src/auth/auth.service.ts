@@ -22,6 +22,7 @@ const SALT_ROUNDS = 10;
 // Masa berlaku token reset password & verifikasi email (ms).
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000; // 1 jam
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
+const EMAIL_CHANGE_TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
 // Toleransi waktu verifikasi TOTP (detik) — menutup jeda ketik & selisih jam.
 const TOTP_TOLERANCE = 30;
 // Umur "tiket" antara login (password benar) dan input kode 2FA.
@@ -542,6 +543,107 @@ export class AuthService {
       }),
     ]);
     return { message: 'Email berhasil diverifikasi.', emailVerified: true };
+  }
+
+  // ── Ganti email (identitas login) ───────────────────────────────────────────
+
+  async requestEmailChange(userId: string, rawEmail: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException();
+
+    // Akun Google-only tidak punya password — Google login dicocokkan murni
+    // via email (tidak ada googleId terpisah), jadi email di sini tak boleh diubah.
+    if (!user.passwordHash) {
+      throw new BadRequestException(
+        'Akun ini masuk lewat Google, email tidak bisa diubah di sini',
+      );
+    }
+
+    const email = rawEmail.toLowerCase().trim();
+    if (email === user.email) {
+      throw new BadRequestException('Email baru sama dengan email saat ini');
+    }
+
+    const conflict = await this.prisma.user.findUnique({ where: { email } });
+    if (conflict) {
+      throw new ConflictException('Email sudah dipakai akun lain');
+    }
+
+    const { token, tokenHash } = this.makeToken();
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { pendingEmail: email },
+      }),
+      this.prisma.authToken.updateMany({
+        where: { userId, type: AuthTokenType.EMAIL_CHANGE, usedAt: null },
+        data: { usedAt: new Date() },
+      }),
+      this.prisma.authToken.create({
+        data: {
+          userId,
+          type: AuthTokenType.EMAIL_CHANGE,
+          tokenHash,
+          expiresAt: new Date(Date.now() + EMAIL_CHANGE_TTL_MS),
+        },
+      }),
+    ]);
+
+    const url = `${this.frontendBase()}/auth/confirm-email-change?token=${token}`;
+    await this.mail.sendEmailChangeConfirmation(email, user.name, url);
+    return { message: 'Tautan konfirmasi telah dikirim ke email baru.' };
+  }
+
+  async confirmEmailChange(token: string) {
+    const record = await this.consumeToken(token, AuthTokenType.EMAIL_CHANGE);
+    const user = await this.prisma.user.findUnique({ where: { id: record.userId } });
+    if (!user?.pendingEmail) {
+      throw new BadRequestException('Tidak ada perubahan email yang menunggu');
+    }
+
+    try {
+      await this.prisma.$transaction([
+        this.prisma.user.update({
+          where: { id: record.userId },
+          data: {
+            email: user.pendingEmail,
+            pendingEmail: null,
+            emailVerified: true,
+            emailVerifiedAt: new Date(),
+          },
+        }),
+        this.prisma.authToken.update({
+          where: { id: record.id },
+          data: { usedAt: new Date() },
+        }),
+      ]);
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'Email sudah dipakai akun lain, minta ulang perubahan',
+        );
+      }
+      throw err;
+    }
+
+    return { message: 'Email berhasil diperbarui.', email: user.pendingEmail };
+  }
+
+  async cancelEmailChange(userId: string) {
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { pendingEmail: null },
+      }),
+      this.prisma.authToken.updateMany({
+        where: { userId, type: AuthTokenType.EMAIL_CHANGE, usedAt: null },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+    return { message: 'Perubahan email dibatalkan.' };
   }
 
   // ── Helper token sekali-pakai ───────────────────────────────────────────────

@@ -103,3 +103,82 @@ describe('MemberService.updateProfile', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 });
+
+describe('MemberService.getProfile', () => {
+  let service: MemberService;
+  let prisma: { member: { findUnique: jest.Mock } };
+
+  beforeEach(async () => {
+    prisma = { member: { findUnique: jest.fn() } };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        MemberService,
+        { provide: PrismaService, useValue: prisma },
+        {
+          provide: TierService,
+          useValue: {
+            statusForMember: jest.fn().mockResolvedValue({
+              tier: 'gold',
+              monthlySpend: 0,
+              rupiahPerPoint: 1000,
+              nextTier: null,
+            }),
+          },
+        },
+      ],
+    }).compile();
+    service = module.get(MemberService);
+  });
+
+  it('includes pendingEmail, hasPassword and emailVerified from the linked user', async () => {
+    prisma.member.findUnique.mockResolvedValue({
+      id: 'm1',
+      userId: 'u1',
+      memberCode: 'MBR-1',
+      name: 'Budi',
+      phone: '081111',
+      birthDate: null,
+      pointBalance: 10,
+      createdAt: new Date(),
+      user: {
+        email: 'budi@x.com',
+        pendingEmail: 'baru@x.com',
+        passwordHash: 'hash',
+        emailVerified: true,
+      },
+      tier: null,
+    });
+
+    const profile = await service.getProfile('u1');
+
+    expect(profile.pendingEmail).toBe('baru@x.com');
+    expect(profile.hasPassword).toBe(true);
+    expect(profile.emailVerified).toBe(true);
+  });
+
+  it('reports hasPassword false and pendingEmail null for a Google-only account', async () => {
+    prisma.member.findUnique.mockResolvedValue({
+      id: 'm1',
+      userId: 'u1',
+      memberCode: 'MBR-1',
+      name: 'Budi',
+      phone: null,
+      birthDate: null,
+      pointBalance: 0,
+      createdAt: new Date(),
+      user: {
+        email: 'budi@gmail.com',
+        pendingEmail: null,
+        passwordHash: null,
+        emailVerified: false,
+      },
+      tier: null,
+    });
+
+    const profile = await service.getProfile('u1');
+
+    expect(profile.pendingEmail).toBeNull();
+    expect(profile.hasPassword).toBe(false);
+    expect(profile.emailVerified).toBe(false);
+  });
+});

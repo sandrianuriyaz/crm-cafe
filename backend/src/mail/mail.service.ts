@@ -94,6 +94,23 @@ export class MailService implements OnModuleInit {
     await this.send(to, subject, html, text);
   }
 
+  async sendEmailChangeConfirmation(to: string, name: string, confirmUrl: string) {
+    const subject = 'Konfirmasi perubahan email POLKS';
+    const text =
+      `Halo ${name},\n\n` +
+      `Ada permintaan mengubah email akun POLKS kamu ke alamat ini. Konfirmasi dengan membuka tautan berikut:\n` +
+      `${confirmUrl}\n\n` +
+      `Tautan berlaku 24 jam. Abaikan email ini bila kamu tidak meminta perubahan email.`;
+    const html = this.layout(
+      `Halo <b>${name}</b>,`,
+      `Kami menerima permintaan mengubah email akun POLKS kamu ke alamat ini. Klik tombol di bawah untuk mengonfirmasi. Tautan berlaku <b>24 jam</b>.`,
+      'Konfirmasi Email Baru',
+      confirmUrl,
+      'Abaikan email ini bila kamu tidak meminta perubahan email.',
+    );
+    await this.send(to, subject, html, text);
+  }
+
   private layout(
     greeting: string,
     body: string,
