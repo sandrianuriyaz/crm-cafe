@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { montserrat } from "@/lib/fonts";
+import { montserrat, nunito } from "@/lib/fonts";
+import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/lib/auth";
 import { RealtimeProvider } from "@/lib/realtime";
 import { SplashGate } from "@/components/layout/splash-gate";
@@ -22,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={montserrat.variable}>
+    <html lang="id" className={cn(montserrat.variable, nunito.variable)}>
       <body className="font-body bg-background text-on-background antialiased">
         <AuthProvider>
           <RealtimeProvider>

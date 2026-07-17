@@ -105,6 +105,7 @@ const config: Config = {
         "margin-desktop": "32px",
       },
       fontFamily: {
+        display: ["var(--font-nunito)", "Nunito", "sans-serif"],
         "app-name": ["var(--font-montserrat)", "Montserrat", "sans-serif"],
         body: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
         "card-title": ["var(--font-montserrat)", "Montserrat", "sans-serif"],

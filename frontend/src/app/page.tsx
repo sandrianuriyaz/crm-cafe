@@ -74,14 +74,22 @@ export default function GuestHomePage() {
         </div>
       </div>
 
-      {/* ── Join CTA ── */}
-      <div className="bg-polks-card px-5 py-5">
-        <p className="text-[19px] font-black leading-[1.2] tracking-[-0.02em] text-polks-text">
+      {/* ── Join CTA (Docket) ── */}
+      <div className="relative mx-4 mt-4 rounded-2xl border border-polks-border bg-polks-card px-5 pb-5 pt-6 shadow-[0_1px_0_#E6EAED,0_8px_20px_rgba(23,33,42,0.06)]">
+        {/* Perforasi */}
+        <div className="absolute inset-x-2.5 -top-1 flex justify-between">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <span key={i} className="size-2 rounded-full bg-polks-bg" />
+          ))}
+        </div>
+
+        <p className="font-display text-[19px] font-extrabold leading-[1.2] tracking-[-0.02em] text-polks-text">
           Kumpulkan poin dari<br />setiap cangkir.
         </p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-polks-muted">
           Daftar gratis & poin otomatis masuk tiap kunjungan di outlet POLKS.
         </p>
+        <div className="mt-4 border-b border-dotted border-[#D7DCDF]" />
         <div className="mt-4 flex gap-2">
           <Link
             href="/register"
@@ -98,23 +106,31 @@ export default function GuestHomePage() {
         </div>
       </div>
 
-      <div className="border-t border-polks-border" />
-
       {/* ── Content ── */}
       <div className="flex flex-col gap-5 pb-28 pt-5">
 
         {/* Cara Kerjanya */}
         <div className="mx-4 rounded-2xl border border-polks-border bg-polks-card px-5 py-5">
-          <h2 className="mb-4 text-[14px] font-bold text-polks-text">Cara Kerjanya</h2>
-          <div className="flex flex-col gap-3.5">
-            {HOW_IT_WORKS.map(({ text }, i) => (
-              <div key={text} className="flex items-center gap-3">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-polks-brand text-[11px] font-bold text-white">
-                  {i + 1}
-                </span>
-                <span className="text-[13px] text-polks-text">{text}</span>
-              </div>
-            ))}
+          <h2 className="mb-4 font-display text-[14px] font-extrabold text-polks-text">Cara Kerjanya</h2>
+          <div className="flex flex-col">
+            {HOW_IT_WORKS.map(({ text }, i) => {
+              const last = i === HOW_IT_WORKS.length - 1;
+              return (
+                <div key={text} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-polks-brand text-[11px] font-bold text-white">
+                      {i + 1}
+                    </span>
+                    {!last && (
+                      <span className="my-1 w-px flex-1 border-l border-dotted border-[#D7DCDF]" />
+                    )}
+                  </div>
+                  <span className={"pt-1 text-[13px] text-polks-text " + (last ? "" : "pb-5")}>
+                    {text}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -194,7 +210,7 @@ export default function GuestHomePage() {
         {/* Outlet */}
         {outlets.length > 0 && (
           <div className="mx-4 rounded-2xl border border-polks-border bg-polks-card px-5 py-4">
-            <h2 className="mb-3 text-[14px] font-bold text-polks-text">Outlet Kami</h2>
+            <h2 className="mb-3 font-display text-[14px] font-extrabold text-polks-text">Outlet Kami</h2>
             {outlets.map((o, i) => (
               <div
                 key={o.id}
