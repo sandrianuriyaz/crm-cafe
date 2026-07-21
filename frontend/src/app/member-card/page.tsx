@@ -134,12 +134,9 @@ export default function MemberCardPage() {
             >
               {name.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <p className="text-[14px] font-bold text-polks-text">{name}</p>
-              <p className="text-[12px] font-semibold" style={{ color: "#B07C35" }}>
-                {tierMeta.label} Member
-              </p>
-            </div>
+            {/* Tier sengaja tidak diulang di sini — sudah ada di baris
+                MEMBER LEVEL tepat di bawahnya. */}
+            <p className="text-[14px] font-bold text-polks-text">{name}</p>
           </div>
           <ChevronRight size={16} className="text-polks-muted" />
         </Link>
