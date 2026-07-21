@@ -4,7 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, RewardStatus, VoucherStatus } from '@prisma/client';
+import { Prisma, RewardStatus, RewardType, VoucherStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { generateVoucherCode } from '../common/voucher-code.util';
 import { CreateRewardDto } from './dto/create-reward.dto';
@@ -51,6 +51,10 @@ export class RewardsService {
   // ── CRUD (admin) ────────────────────────────────────────────────────────
   async create(dto: CreateRewardDto) {
     const { outletIds, notify, ...rest } = dto;
+    RewardsService.assertValidDiscount(
+      dto.type ?? RewardType.MANUAL,
+      dto.value,
+    );
     const reward = await this.prisma.reward.create({
       data: {
         ...RewardsService.withDates(rest),
@@ -61,6 +65,22 @@ export class RewardsService {
     });
     await this.announceIfReleased(reward, notify);
     return reward;
+  }
+
+  // Diskon persen wajib 1–100. Tidak bisa divalidasi di DTO karena saat PATCH
+  // `type` boleh tidak ikut dikirim — nilai efektifnya baru ketahuan setelah
+  // digabung dengan data lama, jadi pemeriksaannya di sini.
+  private static assertValidDiscount(
+    type: RewardType,
+    value: number | null | undefined,
+  ) {
+    if (type !== RewardType.DISCOUNT_PERCENT) return;
+    if (value === null || value === undefined) {
+      throw new BadRequestException('Nilai diskon persen wajib diisi');
+    }
+    if (value < 1 || value > 100) {
+      throw new BadRequestException('Diskon persen harus antara 1 dan 100');
+    }
   }
 
   // Tanggal datang sebagai string ISO dari DTO → Date untuk Prisma. Field yang
@@ -159,6 +179,11 @@ export class RewardsService {
   async update(id: string, dto: UpdateRewardDto) {
     const before = await this.getOne(id);
     const { outletIds, notify, ...rest } = dto;
+    // Field yang tidak dikirim tetap memakai nilai lama.
+    RewardsService.assertValidDiscount(
+      dto.type ?? before.type,
+      dto.value !== undefined ? dto.value : before.value,
+    );
     const reward = await this.prisma.$transaction(async (tx) => {
       if (outletIds !== undefined) {
         await tx.rewardOutlet.deleteMany({ where: { rewardId: id } });

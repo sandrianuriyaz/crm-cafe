@@ -28,9 +28,10 @@ export class CreateRewardDto {
   @IsString()
   imageUrl?: string;
 
-  @ApiProperty({ example: 500, description: 'Poin yang dibutuhkan' })
+  // 0 diperbolehkan: reward gratis / bonus yang tidak menukar poin.
+  @ApiProperty({ example: 500, description: 'Poin yang dibutuhkan (0 = gratis)' })
   @IsInt()
-  @Min(1)
+  @Min(0)
   pointCost!: number;
 
   @ApiProperty({ example: 10 })

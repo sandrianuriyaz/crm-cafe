@@ -300,6 +300,14 @@ function RewardForm({
       setError("Tanggal berakhir tidak boleh sebelum tanggal mulai.");
       return;
     }
+    if (!Number.isInteger(d.pointCost) || d.pointCost < 0) {
+      setError("Poin tidak boleh negatif (0 = reward gratis).");
+      return;
+    }
+    if (d.type === "DISCOUNT_PERCENT" && (d.value < 1 || d.value > 100)) {
+      setError("Diskon persen harus antara 1 dan 100.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const isDiscount =
@@ -369,7 +377,8 @@ function RewardForm({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs font-semibold text-polks-text">Poin</label>
-              <input type="number" className={field} value={d.pointCost} onChange={(e) => set("pointCost", Number(e.target.value))} />
+              <input type="number" min={0} className={field} value={d.pointCost} onChange={(e) => set("pointCost", Number(e.target.value))} />
+              <p className="mt-1 text-[10px] text-polks-muted">0 = gratis, tanpa tukar poin.</p>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-polks-text">Stok</label>
@@ -462,13 +471,16 @@ function RewardForm({
               </label>
               <input
                 type="number"
-                min={0}
+                min={d.type === "DISCOUNT_PERCENT" ? 1 : 0}
                 max={d.type === "DISCOUNT_PERCENT" ? 100 : undefined}
                 className={field}
                 value={d.value}
                 onChange={(e) => set("value", Number(e.target.value))}
-                placeholder={d.type === "DISCOUNT_AMOUNT" ? "10000" : "0–100"}
+                placeholder={d.type === "DISCOUNT_AMOUNT" ? "10000" : "1–100"}
               />
+              {d.type === "DISCOUNT_PERCENT" ? (
+                <p className="mt-1 text-[10px] text-polks-muted">Hanya 1–100.</p>
+              ) : null}
             </div>
           ) : null}
 

@@ -87,9 +87,12 @@ export class NotificationsService {
     if (!members.length) return { recipientCount: 0 };
 
     const title = `Reward baru: ${reward.name}`;
+    // pointCost 0 = reward gratis; "Tukar 0 poin" akan terbaca janggal.
     const message =
-      `Tukar ${reward.pointCost.toLocaleString('id-ID')} poin untuk ` +
-      `${reward.name}. Cek katalog reward sekarang!`;
+      reward.pointCost === 0
+        ? `${reward.name} bisa kamu klaim gratis. Cek katalog reward sekarang!`
+        : `Tukar ${reward.pointCost.toLocaleString('id-ID')} poin untuk ` +
+          `${reward.name}. Cek katalog reward sekarang!`;
     const imageUrl = reward.imageUrl || null;
 
     await this.prisma.$transaction([
