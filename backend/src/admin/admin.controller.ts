@@ -24,6 +24,7 @@ import {
   ListWebhooksQueryDto,
 } from './dto/list-webhooks-query.dto';
 import { UpdateLoyaltyConfigDto } from './dto/update-loyalty-config.dto';
+import { UpdateMemberDto } from './dto/update-member.dto';
 
 // Semua route admin. Wajib login + role ADMIN.
 @ApiTags('admin')
@@ -65,6 +66,12 @@ export class AdminController {
   @ApiOperation({ summary: '[Admin] Detail member + transaksi & poin terakhir' })
   member(@Param('id') id: string) {
     return this.admin.getMember(id);
+  }
+
+  @Patch('members/:id')
+  @ApiOperation({ summary: '[Admin] Koreksi data member (tanggal lahir)' })
+  updateMember(@Param('id') id: string, @Body() dto: UpdateMemberDto) {
+    return this.admin.updateMember(id, dto);
   }
 
   @Post('members/:id/adjust-points')

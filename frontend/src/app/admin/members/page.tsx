@@ -14,13 +14,32 @@ type AdminMember = {
   name: string;
   phone: string | null;
   pointBalance: number;
+  birthDate: string | null;
   createdAt: string;
   user: { email: string } | null;
 };
 
+// Tanggal lahir disimpan sebagai tengah malam UTC — baca/tulis dalam UTC agar
+// tidak bergeser sehari.
+function toDateInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+
+function fmtBirth(iso: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("id-ID", {
+    day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
+  });
+}
+
 export default function AdminMembersPage() {
   const list = useAdminList<AdminMember>("/admin/members", { searchable: true });
   const [adjusting, setAdjusting] = useState<AdminMember | null>(null);
+  const [editing, setEditing] = useState<AdminMember | null>(null);
 
   return (
     <AdminShell title="Members">
@@ -30,7 +49,7 @@ export default function AdminMembersPage() {
           list={list}
           searchable
           searchPlaceholder="Cari nama / email / kode..."
-          columns={["Member", "Member ID", "Telepon", "Poin", "Aksi"]}
+          columns={["Member", "Member ID", "Telepon", "Tgl. Lahir", "Poin", "Aksi"]}
           empty="Tidak ada member."
           renderRow={(m) => [
             <div key="m">
@@ -39,15 +58,24 @@ export default function AdminMembersPage() {
             </div>,
             <span key="c" className="font-mono text-[11px]">{m.memberCode}</span>,
             m.phone ?? "—",
+            <span key="b" className="text-[11px]">{fmtBirth(m.birthDate)}</span>,
             <span key="p" className="font-semibold">{m.pointBalance.toLocaleString("id-ID")} pts</span>,
-            <button
-              key="a"
-              type="button"
-              onClick={() => setAdjusting(m)}
-              className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
-            >
-              Adjust Poin
-            </button>,
+            <div key="a" className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setAdjusting(m)}
+                className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+              >
+                Adjust Poin
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(m)}
+                className="rounded-lg border border-polks-border px-2.5 py-1 text-[11px] font-semibold text-polks-brand hover:bg-polks-surface"
+              >
+                Edit Data
+              </button>
+            </div>,
           ]}
         />
       </div>
@@ -62,7 +90,108 @@ export default function AdminMembersPage() {
           }}
         />
       ) : null}
+
+      {editing ? (
+        <EditMemberModal
+          member={editing}
+          onClose={() => setEditing(null)}
+          onDone={() => {
+            setEditing(null);
+            list.reload();
+          }}
+        />
+      ) : null}
     </AdminShell>
+  );
+}
+
+// Koreksi tanggal lahir — member tidak bisa mengubahnya sendiri setelah terisi.
+function EditMemberModal({
+  member,
+  onClose,
+  onDone,
+}: {
+  member: AdminMember;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [birth, setBirth] = useState(toDateInput(member.birthDate));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const changed = birth !== toDateInput(member.birthDate);
+
+  async function submit() {
+    if (birth && birth > today) {
+      setError("Tanggal lahir tidak boleh di masa depan.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      // Kosong = hapus tanggal lahir (kirim null, bukan string kosong).
+      await api(`/admin/members/${member.id}`, {
+        method: "PATCH",
+        body: { birthDate: birth || null },
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button type="button" aria-label="Tutup" className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-[400px] rounded-2xl bg-white p-5">
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <h2 className="text-base font-bold text-polks-text">Edit Data Member</h2>
+            <p className="text-xs text-polks-muted">
+              {member.name} · {member.memberCode}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Tutup" className="text-polks-muted">
+            <X size={18} />
+          </button>
+        </div>
+
+        <label className="mb-1.5 block text-xs font-semibold text-polks-text">Tanggal Lahir</label>
+        <input
+          type="date"
+          value={birth}
+          max={today}
+          onChange={(e) => setBirth(e.target.value)}
+          className="mb-1.5 h-10 w-full rounded-xl border-[1.5px] border-polks-border bg-white px-3 text-sm text-polks-text outline-none focus:border-polks-brand"
+        />
+        <p className="mb-3 text-[10px] text-polks-muted">
+          Member tidak bisa mengubah tanggal lahirnya sendiri setelah terisi —
+          koreksi salah ketik dilakukan di sini. Kosongkan untuk menghapus.
+        </p>
+
+        {error ? <p className="mb-3 text-[13px] text-polks-error">{error}</p> : null}
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-11 flex-1 rounded-xl border-[1.5px] border-polks-border bg-white text-sm font-semibold text-polks-brand"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            disabled={saving || !changed}
+            onClick={submit}
+            className="h-11 flex-1 rounded-xl bg-polks-brand text-sm font-bold text-white disabled:opacity-60"
+          >
+            {saving ? "Menyimpan…" : "Simpan"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

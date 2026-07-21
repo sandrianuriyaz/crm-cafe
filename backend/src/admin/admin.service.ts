@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { ListMembersQueryDto } from './dto/list-members-query.dto';
+import { UpdateMemberDto } from './dto/update-member.dto';
 import {
   ListVouchersQueryDto,
   ListWebhooksQueryDto,
@@ -48,6 +49,7 @@ export class AdminService {
           phone: true,
           pointBalance: true,
           externalCustomerId: true,
+          birthDate: true,
           createdAt: true,
           user: { select: { email: true } },
         },
@@ -82,6 +84,27 @@ export class AdminService {
     });
     if (!member) throw new NotFoundException('Member tidak ditemukan');
     return member;
+  }
+
+  // Koreksi data member oleh admin. Saat ini hanya tanggal lahir: member
+  // sendiri terkunci setelah mengisinya, jadi salah ketik harus lewat sini.
+  async updateMember(id: string, dto: UpdateMemberDto) {
+    const member = await this.prisma.member.findUnique({ where: { id } });
+    if (!member) throw new NotFoundException('Member tidak ditemukan');
+
+    if (dto.birthDate !== undefined) {
+      const birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
+      if (birthDate && birthDate.getTime() > Date.now()) {
+        throw new BadRequestException(
+          'Tanggal lahir tidak boleh di masa depan',
+        );
+      }
+      await this.prisma.member.update({
+        where: { id },
+        data: { birthDate },
+      });
+    }
+    return this.getMember(id);
   }
 
   // Penyesuaian poin manual oleh admin (audit di ledger). Saldo tidak boleh negatif.
