@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
@@ -14,6 +15,7 @@ import { OutletsModule } from './outlets/outlets.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PosModule } from './pos/pos.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { BirthdayModule } from './birthday/birthday.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { UploadsModule } from './uploads/uploads.module';
       isGlobal: true, // bisa dipakai di seluruh modul tanpa import ulang
       validate: validateEnv, // jalankan validasi saat app start
     }),
+    // Penjadwal untuk hadiah ulang tahun harian.
+    ScheduleModule.forRoot(),
     PrismaModule,
     MailModule,
     WebhooksModule,
@@ -33,6 +37,7 @@ import { UploadsModule } from './uploads/uploads.module';
     NotificationsModule,
     PosModule,
     UploadsModule,
+    BirthdayModule,
   ],
   controllers: [HealthController],
   providers: [],

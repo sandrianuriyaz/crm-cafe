@@ -5,7 +5,9 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Max,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateLoyaltyConfigDto {
@@ -69,4 +71,26 @@ export class UpdateLoyaltyConfigDto {
   @IsInt()
   @Min(1)
   ratePlatinum?: number;
+
+  // ── Hadiah ulang tahun ────────────────────────────────────────────────────
+  @ApiPropertyOptional({ description: 'Aktifkan hadiah ulang tahun otomatis' })
+  @IsOptional()
+  @IsBoolean()
+  birthdayEnabled?: boolean;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Id Reward yang dihadiahkan; null untuk mengosongkan',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  birthdayRewardId?: string | null;
+
+  @ApiPropertyOptional({ description: 'Masa berlaku voucher ulang tahun (hari)' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(365)
+  birthdayVoucherDays?: number;
 }

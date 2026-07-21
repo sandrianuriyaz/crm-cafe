@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -25,6 +26,7 @@ import {
 } from './dto/list-webhooks-query.dto';
 import { UpdateLoyaltyConfigDto } from './dto/update-loyalty-config.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { BirthdayService } from '../birthday/birthday.service';
 
 // Semua route admin. Wajib login + role ADMIN.
 @ApiTags('admin')
@@ -36,6 +38,7 @@ export class AdminController {
   constructor(
     private readonly admin: AdminService,
     private readonly loyaltyConfig: LoyaltyConfigService,
+    private readonly birthday: BirthdayService,
   ) {}
 
   @Get('stats')
@@ -54,6 +57,15 @@ export class AdminController {
   @ApiOperation({ summary: '[Admin] Ubah konfigurasi loyalty' })
   updateLoyaltyConfig(@Body() dto: UpdateLoyaltyConfigDto) {
     return this.loyaltyConfig.update(dto);
+  }
+
+  // Jalur pemulihan: bila server mati saat jadwal harian berjalan, hari itu
+  // terlewat tanpa cara memperbaikinya. Aman diulang — grant unik per tahun.
+  @Post('birthday/run')
+  @HttpCode(200)
+  @ApiOperation({ summary: '[Admin] Jalankan hadiah ulang tahun sekarang' })
+  runBirthday() {
+    return this.birthday.run();
   }
 
   @Get('members')

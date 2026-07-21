@@ -24,18 +24,18 @@ enum Role {
 // Akun login (customer & admin). Satu User customer terhubung ke satu Member
 // (relasi 1:1 opsional). Admin tidak perlu Member.
 model User {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   // Nullable: user yang daftar lewat OTP (phone) tidak punya email/password.
-  email        String?  @unique
-  phone        String?  @unique
+  email        String? @unique
+  phone        String? @unique
   passwordHash String?
-  role         Role     @default(CUSTOMER)
+  role         Role    @default(CUSTOMER)
 
   // 2FA berbasis TOTP (authenticator app). Saat setup, secret disimpan tapi
   // twoFactorEnabled tetap false sampai user verifikasi kode pertama (enable).
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?
+  twoFactorEnabled       Boolean  @default(false)
+  twoFactorSecret        String?
   // Kode pemulihan sekali-pakai (disimpan sebagai hash bcrypt). Cadangan login
   // kalau aplikasi authenticator hilang. Dipakai → dihapus dari array.
   twoFactorRecoveryCodes String[] @default([])
@@ -49,8 +49,8 @@ model User {
   // P2002 pada `email` (yang memang unique) saat konfirmasi.
   pendingEmail    String?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   member               Member?
   authTokens           AuthToken[]
@@ -124,10 +124,10 @@ model Tier {
 // diidentifikasi via phone. Walk-in benar-benar anonim (id+phone null) TIDAK
 // dibuatkan baris di sini — transaksinya tetap dicatat tanpa member (lihat §11 #4).
 model Member {
-  id                 String   @id @default(cuid())
-  memberCode         String   @unique
+  id                 String    @id @default(cuid())
+  memberCode         String    @unique
   // customer.id dari POS dipakai sebagai external key (§11 #5).
-  externalCustomerId String?  @unique
+  externalCustomerId String?   @unique
   name               String?
   phone              String?   @unique
   // Diisi manual (register email/password atau /complete-profile setelah
@@ -150,6 +150,7 @@ model Member {
   pointHistories PointHistory[]
   vouchers       Voucher[]
   redeems        Redeem[]
+  birthdayGrants BirthdayGrant[]
   notifications  Notification[]
 
   @@map("members")
@@ -307,27 +308,52 @@ model Outlet {
 // Konfigurasi loyalty global (singleton, id tetap "singleton"). rupiahPerPoint
 // dipakai webhook untuk menghitung earning poin (fallback env POIN_PER_RUPIAH).
 model LoyaltyConfig {
-  id                     String   @id @default("singleton")
-  rupiahPerPoint         Int      @default(1000)
-  pointsPerUnit          Int      @default(1)
+  id                     String  @id @default("singleton")
+  rupiahPerPoint         Int     @default(1000)
+  pointsPerUnit          Int     @default(1)
   pointExpiryMonths      Int?
-  tierThresholds         Json     @default("[]")
+  tierThresholds         Json    @default("[]")
   webhookUrl             String?
-  requireIdempotencyKeys Boolean  @default(true)
+  requireIdempotencyKeys Boolean @default(true)
 
   // Tier berbasis belanja bulanan (Rp). Bronze = 0 (implisit).
   tierSilverMin   Int @default(500000)
   tierGoldMin     Int @default(1000000)
   tierPlatinumMin Int @default(1500000)
   // Rate earning per tier: Rp per 1 poin (makin kecil = makin banyak poin).
-  rateBronze   Int @default(1000)
-  rateSilver   Int @default(950)
-  rateGold     Int @default(900)
-  ratePlatinum Int @default(850)
+  rateBronze      Int @default(1000)
+  rateSilver      Int @default(950)
+  rateGold        Int @default(900)
+  ratePlatinum    Int @default(850)
+
+  // Hadiah ulang tahun. Reward yang ditunjuk sengaja TIDAK perlu berstatus
+  // ACTIVE — poinnya 0, jadi bila tampil di katalog semua member bisa
+  // mengklaimnya kapan saja. Penjadwal memberikannya langsung, melewati redeem.
+  birthdayEnabled     Boolean @default(false)
+  birthdayRewardId    String?
+  birthdayReward      Reward? @relation(fields: [birthdayRewardId], references: [id])
+  birthdayVoucherDays Int     @default(7)
 
   updatedAt DateTime @updatedAt
 
   @@map("loyalty_config")
+}
+
+// Penanda "member ini sudah dapat hadiah ulang tahun di tahun tersebut".
+// @@unique([memberId, year]) adalah pengaman anti-dobel yang sebenarnya:
+// bila job jalan dua kali atau dua instance berjalan bersamaan, insert kedua
+// gagal di level DB, bukan bergantung pada pengecekan sebelumnya.
+model BirthdayGrant {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  year      Int
+  voucherId String?  @unique
+  voucher   Voucher? @relation(fields: [voucherId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, year])
+  @@map("birthday_grants")
 }
 
 // ── Promo ───────────────────────────────────────────────────────────────────
@@ -419,6 +445,9 @@ model Reward {
   vouchers Voucher[]
   redeems  Redeem[]
 
+  // Dirujuk LoyaltyConfig bila reward ini dipakai sebagai hadiah ulang tahun.
+  loyaltyConfigs LoyaltyConfig[]
+
   // Tag outlet mana reward ini relevan (murni informasi admin — kosong berarti
   // berlaku/relevan di semua outlet; belum ada filter otomatis di customer/POS).
   outlets RewardOutlet[]
@@ -451,7 +480,8 @@ model Voucher {
   usedAt    DateTime?
   createdAt DateTime      @default(now())
 
-  redeem Redeem?
+  redeem        Redeem?
+  birthdayGrant BirthdayGrant?
 
   @@index([memberId])
   @@map("vouchers")

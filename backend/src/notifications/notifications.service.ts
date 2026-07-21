@@ -125,6 +125,29 @@ export class NotificationsService {
     return { recipientCount: members.length };
   }
 
+  // Notifikasi untuk satu member (mis. hadiah ulang tahun). Tidak dicatat
+  // sebagai Broadcast — itu untuk pengumuman massal, bukan kiriman personal.
+  async notifyMember(
+    member: { id: string; userId: string | null },
+    title: string,
+    message: string,
+    imageUrl: string | null = null,
+  ) {
+    await this.prisma.notification.create({
+      data: { memberId: member.id, title, message, imageUrl },
+    });
+    if (!member.userId) return;
+    try {
+      this.realtime.emitNotification(member.userId, {
+        title,
+        message,
+        createdAt: new Date().toISOString(),
+      });
+    } catch {
+      // best-effort — notifikasi sudah tersimpan di inbox
+    }
+  }
+
   async listBroadcasts(skip = 0, take = 20) {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.broadcast.findMany({
