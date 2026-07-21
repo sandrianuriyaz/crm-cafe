@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, User, Mail, Phone, IdCard, Calendar, ShieldCheck,
+  ArrowLeft, User, Mail, Phone, IdCard, Calendar, Cake, ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
@@ -16,6 +16,7 @@ type MemberProfile = {
   name: string;
   email: string;
   phone: string | null;
+  birthDate: string | null;
   pointBalance: number;
   createdAt: string;
   emailVerified: boolean;
@@ -27,6 +28,24 @@ function formatJoined(iso: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
+
+// Tanggal lahir disimpan sebagai tengah malam UTC (registrasi mengirim
+// yyyy-mm-dd). Baca & tulis dalam UTC agar tidak bergeser sehari di zona
+// waktu tertentu.
+function formatBirth(iso: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("id-ID", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+  });
+}
+
+function toDateInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
 function DocketRow({
@@ -55,6 +74,7 @@ export default function AccountInfoPage() {
   const [name, setName]           = useState("");
   const [phone, setPhone]         = useState("");
   const [email, setEmail]         = useState("");
+  const [birth, setBirth]         = useState("");
   const [saving, setSaving]       = useState(false);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -71,6 +91,7 @@ export default function AccountInfoPage() {
         setName(d.name);
         setPhone(d.phone ?? "");
         setEmail(d.email);
+        setBirth(toDateInput(d.birthDate));
       })
       .catch((err) => {
         if (!alive) return;
@@ -90,6 +111,7 @@ export default function AccountInfoPage() {
     setName(p.name);
     setPhone(p.phone ?? "");
     setEmail(p.email);
+    setBirth(toDateInput(p.birthDate));
     setPhoneError(null);
     setEmailError(null);
     setEditing(true);
@@ -110,14 +132,18 @@ export default function AccountInfoPage() {
       const nameChanged  = name.trim() !== p.name;
       const phoneChanged = phone.trim() !== (p.phone ?? "");
       const emailChanged = p.hasPassword && email.trim().toLowerCase() !== p.email.toLowerCase();
+      // Hanya dikirim saat sebelumnya kosong — setelah terisi, server menolak
+      // perubahan (lihat komentar di baris Tgl. Lahir).
+      const birthChanged = !p.birthDate && birth !== "";
 
-      if (nameChanged || phoneChanged) {
+      if (nameChanged || phoneChanged || birthChanged) {
         try {
           await api("/member/profile", {
             method: "PATCH",
             body: {
               ...(nameChanged ? { name: name.trim() } : {}),
               ...(phoneChanged ? { phone: phone.trim() } : {}),
+              ...(birthChanged ? { birthDate: birth } : {}),
             },
           });
         } catch (err) {
@@ -314,6 +340,32 @@ export default function AccountInfoPage() {
               </DocketRow>
               {editing && phoneError ? (
                 <p className="-mt-1 text-right text-[10.5px] text-polks-error">{phoneError}</p>
+              ) : null}
+
+              {/* Hanya bisa diisi selagi kosong — begitu terisi, terkunci agar
+                  tanggal tidak bisa diganti-ganti demi memanen reward ulang
+                  tahun. Server menolak perubahannya juga. */}
+              <DocketRow label="Tgl. Lahir" icon={Cake}>
+                {editing && !p.birthDate ? (
+                  <input
+                    type="date"
+                    value={birth}
+                    max={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => setBirth(e.target.value)}
+                    className="w-28 border-b border-polks-point bg-transparent text-right font-mono text-[11px] font-semibold text-polks-text outline-none"
+                  />
+                ) : (
+                  <span className="font-mono text-[11px] font-semibold tabular-nums text-polks-text-soft">
+                    {formatBirth(p.birthDate)}
+                  </span>
+                )}
+              </DocketRow>
+              {editing ? (
+                <p className="-mt-0.5 text-right text-[9px] italic text-polks-muted">
+                  {p.birthDate
+                    ? "Tanggal lahir terkunci — hubungi admin bila keliru."
+                    : "Hanya bisa diisi sekali, pastikan benar."}
+                </p>
               ) : null}
 
               <div className="relative my-4 -mx-4 border-t border-dashed border-polks-muted/30">

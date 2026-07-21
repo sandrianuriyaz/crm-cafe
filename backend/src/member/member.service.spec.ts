@@ -91,6 +91,34 @@ describe('MemberService.updateProfile', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
+  it('rejects changing birthDate once it is set', async () => {
+    prisma.member.findUnique.mockResolvedValueOnce({
+      ...member,
+      birthDate: new Date('2000-05-17'),
+    });
+    await expect(
+      service.updateProfile('u1', { birthDate: '1995-01-01' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    // Tidak boleh menyentuh DB sama sekali saat ditolak.
+    expect(prisma.member.update).not.toHaveBeenCalled();
+  });
+
+  it('ignores a birthDate resent with the same value', async () => {
+    prisma.member.findUnique.mockResolvedValueOnce({
+      ...member,
+      birthDate: new Date('2000-05-17'),
+    });
+    // Form mengirim ulang nilai yang sama bersama field lain — bukan perubahan,
+    // jadi tidak boleh ditolak dan tidak ikut ditulis.
+    await service.updateProfile('u1', {
+      birthDate: '2000-05-17',
+      name: 'Baru',
+    });
+    expect(prisma.member.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { name: 'Baru' } }),
+    );
+  });
+
   it('throws 409 when the phone is already taken', async () => {
     prisma.$transaction.mockRejectedValueOnce(
       new Prisma.PrismaClientKnownRequestError('dup', {

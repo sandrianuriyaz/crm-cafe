@@ -64,6 +64,19 @@ export class MemberService {
     const phone = dto.phone?.trim();
     const birthDate = dto.birthDate;
 
+    // Tanggal lahir hanya boleh diisi sekali. Bila bebas diubah, member bisa
+    // menyetel ulang tanggalnya tiap bulan untuk memanen reward ulang tahun.
+    // Koreksi salah ketik lewat admin. Mengirim nilai yang sama diabaikan
+    // (bukan perubahan) agar PATCH tetap idempoten.
+    const birthChanged =
+      birthDate !== undefined &&
+      new Date(birthDate).getTime() !== m.birthDate?.getTime();
+    if (birthChanged && m.birthDate) {
+      throw new ConflictException(
+        'Tanggal lahir sudah diisi dan tidak bisa diubah sendiri. Hubungi admin bila keliru.',
+      );
+    }
+
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.member.update({
@@ -71,7 +84,7 @@ export class MemberService {
           data: {
             ...(name !== undefined ? { name } : {}),
             ...(phone !== undefined ? { phone: phone || null } : {}),
-            ...(birthDate !== undefined ? { birthDate: new Date(birthDate) } : {}),
+            ...(birthChanged ? { birthDate: new Date(birthDate!) } : {}),
           },
         });
         // Sinkronkan phone (dan nama) ke akun login bila ada.
