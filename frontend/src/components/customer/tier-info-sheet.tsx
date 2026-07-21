@@ -27,7 +27,9 @@ export function TierInfoSheet({ currentTier, monthlySpend, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+      // z di atas bottom nav (z-50): setara membuat nav menimpa isi sheet dan
+      // memotong baris terakhirnya.
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50"
       onClick={onClose}
     >
       <div

@@ -56,7 +56,8 @@ export function HistoryFilterSheet({
   const isDefault = sort === DEFAULT_SORT && range === DEFAULT_RANGE;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+    // Di atas bottom nav (z-50) agar tombol paling bawah tidak tertimpa.
+    <div className="fixed inset-0 z-[60] flex items-end justify-center md:items-center">
       <button
         type="button"
         aria-label="Tutup"

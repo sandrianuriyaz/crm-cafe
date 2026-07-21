@@ -23,7 +23,8 @@ export function VoucherQrModal({ voucher, onClose }: { voucher: Voucher; onClose
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+      // Di atas bottom nav (z-50) agar tidak tertimpa di layar pendek.
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-6"
       onClick={onClose}
     >
       <div
