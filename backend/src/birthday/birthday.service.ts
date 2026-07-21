@@ -1,9 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma, VoucherStatus } from '@prisma/client';
+import {
+  BirthdayConfig,
+  Prisma,
+  RewardStatus,
+  RewardType,
+  VoucherStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { generateVoucherCode } from '../common/voucher-code.util';
+import { UpdateBirthdayConfigDto } from './dto/update-birthday-config.dto';
+
+const SINGLETON_ID = 'singleton';
 
 export interface BirthdayRunResult {
   granted: number;
@@ -21,7 +30,82 @@ export class BirthdayService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  // Jalan tiap hari pukul 07:00 waktu server. Idempoten: BirthdayGrant unik per
+  // ── Pengaturan (admin) ────────────────────────────────────────────────────
+  getConfig() {
+    return this.prisma.birthdayConfig.upsert({
+      where: { id: SINGLETON_ID },
+      update: {},
+      create: { id: SINGLETON_ID },
+    });
+  }
+
+  async updateConfig(dto: UpdateBirthdayConfigDto) {
+    const current = await this.getConfig();
+    const next = { ...current, ...dto };
+
+    BirthdayService.assertValidGift(next);
+
+    const config = await this.prisma.birthdayConfig.update({
+      where: { id: SINGLETON_ID },
+      data: dto,
+    });
+    // Definisi hadiah dicerminkan ke baris Reward tersembunyi supaya Voucher
+    // (yang wajib menunjuk Reward) tetap sah dan kartu voucher di app bisa
+    // menampilkan besaran diskonnya.
+    return this.syncHiddenReward(config);
+  }
+
+  private static assertValidGift(c: {
+    name: string;
+    type: RewardType;
+    value: number | null;
+    freeItemName: string | null;
+  }) {
+    if (c.type === RewardType.DISCOUNT_PERCENT) {
+      if (c.value === null || c.value < 1 || c.value > 100) {
+        throw new BadRequestException('Diskon persen harus antara 1 dan 100');
+      }
+    }
+    if (c.type === RewardType.DISCOUNT_AMOUNT) {
+      if (c.value === null || c.value < 1) {
+        throw new BadRequestException('Nilai diskon rupiah wajib diisi');
+      }
+    }
+    if (c.type === RewardType.FREE_ITEM && !c.freeItemName?.trim()) {
+      throw new BadRequestException('Nama item gratis wajib diisi');
+    }
+  }
+
+  // Reward cermin selalu INACTIVE + isBirthdayGift: tidak pernah muncul di
+  // katalog member maupun daftar reward admin, dan tidak bisa ditukar poin.
+  private async syncHiddenReward(config: BirthdayConfig) {
+    const data = {
+      name: config.name,
+      description: config.description,
+      imageUrl: config.imageUrl,
+      type: config.type,
+      value: config.value,
+      minPurchase: config.minPurchase,
+      freeItemName: config.freeItemName,
+      pointCost: 0,
+      stock: 0,
+      status: RewardStatus.INACTIVE,
+      isBirthdayGift: true,
+    };
+
+    if (config.rewardId) {
+      await this.prisma.reward.update({ where: { id: config.rewardId }, data });
+      return config;
+    }
+    const reward = await this.prisma.reward.create({ data });
+    return this.prisma.birthdayConfig.update({
+      where: { id: SINGLETON_ID },
+      data: { rewardId: reward.id },
+    });
+  }
+
+  // ── Penjadwal ─────────────────────────────────────────────────────────────
+  // Tiap hari 07:00 waktu server. Idempoten: BirthdayGrant unik per
   // (member, tahun), jadi menjalankannya ulang tidak menerbitkan voucher kedua.
   @Cron(CronExpression.EVERY_DAY_AT_7AM)
   async handleDailyRun() {
@@ -37,36 +121,37 @@ export class BirthdayService {
   // Dipisah dari cron agar admin bisa memicunya manual — server yang mati saat
   // jadwal berjalan akan melewatkan hari itu tanpa cara memperbaikinya.
   async run(now = new Date()): Promise<BirthdayRunResult> {
-    const config = await this.prisma.loyaltyConfig.findUnique({
-      where: { id: 'singleton' },
+    const config = await this.prisma.birthdayConfig.findUnique({
+      where: { id: SINGLETON_ID },
     });
-    if (!config?.birthdayEnabled || !config.birthdayRewardId) {
+    if (!config?.enabled) {
       return { granted: 0, skipped: 0, candidates: 0, reason: 'nonaktif' };
     }
-
-    const reward = await this.prisma.reward.findUnique({
-      where: { id: config.birthdayRewardId },
-    });
-    if (!reward) {
+    if (!config.rewardId) {
       return {
         granted: 0,
         skipped: 0,
         candidates: 0,
-        reason: 'reward tidak ditemukan',
+        reason: 'hadiah belum disimpan',
       };
     }
 
     const members = await this.findBirthdayMembers(now);
     const year = now.getUTCFullYear();
     const expiredAt = new Date(
-      now.getTime() + config.birthdayVoucherDays * 24 * 60 * 60 * 1000,
+      now.getTime() + config.voucherValidDays * 24 * 60 * 60 * 1000,
     );
 
     let granted = 0;
     let skipped = 0;
     for (const member of members) {
       try {
-        const voucher = await this.grantOne(member, reward, year, expiredAt);
+        const voucher = await this.grantOne(
+          member,
+          config.rewardId,
+          year,
+          expiredAt,
+        );
         if (!voucher) {
           skipped++;
           continue;
@@ -78,9 +163,9 @@ export class BirthdayService {
           .notifyMember(
             member,
             'Selamat ulang tahun! 🎉',
-            `Ada hadiah untukmu: ${reward.name}. Voucher sudah masuk ke ` +
-              `Voucher Saya, berlaku ${config.birthdayVoucherDays} hari.`,
-            reward.imageUrl,
+            `Ada hadiah untukmu: ${config.name}. Voucher sudah masuk ke ` +
+              `Voucher Saya, berlaku ${config.voucherValidDays} hari.`,
+            config.imageUrl,
           )
           .catch((err) => {
             this.logger.error(
@@ -141,7 +226,7 @@ export class BirthdayService {
   // berarti sudah pernah diberi — kembalikan null tanpa menerbitkan apa pun.
   private async grantOne(
     member: { id: string; memberCode: string },
-    reward: { id: string; name: string; pointCost: number },
+    rewardId: string,
     year: number,
     expiredAt: Date,
   ) {
@@ -154,7 +239,7 @@ export class BirthdayService {
         const voucher = await tx.voucher.create({
           data: {
             code: generateVoucherCode(),
-            rewardId: reward.id,
+            rewardId,
             memberId: member.id,
             status: VoucherStatus.ACTIVE,
             expiredAt,
@@ -167,7 +252,7 @@ export class BirthdayService {
         await tx.redeem.create({
           data: {
             memberId: member.id,
-            rewardId: reward.id,
+            rewardId,
             voucherId: voucher.id,
             pointsSpent: 0,
           },

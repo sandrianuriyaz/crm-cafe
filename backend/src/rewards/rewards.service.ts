@@ -33,6 +33,9 @@ export class RewardsService {
     return this.prisma.reward.findMany({
       where: {
         status: RewardStatus.ACTIVE,
+        // Hadiah ulang tahun bukan barang katalog — poinnya 0, kalau tampil
+        // semua member bisa mengklaimnya gratis kapan saja.
+        isBirthdayGift: false,
         AND: [
           { OR: [{ startAt: null }, { startAt: { lte: now } }] },
           { OR: [{ endAt: null }, { endAt: { gte: now } }] },
@@ -146,7 +149,9 @@ export class RewardsService {
   async listAll(q: ListRewardsQueryDto) {
     const skip = q.skip ?? 0;
     const take = q.take ?? 20;
-    const conditions: Prisma.RewardWhereInput[] = [];
+    // Reward cermin hadiah ulang tahun dikelola di menu tersendiri — jangan
+    // tampilkan di daftar reward admin agar tidak diedit/dihapus dari sini.
+    const conditions: Prisma.RewardWhereInput[] = [{ isBirthdayGift: false }];
     if (q.search) {
       conditions.push({
         OR: [

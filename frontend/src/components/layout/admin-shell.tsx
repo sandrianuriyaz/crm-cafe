@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Store, Tag, Gift, Ticket, Webhook,
-  RefreshCw, History, Settings, Radio, LogOut, Bell, Search,
+  RefreshCw, History, Settings, Radio, LogOut, Bell, Search, Cake,
   Menu, X, Zap, ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -43,6 +43,7 @@ const GROUPS: NavGroup[] = [
       { label: "Promotions", href: "/admin/promos", Icon: Tag },
       { label: "Rewards", href: "/admin/rewards", Icon: Gift },
       { label: "Vouchers", href: "/admin/vouchers", Icon: Ticket },
+      { label: "Hadiah Ulang Tahun", href: "/admin/birthday", Icon: Cake },
       { label: "Loyalty Config", href: "/admin/config", Icon: Settings },
     ],
   },

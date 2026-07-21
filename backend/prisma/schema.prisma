@@ -326,17 +326,42 @@ model LoyaltyConfig {
   rateGold        Int @default(900)
   ratePlatinum    Int @default(850)
 
-  // Hadiah ulang tahun. Reward yang ditunjuk sengaja TIDAK perlu berstatus
-  // ACTIVE — poinnya 0, jadi bila tampil di katalog semua member bisa
-  // mengklaimnya kapan saja. Penjadwal memberikannya langsung, melewati redeem.
-  birthdayEnabled     Boolean @default(false)
-  birthdayRewardId    String?
-  birthdayReward      Reward? @relation(fields: [birthdayRewardId], references: [id])
-  birthdayVoucherDays Int     @default(7)
-
   updatedAt DateTime @updatedAt
 
   @@map("loyalty_config")
+}
+
+// Pengaturan hadiah ulang tahun (singleton, menu admin tersendiri).
+//
+// Hadiahnya didefinisikan di sini, bukan menunjuk reward katalog. Namun Voucher
+// wajib menunjuk sebuah Reward, jadi definisi itu dicerminkan ke satu baris
+// Reward tersembunyi (isBirthdayGift = true) yang dikelola otomatis: tidak
+// pernah tampil di katalog member maupun daftar reward admin, dan tidak bisa
+// ditukar dengan poin.
+model BirthdayConfig {
+  id      String  @id @default("singleton")
+  enabled Boolean @default(false)
+
+  // Definisi hadiah — cermin dari field Reward.
+  name         String     @default("Hadiah Ulang Tahun")
+  description  String?
+  imageUrl     String?
+  type         RewardType @default(MANUAL)
+  value        Int?
+  minPurchase  Int?
+  freeItemName String?
+
+  // Masa berlaku voucher sejak terbit (hari).
+  voucherValidDays Int @default(7)
+
+  // Baris Reward tersembunyi yang dikelola otomatis; dibuat saat pertama kali
+  // pengaturan disimpan.
+  rewardId String? @unique
+  reward   Reward? @relation(fields: [rewardId], references: [id])
+
+  updatedAt DateTime @updatedAt
+
+  @@map("birthday_config")
 }
 
 // Penanda "member ini sudah dapat hadiah ulang tahun di tahun tersebut".
@@ -445,8 +470,10 @@ model Reward {
   vouchers Voucher[]
   redeems  Redeem[]
 
-  // Dirujuk LoyaltyConfig bila reward ini dipakai sebagai hadiah ulang tahun.
-  loyaltyConfigs LoyaltyConfig[]
+  // true = baris tersembunyi cerminan BirthdayConfig, bukan reward katalog.
+  // Disaring dari katalog member maupun daftar reward admin.
+  isBirthdayGift Boolean         @default(false)
+  birthdayConfig BirthdayConfig?
 
   // Tag outlet mana reward ini relevan (murni informasi admin — kosong berarti
   // berlaku/relevan di semua outlet; belum ada filter otomatis di customer/POS).
