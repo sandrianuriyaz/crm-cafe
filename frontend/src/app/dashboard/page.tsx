@@ -264,9 +264,7 @@ export default function MemberDashboardPage() {
                     className="flex overflow-hidden rounded-xl border border-polks-border bg-polks-card"
                   >
                     <div className="flex w-[54px] shrink-0 flex-col items-center justify-center bg-polks-brand px-2 py-3">
-                      <p className="text-center text-[13px] font-black leading-none text-white">
-                        {v.reward.name.match(/\d+%/)?.[0] ?? "OFF"}
-                      </p>
+                      <Ticket size={22} className="text-white" strokeWidth={1.8} />
                     </div>
                     <div className="flex flex-1 flex-col justify-center px-3 py-2.5">
                       <p className="text-[12px] font-bold text-polks-text">{v.reward.name}</p>
