@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
+  IsDateString,
   IsEnum,
   IsInt,
   IsOptional,
@@ -68,10 +70,32 @@ export class CreateRewardDto {
   @IsString()
   freeItemName?: string;
 
+  // Periode tayang di katalog customer. Kosong = tak dibatasi di sisi itu.
+  @ApiPropertyOptional({ example: '2026-08-01T00:00:00Z' })
+  @IsOptional()
+  @IsDateString()
+  startAt?: string;
+
+  @ApiPropertyOptional({ example: '2026-08-31T23:59:59Z' })
+  @IsOptional()
+  @IsDateString()
+  endAt?: string;
+
   // Outlet mana reward ini relevan — kosong/tidak dikirim = semua outlet.
   @ApiPropertyOptional({ type: [String], description: 'Id Outlet yang relevan (kosong = semua outlet)' })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   outletIds?: string[];
+
+  // Kirim notifikasi inbox + realtime ke semua member saat reward ini dirilis.
+  // Default true; hanya berpengaruh bila reward berstatus ACTIVE. Bukan kolom
+  // DB — dibuang sebelum menulis ke Prisma.
+  @ApiPropertyOptional({
+    default: true,
+    description: 'Beri tahu member saat reward dirilis (hanya bila ACTIVE)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  notify?: boolean;
 }

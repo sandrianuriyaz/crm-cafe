@@ -22,8 +22,40 @@ type Draft = {
   value: number;
   minPurchase: number;
   freeItemName: string;
+  startAt: string; // yyyy-mm-dd
+  endAt: string;
   outletIds: string[];
+  notify: boolean;
 };
+
+function toDateInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+
+function fmtDate(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Ringkasan periode untuk kolom tabel.
+function periodLabel(r: Reward): string {
+  if (!r.startAt && !r.endAt) return "Selamanya";
+  if (r.startAt && r.endAt) return `${fmtDate(r.startAt)} – ${fmtDate(r.endAt)}`;
+  if (r.endAt) return `s/d ${fmtDate(r.endAt)}`;
+  return `mulai ${fmtDate(r.startAt)}`;
+}
+
+// Reward bisa ACTIVE tapi belum/sudah lewat jadwal — bedakan di tabel supaya
+// admin tidak bingung kenapa tidak muncul di app.
+function scheduleState(r: Reward): "live" | "scheduled" | "ended" | null {
+  if (r.status !== "ACTIVE") return null;
+  const now = Date.now();
+  if (r.startAt && new Date(r.startAt).getTime() > now) return "scheduled";
+  if (r.endAt && new Date(r.endAt).getTime() < now) return "ended";
+  return "live";
+}
 
 const emptyDraft: Draft = {
   name: "",
@@ -36,7 +68,10 @@ const emptyDraft: Draft = {
   value: 0,
   minPurchase: 0,
   freeItemName: "",
+  startAt: "",
+  endAt: "",
   outletIds: [],
+  notify: true,
 };
 
 const TYPE_OPTIONS: { value: RewardType; label: string }[] = [
@@ -147,7 +182,7 @@ export default function AdminRewardsPage() {
           list={list}
           searchable
           searchPlaceholder="Cari nama / deskripsi..."
-          columns={["Nama", "Poin", "Stok", "Tipe", "Status", "Aksi"]}
+          columns={["Nama", "Poin", "Stok", "Tipe", "Periode", "Status", "Aksi"]}
           empty="Belum ada reward."
           renderRow={(r) => [
             <div key="n">
@@ -161,11 +196,25 @@ export default function AdminRewardsPage() {
             <span key="t" className="text-[11px] font-medium text-polks-text">
               {rewardTypeLabel(r)}
             </span>,
-            <AdminBadge
-              key="s"
-              label={r.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
-              type={r.status === "ACTIVE" ? "success" : "neutral"}
-            />,
+            <span key="pr" className="text-[11px] text-polks-muted">
+              {periodLabel(r)}
+            </span>,
+            // Reward aktif tapi di luar jadwal tidak tampil di app — beri label
+            // sendiri agar tidak tertukar dengan "Aktif" yang benar-benar tayang.
+            (() => {
+              const st = scheduleState(r);
+              if (st === "scheduled")
+                return <AdminBadge key="s" label="Terjadwal" type="neutral" />;
+              if (st === "ended")
+                return <AdminBadge key="s" label="Berakhir" type="neutral" />;
+              return (
+                <AdminBadge
+                  key="s"
+                  label={r.status === "ACTIVE" ? "Aktif" : "Nonaktif"}
+                  type={r.status === "ACTIVE" ? "success" : "neutral"}
+                />
+              );
+            })(),
             <div key="a" className="flex gap-2">
               <button
                 type="button"
@@ -224,12 +273,19 @@ function RewardForm({
           value: reward.value ?? 0,
           minPurchase: reward.minPurchase ?? 0,
           freeItemName: reward.freeItemName ?? "",
+          startAt: toDateInput(reward.startAt),
+          endAt: toDateInput(reward.endAt),
           outletIds: reward.outlets?.map((o) => o.outlet.id) ?? [],
+          notify: true,
         }
       : emptyDraft,
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Jadwal mundur: reward tersimpan aktif tapi belum muncul di katalog.
+  const startsInFuture =
+    !!d.startAt && new Date(`${d.startAt}T00:00:00`).getTime() > Date.now();
 
   function set<K extends keyof Draft>(k: K, v: Draft[K]) {
     setD((prev) => ({ ...prev, [k]: v }));
@@ -238,6 +294,10 @@ function RewardForm({
   async function submit() {
     if (d.name.trim().length < 2) {
       setError("Nama minimal 2 karakter.");
+      return;
+    }
+    if (d.startAt && d.endAt && d.startAt > d.endAt) {
+      setError("Tanggal berakhir tidak boleh sebelum tanggal mulai.");
       return;
     }
     setSaving(true);
@@ -257,7 +317,15 @@ function RewardForm({
       value: isDiscount ? Number(d.value) : null,
       minPurchase: isDiscount && d.minPurchase > 0 ? Number(d.minPurchase) : null,
       freeItemName: d.type === "FREE_ITEM" ? d.freeItemName || null : null,
+      // Input tanggal hanya memberi yyyy-mm-dd. Mulai = awal hari, berakhir =
+      // akhir hari (waktu lokal) agar "berakhir 31 Agt" mencakup seluruh 31
+      // Agustus. null = hapus batasan (admin mengosongkan field).
+      startAt: d.startAt ? new Date(`${d.startAt}T00:00:00`).toISOString() : null,
+      endAt: d.endAt ? new Date(`${d.endAt}T23:59:59.999`).toISOString() : null,
       outletIds: d.outletIds,
+      // Server abaikan bila reward tidak berstatus ACTIVE, atau (saat edit)
+      // bila reward sudah aktif sebelumnya.
+      notify: d.notify,
     };
     try {
       if (reward) {
@@ -316,6 +384,21 @@ function RewardForm({
               folder="rewards"
             />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-polks-text">Mulai Tayang</label>
+              <input type="date" className={field} value={d.startAt} onChange={(e) => set("startAt", e.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-polks-text">Berakhir</label>
+              <input type="date" className={field} value={d.endAt} onChange={(e) => set("endAt", e.target.value)} />
+            </div>
+          </div>
+          <p className="-mt-1 text-[10px] text-polks-muted">
+            Kosongkan salah satu / keduanya = tanpa batas. Di luar periode, reward
+            hilang dari katalog member walau statusnya Aktif.
+          </p>
+
           <div>
             <label className="mb-1 block text-xs font-semibold text-polks-text">Status</label>
             <select className={field} value={d.status} onChange={(e) => set("status", e.target.value as Draft["status"])}>
@@ -323,6 +406,38 @@ function RewardForm({
               <option value="INACTIVE">Nonaktif</option>
             </select>
           </div>
+
+          {/* Hanya relevan saat reward benar-benar dirilis: baru dibuat aktif,
+              atau reward nonaktif yang sedang diaktifkan kembali. */}
+          {(!reward || reward.status === "INACTIVE") && d.status === "ACTIVE" ? (
+            startsInFuture ? (
+              // Belum tayang → tidak ada yang bisa dikabarkan sekarang.
+              <p className="rounded-xl border-[1.5px] border-polks-border bg-polks-surface p-3 text-[10px] text-polks-muted">
+                Reward dijadwalkan mulai {fmtDate(new Date(`${d.startAt}T00:00:00`).toISOString())}.
+                Notifikasi tidak dikirim sekarang, dan belum ada penjadwal yang
+                mengirimnya otomatis saat tanggal itu tiba — pakai menu Broadcast
+                bila ingin mengabarkannya.
+              </p>
+            ) : (
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border-[1.5px] border-polks-border bg-polks-surface p-3">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 accent-polks-brand"
+                  checked={d.notify}
+                  onChange={(e) => set("notify", e.target.checked)}
+                />
+                <span>
+                  <span className="block text-xs font-semibold text-polks-text">
+                    Kirim notifikasi ke member
+                  </span>
+                  <span className="mt-0.5 block text-[10px] text-polks-muted">
+                    Masuk ke inbox semua member dan muncul instan di aplikasi.
+                    Member yang mematikan notifikasi reward tidak menerimanya.
+                  </span>
+                </span>
+              </label>
+            )
+          ) : null}
 
           <div>
             <label className="mb-1 block text-xs font-semibold text-polks-text">Tipe Reward</label>

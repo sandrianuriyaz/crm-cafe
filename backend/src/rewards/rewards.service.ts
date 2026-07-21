@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, RewardStatus, VoucherStatus } from '@prisma/client';
@@ -9,19 +10,34 @@ import { generateVoucherCode } from '../common/voucher-code.util';
 import { CreateRewardDto } from './dto/create-reward.dto';
 import { ListRewardsQueryDto } from './dto/list-rewards-query.dto';
 import { UpdateRewardDto } from './dto/update-reward.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 // Berapa lama voucher berlaku sejak dibuat (hari).
 const VOUCHER_VALID_DAYS = 30;
 
 @Injectable()
 export class RewardsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(RewardsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // ── Katalog (customer) ────────────────────────────────────────────────────
-  // Hanya reward aktif. Tampilkan stok agar UI bisa tandai habis.
+  // Reward tayang = status ACTIVE & sekarang dalam rentang startAt–endAt
+  // (null = tak dibatasi di sisi itu). Sejalan dengan PromosService.listActive.
+  // Tampilkan stok agar UI bisa tandai habis.
   listActive() {
+    const now = new Date();
     return this.prisma.reward.findMany({
-      where: { status: RewardStatus.ACTIVE },
+      where: {
+        status: RewardStatus.ACTIVE,
+        AND: [
+          { OR: [{ startAt: null }, { startAt: { lte: now } }] },
+          { OR: [{ endAt: null }, { endAt: { gte: now } }] },
+        ],
+      },
       orderBy: { pointCost: 'asc' },
     });
   }
@@ -33,16 +49,76 @@ export class RewardsService {
   }
 
   // ── CRUD (admin) ────────────────────────────────────────────────────────
-  create(dto: CreateRewardDto) {
-    const { outletIds, ...rest } = dto;
-    return this.prisma.reward.create({
+  async create(dto: CreateRewardDto) {
+    const { outletIds, notify, ...rest } = dto;
+    const reward = await this.prisma.reward.create({
       data: {
-        ...rest,
+        ...RewardsService.withDates(rest),
         outlets: outletIds?.length
           ? { create: outletIds.map((outletId) => ({ outletId })) }
           : undefined,
       },
     });
+    await this.announceIfReleased(reward, notify);
+    return reward;
+  }
+
+  // Tanggal datang sebagai string ISO dari DTO → Date untuk Prisma. Field yang
+  // tidak dikirim tetap undefined (tidak diubah); null berarti hapus batasan.
+  private static withDates<T extends { startAt?: string | null; endAt?: string | null }>(
+    dto: T,
+  ) {
+    const toDate = (v: string | null | undefined) =>
+      v === undefined ? undefined : v === null ? null : new Date(v);
+    return {
+      ...dto,
+      startAt: toDate(dto.startAt),
+      endAt: toDate(dto.endAt),
+    };
+  }
+
+  // Reward sedang tayang ke member? Dipakai untuk memutuskan apakah notifikasi
+  // "reward baru" layak dikirim — percuma mengabarkan sesuatu yang belum/tidak
+  // muncul di katalog.
+  private static isLive(reward: {
+    status: RewardStatus;
+    startAt: Date | null;
+    endAt: Date | null;
+  }): boolean {
+    if (reward.status !== RewardStatus.ACTIVE) return false;
+    const now = Date.now();
+    if (reward.startAt && reward.startAt.getTime() > now) return false;
+    if (reward.endAt && reward.endAt.getTime() < now) return false;
+    return true;
+  }
+
+  // Reward baru terbit ke member → kirim notifikasi inbox + realtime.
+  // Best-effort: kegagalan notifikasi tidak boleh menggagalkan simpan reward,
+  // karena rewardnya sendiri sudah tersimpan saat ini dipanggil.
+  private async announceIfReleased(
+    reward: {
+      name: string;
+      pointCost: number;
+      imageUrl: string | null;
+      status: RewardStatus;
+      startAt: Date | null;
+      endAt: Date | null;
+    },
+    notify: boolean | undefined,
+  ) {
+    if (notify === false) return;
+    // Reward berjadwal mundur tidak dinotifikasi sekarang. Belum ada scheduler,
+    // jadi notifikasi menyusul saat startAt tiba juga belum ada — admin perlu
+    // broadcast manual bila ingin mengabarkannya.
+    if (!RewardsService.isLive(reward)) return;
+    try {
+      await this.notifications.notifyNewReward(reward);
+    } catch (err) {
+      this.logger.error(
+        `Gagal kirim notifikasi reward "${reward.name}"`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   // Cari (nama/deskripsi) + filter status/tipe + paginated. outlets di-include
@@ -81,9 +157,9 @@ export class RewardsService {
   // outletIds tidak dikirim (undefined) → tag outlet tidak diubah.
   // outletIds dikirim (termasuk []) → ganti seluruh tag jadi daftar ini.
   async update(id: string, dto: UpdateRewardDto) {
-    await this.getOne(id);
-    const { outletIds, ...rest } = dto;
-    return this.prisma.$transaction(async (tx) => {
+    const before = await this.getOne(id);
+    const { outletIds, notify, ...rest } = dto;
+    const reward = await this.prisma.$transaction(async (tx) => {
       if (outletIds !== undefined) {
         await tx.rewardOutlet.deleteMany({ where: { rewardId: id } });
         if (outletIds.length) {
@@ -92,8 +168,18 @@ export class RewardsService {
           });
         }
       }
-      return tx.reward.update({ where: { id }, data: rest });
+      return tx.reward.update({
+        where: { id },
+        data: RewardsService.withDates(rest),
+      });
     });
+
+    // Hanya transisi "belum tayang" → "tayang" yang dianggap rilis. Edit reward
+    // yang sudah tayang tidak mengirim notifikasi ulang.
+    if (!RewardsService.isLive(before)) {
+      await this.announceIfReleased(reward, notify);
+    }
+    return reward;
   }
 
   async remove(id: string) {
@@ -119,6 +205,11 @@ export class RewardsService {
       if (!reward) throw new NotFoundException('Reward tidak ditemukan');
       if (reward.status !== RewardStatus.ACTIVE) {
         throw new BadRequestException('Reward tidak aktif');
+      }
+      // Cegah redeem dari halaman yang terlanjur terbuka sebelum/sesudah
+      // periode tayang — katalog sudah menyembunyikannya, ini penjaga server.
+      if (!RewardsService.isLive(reward)) {
+        throw new BadRequestException('Reward sedang tidak berlaku');
       }
       if (reward.stock <= 0) {
         throw new BadRequestException('Stok reward habis');

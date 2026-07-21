@@ -408,6 +408,11 @@ model Reward {
   // kasir/POS secara manual. Belum ada enforcement otomatis di server.
   minPurchase  Int?
   freeItemName String?
+  // Periode tayang di katalog customer (null = tak dibatasi di sisi itu),
+  // sejalan dengan Promo.startAt/endAt. Di luar rentang reward hilang dari
+  // katalog tanpa perlu admin menonaktifkan manual.
+  startAt      DateTime?
+  endAt        DateTime?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 

@@ -23,6 +23,9 @@ export type Reward = {
   value: number | null;
   minPurchase: number | null;
   freeItemName: string | null;
+  // Periode tayang di katalog — null = tak dibatasi di sisi itu.
+  startAt: string | null;
+  endAt: string | null;
   createdAt: string;
   updatedAt: string;
   outlets?: OutletTag[];

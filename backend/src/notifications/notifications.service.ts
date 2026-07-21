@@ -61,6 +61,67 @@ export class NotificationsService {
     return { recipientCount: members.length };
   }
 
+  // ── Notif otomatis: reward baru dirilis ──────────────────────────────────
+  // Dipanggil RewardsService saat admin membuat reward ACTIVE, atau
+  // mengaktifkan kembali reward yang tadinya INACTIVE. Beda dari broadcast()
+  // manual: target selalu semua member, dan menghormati preferensi
+  // `rewardNotifications` milik user.
+  async notifyNewReward(reward: {
+    name: string;
+    pointCost: number;
+    imageUrl: string | null;
+  }) {
+    const members = await this.prisma.member.findMany({
+      where: {
+        userId: { not: null },
+        user: {
+          OR: [
+            // Belum pernah menyimpan preferensi = pakai default (semua aktif).
+            { notificationSettings: { is: null } },
+            { notificationSettings: { is: { rewardNotifications: true } } },
+          ],
+        },
+      },
+      select: { id: true, userId: true },
+    });
+    if (!members.length) return { recipientCount: 0 };
+
+    const title = `Reward baru: ${reward.name}`;
+    const message =
+      `Tukar ${reward.pointCost.toLocaleString('id-ID')} poin untuk ` +
+      `${reward.name}. Cek katalog reward sekarang!`;
+    const imageUrl = reward.imageUrl || null;
+
+    await this.prisma.$transaction([
+      // Dicatat sebagai broadcast juga supaya admin bisa lihat jangkauannya di
+      // riwayat broadcast, sama seperti kiriman manual.
+      this.prisma.broadcast.create({
+        data: {
+          title,
+          message,
+          imageUrl,
+          target: 'all',
+          recipientCount: members.length,
+        },
+      }),
+      this.prisma.notification.createMany({
+        data: members.map((m) => ({ memberId: m.id, title, message, imageUrl })),
+      }),
+    ]);
+
+    const createdAt = new Date().toISOString();
+    for (const m of members) {
+      if (!m.userId) continue;
+      try {
+        this.realtime.emitNotification(m.userId, { title, message, createdAt });
+      } catch {
+        // best-effort per member
+      }
+    }
+
+    return { recipientCount: members.length };
+  }
+
   async listBroadcasts(skip = 0, take = 20) {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.broadcast.findMany({

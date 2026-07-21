@@ -8,5 +8,6 @@ import { RealtimeModule } from '../realtime/realtime.module';
   imports: [RealtimeModule],
   controllers: [BroadcastController, NotificationsController],
   providers: [NotificationsService],
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}
