@@ -11,6 +11,7 @@ import { CreateRewardDto } from './dto/create-reward.dto';
 import { ListRewardsQueryDto } from './dto/list-rewards-query.dto';
 import { UpdateRewardDto } from './dto/update-reward.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { BirthdayService } from '../birthday/birthday.service';
 
 // Berapa lama voucher berlaku sejak dibuat (hari).
 const VOUCHER_VALID_DAYS = 30;
@@ -22,6 +23,7 @@ export class RewardsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly birthday: BirthdayService,
   ) {}
 
   // ── Katalog (customer) ────────────────────────────────────────────────────
@@ -311,6 +313,15 @@ export class RewardsService {
   // ── Voucher & histori redeem milik member login ─────────────────────────
   async listVouchers(userId: string) {
     const member = await this.getMemberOrThrow(userId);
+    // Hadiah ulang tahun terbit saat member membuka aplikasi, tidak menunggu
+    // cron pagi. Hampir selalu no-op (cek tanggal di memori). Best-effort:
+    // gagal memberi hadiah tidak boleh menggagalkan tampilan daftar voucher.
+    await this.birthday.ensureForMember(member).catch((err) => {
+      this.logger.error(
+        `Cek hadiah ulang tahun gagal untuk ${member.memberCode}: ` +
+          (err instanceof Error ? err.message : String(err)),
+      );
+    });
     return this.prisma.voucher.findMany({
       where: { memberId: member.id },
       orderBy: { createdAt: 'desc' },

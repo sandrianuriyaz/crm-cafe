@@ -105,6 +105,21 @@ export class BirthdayService {
   }
 
   // ── Penjadwal ─────────────────────────────────────────────────────────────
+  // Cron hanya menyala sekali sehari. Bila server sedang mati saat itu — deploy,
+  // restart, atau fitur baru dinyalakan setelah lewat jam 07:00 — hari itu
+  // terlewat tanpa penyusul. Jalankan sekali saat boot sebagai jaring pengaman.
+  async onModuleInit() {
+    const res = await this.run().catch((err) => {
+      this.logger.error(
+        `Penyusulan saat boot gagal: ${err instanceof Error ? err.message : err}`,
+      );
+      return null;
+    });
+    if (res?.granted) {
+      this.logger.log(`Penyusulan saat boot: ${res.granted} voucher terbit.`);
+    }
+  }
+
   // Tiap hari 07:00 waktu server. Idempoten: BirthdayGrant unik per
   // (member, tahun), jadi menjalankannya ulang tidak menerbitkan voucher kedua.
   @Cron(CronExpression.EVERY_DAY_AT_7AM)
@@ -185,6 +200,84 @@ export class BirthdayService {
     return { granted, skipped, candidates: members.length };
   }
 
+  // ── Jalur instan ──────────────────────────────────────────────────────────
+  // Dipanggil saat member membuka daftar vouchernya. Tanpa ini, member yang
+  // ulang tahun harus menunggu cron 07:00 berikutnya — dan bila fiturnya baru
+  // dinyalakan siang hari, hadiah hari itu tidak pernah terbit sama sekali.
+  //
+  // Murah: sebagian besar panggilan berhenti di perbandingan tanggal di memori
+  // (member-nya sudah dimuat pemanggil), tanpa query tambahan apa pun.
+  async ensureForMember(
+    member: {
+      id: string;
+      userId: string | null;
+      memberCode: string;
+      birthDate: Date | null;
+      createdAt: Date;
+    },
+    now = new Date(),
+  ): Promise<boolean> {
+    if (!member.userId || !member.birthDate) return false;
+    if (!BirthdayService.isBirthdayToday(member.birthDate, now)) return false;
+    if (member.createdAt >= BirthdayService.startOfDay(now)) return false;
+
+    const config = await this.prisma.birthdayConfig.findUnique({
+      where: { id: SINGLETON_ID },
+    });
+    if (!config?.enabled || !config.rewardId) return false;
+
+    const expiredAt = new Date(
+      now.getTime() + config.voucherValidDays * 24 * 60 * 60 * 1000,
+    );
+    const voucher = await this.grantOne(
+      member,
+      config.rewardId,
+      now.getUTCFullYear(),
+      expiredAt,
+    );
+    if (!voucher) return false; // sudah pernah dapat tahun ini
+
+    await this.notifications
+      .notifyMember(
+        member,
+        'Selamat ulang tahun! 🎉',
+        `Ada hadiah untukmu: ${config.name}. Voucher sudah masuk ke ` +
+          `Voucher Saya, berlaku ${config.voucherValidDays} hari.`,
+        config.imageUrl,
+      )
+      .catch(() => {
+        // voucher sudah sah terbit; notifikasi bersifat best-effort
+      });
+    return true;
+  }
+
+  private static startOfDay(now: Date) {
+    return new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+  }
+
+  private static isLeap(y: number) {
+    return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  }
+
+  // 29 Februari dirayakan 28 Februari di tahun non-kabisat agar member tidak
+  // dilewati tiga tahun sekali. Sejalan dengan query batch di bawah.
+  private static isBirthdayToday(birthDate: Date, now: Date): boolean {
+    const bm = birthDate.getUTCMonth() + 1;
+    const bd = birthDate.getUTCDate();
+    const m = now.getUTCMonth() + 1;
+    const d = now.getUTCDate();
+    if (bm === m && bd === d) return true;
+    return (
+      bm === 2 &&
+      bd === 29 &&
+      m === 2 &&
+      d === 28 &&
+      !BirthdayService.isLeap(now.getUTCFullYear())
+    );
+  }
+
   // Cocokkan tanggal & bulan lahir dengan hari ini. birthDate disimpan sebagai
   // tengah malam UTC (lihat alur registrasi), jadi dibandingkan dalam UTC.
   //
@@ -193,15 +286,13 @@ export class BirthdayService {
   private async findBirthdayMembers(now: Date) {
     const month = now.getUTCMonth() + 1;
     const day = now.getUTCDate();
-    const isLeap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
-    const alsoLeapDay = month === 2 && day === 28 && !isLeap(now.getUTCFullYear());
+    const alsoLeapDay =
+      month === 2 && day === 28 && !BirthdayService.isLeap(now.getUTCFullYear());
 
     // Member yang mendaftar hari ini dilewati: mencegah daftar → isi tanggal
     // lahir hari ini → klaim seketika. Tanggal lahir sudah terkunci setelah
     // diisi, jadi ini menutup sisa celahnya.
-    const startOfToday = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-    );
+    const startOfToday = BirthdayService.startOfDay(now);
 
     return this.prisma.$queryRaw<
       { id: string; userId: string | null; memberCode: string }[]
