@@ -26,6 +26,7 @@ export interface VoucherUpdatedPayload {
     minPurchase: number | null;
     freeItemName: string | null;
     description: string | null;
+    isBirthdayGift: boolean;
   };
 }
 

@@ -117,6 +117,7 @@ export class PosService {
             minPurchase: true,
             freeItemName: true,
             description: true,
+            isBirthdayGift: true,
           },
         },
       },
@@ -159,6 +160,7 @@ export class PosService {
             minPurchase: true;
             freeItemName: true;
             description: true;
+            isBirthdayGift: true;
           };
         };
       };
@@ -183,6 +185,7 @@ export class PosService {
           minPurchase: voucher.reward.minPurchase,
           freeItemName: voucher.reward.freeItemName,
           description: voucher.reward.description,
+          isBirthdayGift: voucher.reward.isBirthdayGift,
         },
       });
     } catch {

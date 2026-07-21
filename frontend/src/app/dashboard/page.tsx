@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Bell, ChevronRight, Gift, Headphones, MapPin, QrCode, Star, Tag, Ticket,
+  Bell, Cake, ChevronRight, Gift, Headphones, MapPin, QrCode, Star, Tag, Ticket,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { PromoBanner } from "@/components/customer/promo-banner";
@@ -291,7 +291,12 @@ export default function MemberDashboardPage() {
                     {/* Kotak kiri: besaran diskon versi ringkas. Tipe tanpa
                         nominal (item gratis / manual) tetap pakai ikon. */}
                     <div className="flex w-[54px] shrink-0 flex-col items-center justify-center bg-polks-brand px-1 py-3 text-white">
-                      {v.reward.type === "DISCOUNT_PERCENT" && v.reward.value != null ? (
+                      {/* Hadiah ulang tahun didahulukan: nuansa perayaannya
+                          lebih penting daripada mengulang besaran diskon, yang
+                          sudah tertulis di baris keterangan. */}
+                      {v.reward.isBirthdayGift ? (
+                        <Cake size={22} strokeWidth={1.8} />
+                      ) : v.reward.type === "DISCOUNT_PERCENT" && v.reward.value != null ? (
                         <p className="text-[16px] font-black leading-none">{v.reward.value}%</p>
                       ) : v.reward.type === "DISCOUNT_AMOUNT" && v.reward.value != null ? (
                         <>

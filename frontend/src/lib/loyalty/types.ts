@@ -86,6 +86,8 @@ export type Voucher = {
     minPurchase: number | null;
     freeItemName: string | null;
     description: string | null;
+    // Hadiah ulang tahun ditandai ikon kue, bukan label diskon biasa.
+    isBirthdayGift: boolean;
   };
 };
 

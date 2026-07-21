@@ -337,6 +337,8 @@ export class RewardsService {
             minPurchase: true,
             freeItemName: true,
             description: true,
+            // Agar kartu voucher bisa menandainya dengan ikon ulang tahun.
+            isBirthdayGift: true,
           },
         },
       },
