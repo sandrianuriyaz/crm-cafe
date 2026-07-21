@@ -67,12 +67,19 @@ export class PosService {
     };
   }
 
-  // Ambil saldo member by externalCustomerId (= customer.id POS) untuk jaring
-  // pengaman sync saldo, mis. POS menariknya setelah order Rp0 (lunas via poin)
-  // yang tidak dikirim sebagai transaksi. Null = tidak ditemukan (controller → 404).
-  async getMember(externalCustomerId: string): Promise<PosMember | null> {
-    return this.prisma.member.findUnique({
-      where: { externalCustomerId },
+  // Ambil saldo member by customer.id POS untuk jaring pengaman sync saldo,
+  // mis. POS menariknya setelah order Rp0 (lunas via poin) yang tidak dikirim
+  // sebagai transaksi. Null = tidak ditemukan (controller → 404).
+  //
+  // Terima dua bentuk id: memberCode terbitan CRM (isi QR member, jalur normal
+  // Opsi A) dan externalCustomerId (id internal POS). Sebelumnya hanya
+  // externalCustomerId — yang tidak pernah cocok untuk pelanggan hasil scan QR,
+  // jadi endpoint ini selalu balas 404.
+  async getMember(customerId: string): Promise<PosMember | null> {
+    return this.prisma.member.findFirst({
+      where: {
+        OR: [{ memberCode: customerId }, { externalCustomerId: customerId }],
+      },
       select: {
         name: true,
         memberCode: true,

@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { TierService } from '../tier/tier.service';
 import { rateForTier, tierForSpend, TierName } from '../common/tier.util';
+import { normalizePhone } from '../common/phone.util';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { PosTransactionEventDto } from './dto/pos-transaction.dto';
 
@@ -220,28 +221,43 @@ export class WebhooksService {
   }
 
   // Opsi A (CRM yang punya id): customer.id = memberCode terbitan CRM yang
-  // di-echo POS. Cocokkan ke memberCode (utama) → phone (cadangan). Walk-in
+  // di-echo POS. Cocokkan memberCode → externalCustomerId → phone. Walk-in
   // anonim (id+phone null) → null (transaksi tetap dicatat tanpa member/poin).
   // Lihat docs/usulan-kepemilikan-id-customer.md.
+  //
+  // POS tidak selalu meng-echo memberCode kita: kalau pelanggan sudah lebih
+  // dulu ada di POS, yang dikirim balik adalah id internal POS. Id itu WAJIB
+  // disimpan sebagai externalCustomerId — kalau tidak, tiap transaksi
+  // berikutnya gagal cocok dan membuat member baru, sehingga poin menyebar ke
+  // member hantu dan saldo pelanggan asli tidak pernah bertambah.
   private async upsertMember(
     tx: Prisma.TransactionClient,
     dto: PosTransactionEventDto,
   ) {
     const c = dto.customer ?? {};
-    const crmId = c.id || null; // = memberCode milik CRM
-    const phone = c.phone || null;
+    const crmId = c.id || null; // memberCode CRM, atau id internal POS
+    const phone = normalizePhone(c.phone);
     const name = c.name && c.name !== 'Pelanggan Umum' ? c.name : null;
 
     if (!crmId && !phone) {
       return null; // guest anonim
     }
 
-    // Cari existing: prioritas memberCode (id CRM), lalu phone.
+    // Cari existing: prioritas memberCode (id CRM) → externalCustomerId (id POS
+    // yang pernah kita simpan) → phone.
     const member =
       (crmId
         ? await tx.member.findUnique({ where: { memberCode: crmId } })
         : null) ??
+      (crmId
+        ? await tx.member.findUnique({ where: { externalCustomerId: crmId } })
+        : null) ??
       (phone ? await tx.member.findUnique({ where: { phone } }) : null);
+
+    // customer.id yang bukan memberCode kita = id internal POS. Aman di-klaim:
+    // pencarian di atas sudah memastikan belum ada member lain yang memegangnya
+    // (kalau ada, member itu yang terpilih), jadi tidak akan bentrok unique.
+    const externalId = crmId && crmId !== member?.memberCode ? crmId : null;
 
     if (member) {
       // Lengkapi field yang masih kosong.
@@ -250,15 +266,17 @@ export class WebhooksService {
         data: {
           phone: member.phone ?? phone,
           name: member.name ?? name,
+          externalCustomerId: member.externalCustomerId ?? externalId,
         },
       });
     }
 
-    // Tidak ditemukan → walk-in baru; CRM terbitkan memberCode baru.
-    // (customer.id tak dikenal diabaikan; identitas pakai phone bila ada.)
+    // Tidak ditemukan → walk-in baru; CRM terbitkan memberCode baru, sambil
+    // menyimpan id POS supaya scan berikutnya mendarat di member yang sama.
     return tx.member.create({
       data: {
         memberCode: this.generateMemberCode(),
+        externalCustomerId: externalId,
         phone,
         name,
       },
