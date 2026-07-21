@@ -115,6 +115,8 @@ export class PosService {
             type: true,
             value: true,
             minPurchase: true,
+            freeItemName: true,
+            description: true,
           },
         },
       },
@@ -155,6 +157,8 @@ export class PosService {
             type: true;
             value: true;
             minPurchase: true;
+            freeItemName: true;
+            description: true;
           };
         };
       };
@@ -177,6 +181,8 @@ export class PosService {
           type: voucher.reward.type,
           value: voucher.reward.value,
           minPurchase: voucher.reward.minPurchase,
+          freeItemName: voucher.reward.freeItemName,
+          description: voucher.reward.description,
         },
       });
     } catch {

@@ -24,6 +24,8 @@ export interface VoucherUpdatedPayload {
     type: RewardType;
     value: number | null;
     minPurchase: number | null;
+    freeItemName: string | null;
+    description: string | null;
   };
 }
 

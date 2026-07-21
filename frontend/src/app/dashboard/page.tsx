@@ -33,13 +33,20 @@ function compactRupiah(n: number): string {
   return String(n);
 }
 
-// Besaran diskon voucher versi panjang, untuk baris keterangan di bawah nama.
-// null = tipe reward yang tidak punya nominal (item gratis / hadiah manual).
-function discountLabel(reward: Voucher["reward"]): string | null {
-  if (reward.value == null) return null;
-  if (reward.type === "DISCOUNT_PERCENT") return `Diskon ${reward.value}%`;
-  if (reward.type === "DISCOUNT_AMOUNT") return `Diskon ${formatRupiah(reward.value)}`;
-  return null;
+// Isi voucher dalam satu kalimat pendek, untuk baris keterangan di bawah nama.
+// Nama reward saja sering tidak cukup — "Hadiah Ulang Tahun" tidak memberi tahu
+// pembeli apa yang sebenarnya ia dapat.
+function benefitLabel(reward: Voucher["reward"]): string | null {
+  switch (reward.type) {
+    case "DISCOUNT_PERCENT":
+      return reward.value == null ? null : `Diskon ${reward.value}%`;
+    case "DISCOUNT_AMOUNT":
+      return reward.value == null ? null : `Diskon ${formatRupiah(reward.value)}`;
+    case "FREE_ITEM":
+      return reward.freeItemName ? `Gratis ${reward.freeItemName}` : "Item gratis";
+    default:
+      return null; // MANUAL: dijelaskan lewat deskripsi, bila admin mengisinya
+  }
 }
 
 export default function MemberDashboardPage() {
@@ -293,6 +300,10 @@ export default function MemberDashboardPage() {
                             {compactRupiah(v.reward.value)}
                           </span>
                         </>
+                      ) : v.reward.type === "FREE_ITEM" ? (
+                        <span className="text-[10px] font-black leading-none tracking-wide">
+                          GRATIS
+                        </span>
                       ) : (
                         <Ticket size={22} strokeWidth={1.8} />
                       )}
@@ -300,15 +311,18 @@ export default function MemberDashboardPage() {
                     <div className="flex flex-1 flex-col justify-center px-3 py-2.5">
                       <p className="text-[12px] font-bold text-polks-text">{v.reward.name}</p>
                       {(() => {
-                        // Baris 1: nilai & syarat pakai — ditulis utuh (kotak
-                        // kiri diringkas supaya muat, di sini tidak ambigu).
-                        // Baris 2: masa berlaku, dibedakan agar tidak menyatu.
-                        const disc = discountLabel(v.reward);
+                        // Baris 1: isi & syarat pakai — ditulis utuh (kotak kiri
+                        // diringkas supaya muat, di sini tidak ambigu).
+                        // Baris 2: keterangan admin, bila ada — ini yang bisa
+                        // menjelaskan hadiah bertipe manual.
+                        // Baris 3: masa berlaku, dibedakan agar tidak menyatu.
+                        const benefit = benefitLabel(v.reward);
                         const min =
                           v.reward.minPurchase && v.reward.minPurchase > 0
                             ? `Min. belanja ${formatRupiah(v.reward.minPurchase)}`
                             : null;
-                        const terms = [disc, min].filter(Boolean);
+                        const terms = [benefit, min].filter(Boolean);
+                        const desc = v.reward.description?.trim() || null;
                         const exp = v.expiredAt
                           ? "Sampai " +
                             new Date(v.expiredAt).toLocaleDateString("id-ID", {
@@ -322,6 +336,11 @@ export default function MemberDashboardPage() {
                             {terms.length > 0 && (
                               <p className="mt-0.5 text-[9px] font-semibold text-polks-text">
                                 {terms.join(" · ")}
+                              </p>
+                            )}
+                            {desc && (
+                              <p className="mt-0.5 line-clamp-1 text-[9px] text-polks-muted">
+                                {desc}
                               </p>
                             )}
                             {exp && (

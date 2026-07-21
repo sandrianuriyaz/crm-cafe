@@ -335,6 +335,8 @@ export class RewardsService {
             type: true,
             value: true,
             minPurchase: true,
+            freeItemName: true,
+            description: true,
           },
         },
       },

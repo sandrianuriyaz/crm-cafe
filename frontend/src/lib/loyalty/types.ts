@@ -80,10 +80,12 @@ export type Voucher = {
   reward: {
     name: string;
     imageUrl: string | null;
-    // Dipakai kartu voucher untuk menampilkan besaran diskon & syaratnya.
+    // Dipakai kartu voucher untuk menjelaskan isi & syarat hadiahnya.
     type: RewardType;
     value: number | null;
     minPurchase: number | null;
+    freeItemName: string | null;
+    description: string | null;
   };
 };
 
