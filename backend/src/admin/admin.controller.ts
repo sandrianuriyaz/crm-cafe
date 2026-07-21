@@ -111,6 +111,12 @@ export class AdminController {
     return this.admin.listWebhooks(q);
   }
 
+  @Get('webhooks/:id')
+  @ApiOperation({ summary: '[Admin] Detail event POS + payload mentah' })
+  webhook(@Param('id') id: string) {
+    return this.admin.getWebhook(id);
+  }
+
   @Get('idempotency-keys')
   @ApiOperation({ summary: '[Admin] Audit idempotency key (anti-duplikat)' })
   idempotencyKeys(@Query() q: ListQueryDto) {

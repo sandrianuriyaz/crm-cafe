@@ -20,12 +20,25 @@ function sign(body: string) {
   return 'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex');
 }
 
+// Bentuk argumen prisma.posSyncLog.create() yang diharapkan guard tulis.
+type CreateArg = {
+  data: {
+    status: string;
+    idempotencyKey: string;
+    eventId: string | null;
+    errorMessage: string | null;
+    rawPayload: unknown;
+  };
+};
+
 describe('HmacGuard', () => {
   let guard: HmacGuard;
-  let create: jest.Mock;
+  let create: jest.Mock<Promise<unknown>, [CreateArg]>;
+
+  const logged = (): CreateArg['data'] => create.mock.calls[0][0].data;
 
   beforeEach(() => {
-    create = jest.fn().mockResolvedValue({});
+    create = jest.fn<Promise<unknown>, [CreateArg]>().mockResolvedValue({});
     const config = { get: () => SECRET } as unknown as ConfigService;
     const prisma = { posSyncLog: { create } } as unknown as PrismaService;
     guard = new HmacGuard(config, prisma);
@@ -50,7 +63,7 @@ describe('HmacGuard', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
 
     expect(create).toHaveBeenCalledTimes(1);
-    expect(create.mock.calls[0][0].data).toMatchObject({
+    expect(logged()).toMatchObject({
       status: 'invalid_signature',
       idempotencyKey: 'ORD-1',
       eventId: 'evt-1',
@@ -62,16 +75,14 @@ describe('HmacGuard', () => {
     await expect(guard.canActivate(ctx(body, {}))).rejects.toBeInstanceOf(
       UnauthorizedException,
     );
-    expect(create.mock.calls[0][0].data.errorMessage).toBe(
-      'Missing X-Signature header',
-    );
+    expect(logged().errorMessage).toBe('Missing X-Signature header');
   });
 
   it('tetap mencatat walau body bukan JSON valid', async () => {
     await expect(
       guard.canActivate(ctx('bukan-json', { 'x-signature': 'sha256=abc' })),
     ).rejects.toBeInstanceOf(UnauthorizedException);
-    const data = create.mock.calls[0][0].data;
+    const data = logged();
     expect(data.status).toBe('invalid_signature');
     expect(data.idempotencyKey).toBe('');
     expect(data.rawPayload).toEqual({ raw: 'bukan-json' });

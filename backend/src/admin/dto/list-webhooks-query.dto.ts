@@ -20,6 +20,15 @@ export class ListWebhooksQueryDto extends ListQueryDto {
   @IsOptional()
   @IsISO8601()
   to?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Cari di idempotency key, event id, status, atau nomor order POS',
+    example: '#ORD-20260610-001',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
 
 export class ListVouchersQueryDto extends ListQueryDto {

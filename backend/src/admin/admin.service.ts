@@ -299,6 +299,24 @@ export class AdminService {
       if (q.from) where.createdAt.gte = new Date(q.from);
       if (q.to) where.createdAt.lte = new Date(q.to);
     }
+    // Pencarian triase: admin biasanya cuma pegang nomor struk pelanggan
+    // (#ORD-...), sedangkan idempotencyKey = order_id (UUID). Jadi nomor order
+    // ikut dicari di dalam payload mentah.
+    const search = q.search?.trim();
+    if (search) {
+      where.OR = [
+        { idempotencyKey: { contains: search, mode: 'insensitive' } },
+        { eventId: { contains: search, mode: 'insensitive' } },
+        { status: { contains: search, mode: 'insensitive' } },
+        {
+          rawPayload: {
+            path: ['transaction', 'order_number'],
+            string_contains: search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.posSyncLog.findMany({
@@ -318,6 +336,30 @@ export class AdminService {
       this.prisma.posSyncLog.count({ where }),
     ]);
     return { total, skip, take, items };
+  }
+
+  // Detail 1 event + payload mentahnya. Payload berisi customer.id/phone dan
+  // nomor order — data yang dibutuhkan admin untuk memutuskan kenapa poin
+  // tidak masuk (pelanggan tak terdeteksi vs event gagal diproses).
+  async getWebhook(id: string) {
+    const log = await this.prisma.posSyncLog.findUnique({ where: { id } });
+    if (!log) throw new NotFoundException('Event webhook tidak ditemukan');
+
+    // Kalau event ini sudah jadi transaksi, tautkan supaya admin tidak perlu
+    // menyeberang manual ke halaman Transactions.
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { idempotencyKey: log.idempotencyKey },
+      select: {
+        id: true,
+        posOrderNumber: true,
+        memberId: true,
+        pointsAwarded: true,
+        grandTotal: true,
+        occurredAt: true,
+      },
+    });
+
+    return { ...log, transaction };
   }
 
   // ── Audit idempotency key (dari transaksi yang tercatat) ────────────────
