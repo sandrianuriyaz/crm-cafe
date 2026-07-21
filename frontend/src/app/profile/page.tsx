@@ -10,6 +10,7 @@ import {
   Store,
   Bell,
   HelpCircle,
+  History,
   LogOut,
   Shield,
 } from "lucide-react";
@@ -38,6 +39,7 @@ const menuSections = [
     title: "Akun",
     items: [
       { label: "Informasi Akun", Icon: User, href: "/profile/account" },
+      { label: "Riwayat Poin", Icon: History, href: "/history" },
       { label: "Lokasi Outlet", Icon: Store, href: "/outlets" },
       { label: "Notifikasi", Icon: Bell, href: "/notifications" },
       { label: "Keamanan", Icon: Shield, href: "/security" },

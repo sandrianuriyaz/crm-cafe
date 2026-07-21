@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Bell, Cake, ChevronRight, Gift, Headphones, MapPin, QrCode, Star, Tag, Ticket,
+  Bell, Cake, ChevronRight, Gift, Headphones, History, MapPin, Star, Tag, Ticket,
 } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { PromoBanner } from "@/components/customer/promo-banner";
@@ -166,12 +166,14 @@ export default function MemberDashboardPage() {
 
           {/* 2 Big action buttons */}
           <div className="grid grid-cols-2 gap-2.5 px-4 pb-3">
+            {/* Kartu member tetap terjangkau lewat tombol QR di tengah bottom
+                nav, jadi slot ini dipakai untuk katalog reward. */}
             <Link
-              href="/member-card"
+              href="/rewards"
               className="flex flex-col items-center gap-2 rounded-2xl bg-polks-brand px-3 py-4"
             >
-              <QrCode size={22} className="text-white" strokeWidth={1.8} />
-              <p className="text-[12px] font-bold text-white">Kartu Member</p>
+              <Gift size={22} className="text-white" strokeWidth={1.8} />
+              <p className="text-[12px] font-bold text-white">Rewards</p>
             </Link>
             <Link
               href="/redeem-history"
@@ -186,7 +188,7 @@ export default function MemberDashboardPage() {
           <div className="grid grid-cols-4 divide-x divide-polks-border border-y border-polks-border">
             {([
               { href: "/promos",  Icon: Tag,        label: "Promo"   },
-              { href: "/rewards", Icon: Gift,       label: "Rewards" },
+              { href: "/history", Icon: History,    label: "History" },
               { href: "/outlets", Icon: MapPin,     label: "Outlet"  },
               { href: "/help",    Icon: Headphones, label: "Bantuan" },
             ] as const).map(({ href, Icon, label }) => (
