@@ -5,7 +5,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { VoucherStatus } from '@prisma/client';
+import { RewardType, VoucherStatus } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
 
@@ -18,7 +18,13 @@ export interface VoucherUpdatedPayload {
   expiredAt: Date | null;
   usedAt: Date | null;
   createdAt: Date;
-  reward: { name: string; imageUrl: string | null };
+  reward: {
+    name: string;
+    imageUrl: string | null;
+    type: RewardType;
+    value: number | null;
+    minPurchase: number | null;
+  };
 }
 
 export type TierName = 'bronze' | 'silver' | 'gold' | 'platinum';

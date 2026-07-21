@@ -106,7 +106,18 @@ export class PosService {
     // (2) push realtime ke app customer pemiliknya.
     const voucher = await this.prisma.voucher.findUnique({
       where: { code },
-      include: { member: true, reward: { select: { name: true, imageUrl: true } } },
+      include: {
+        member: true,
+        reward: {
+          select: {
+            name: true,
+            imageUrl: true,
+            type: true,
+            value: true,
+            minPurchase: true,
+          },
+        },
+      },
     });
 
     // Push realtime ke app customer agar kartu voucher langsung berubah jadi
@@ -137,7 +148,15 @@ export class PosService {
     voucher: Prisma.VoucherGetPayload<{
       include: {
         member: true;
-        reward: { select: { name: true; imageUrl: true } };
+        reward: {
+          select: {
+            name: true;
+            imageUrl: true;
+            type: true;
+            value: true;
+            minPurchase: true;
+          };
+        };
       };
     }> | null,
   ) {
@@ -155,6 +174,9 @@ export class PosService {
         reward: {
           name: voucher.reward.name,
           imageUrl: voucher.reward.imageUrl,
+          type: voucher.reward.type,
+          value: voucher.reward.value,
+          minPurchase: voucher.reward.minPurchase,
         },
       });
     } catch {

@@ -77,7 +77,14 @@ export type Voucher = {
   expiredAt: string | null;
   usedAt?: string | null;
   createdAt: string;
-  reward: { name: string; imageUrl: string | null };
+  reward: {
+    name: string;
+    imageUrl: string | null;
+    // Dipakai kartu voucher untuk menampilkan besaran diskon & syaratnya.
+    type: RewardType;
+    value: number | null;
+    minPurchase: number | null;
+  };
 };
 
 // Entri ledger poin — GET /member/point-histories

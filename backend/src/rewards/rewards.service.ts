@@ -309,7 +309,19 @@ export class RewardsService {
     return this.prisma.voucher.findMany({
       where: { memberId: member.id },
       orderBy: { createdAt: 'desc' },
-      include: { reward: { select: { name: true, imageUrl: true } } },
+      // type, value & minPurchase ikut agar app bisa menampilkan besaran diskon
+      // dan syarat minimal belanja di kartu voucher, bukan sekadar nama reward.
+      include: {
+        reward: {
+          select: {
+            name: true,
+            imageUrl: true,
+            type: true,
+            value: true,
+            minPurchase: true,
+          },
+        },
+      },
     });
   }
 

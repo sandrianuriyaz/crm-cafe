@@ -24,6 +24,24 @@ function SkeletonBlock({ className }: { className?: string }) {
   return <div className={"skeleton rounded-xl " + (className ?? "")} />;
 }
 
+// Rupiah ringkas untuk kotak sempit di kartu voucher: 25000 → "25rb".
+function compactRupiah(n: number): string {
+  const short = (v: number, unit: string) =>
+    `${Number.isInteger(v) ? v : v.toFixed(1).replace(".", ",")}${unit}`;
+  if (n >= 1_000_000) return short(n / 1_000_000, "jt");
+  if (n >= 1_000) return short(n / 1_000, "rb");
+  return String(n);
+}
+
+// Besaran diskon voucher versi panjang, untuk baris keterangan di bawah nama.
+// null = tipe reward yang tidak punya nominal (item gratis / hadiah manual).
+function discountLabel(reward: Voucher["reward"]): string | null {
+  if (reward.value == null) return null;
+  if (reward.type === "DISCOUNT_PERCENT") return `Diskon ${reward.value}%`;
+  if (reward.type === "DISCOUNT_AMOUNT") return `Diskon ${formatRupiah(reward.value)}`;
+  return null;
+}
+
 export default function MemberDashboardPage() {
   const { user } = useAuth();
   const [promos,      setPromos]      = useState<Promo[]>([]);
@@ -263,21 +281,55 @@ export default function MemberDashboardPage() {
                     key={v.id}
                     className="flex overflow-hidden rounded-xl border border-polks-border bg-polks-card"
                   >
-                    <div className="flex w-[54px] shrink-0 flex-col items-center justify-center bg-polks-brand px-2 py-3">
-                      <Ticket size={22} className="text-white" strokeWidth={1.8} />
+                    {/* Kotak kiri: besaran diskon versi ringkas. Tipe tanpa
+                        nominal (item gratis / manual) tetap pakai ikon. */}
+                    <div className="flex w-[54px] shrink-0 flex-col items-center justify-center bg-polks-brand px-1 py-3 text-white">
+                      {v.reward.type === "DISCOUNT_PERCENT" && v.reward.value != null ? (
+                        <p className="text-[16px] font-black leading-none">{v.reward.value}%</p>
+                      ) : v.reward.type === "DISCOUNT_AMOUNT" && v.reward.value != null ? (
+                        <>
+                          <span className="text-[9px] font-bold leading-none opacity-80">Rp</span>
+                          <span className="mt-0.5 text-[13px] font-black leading-none">
+                            {compactRupiah(v.reward.value)}
+                          </span>
+                        </>
+                      ) : (
+                        <Ticket size={22} strokeWidth={1.8} />
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col justify-center px-3 py-2.5">
                       <p className="text-[12px] font-bold text-polks-text">{v.reward.name}</p>
-                      {v.expiredAt && (
-                        <p className="mt-0.5 text-[9px] text-polks-muted">
-                          Sampai{" "}
-                          {new Date(v.expiredAt).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
-                      )}
+                      {(() => {
+                        // Baris 1: nilai & syarat pakai — ditulis utuh (kotak
+                        // kiri diringkas supaya muat, di sini tidak ambigu).
+                        // Baris 2: masa berlaku, dibedakan agar tidak menyatu.
+                        const disc = discountLabel(v.reward);
+                        const min =
+                          v.reward.minPurchase && v.reward.minPurchase > 0
+                            ? `Min. belanja ${formatRupiah(v.reward.minPurchase)}`
+                            : null;
+                        const terms = [disc, min].filter(Boolean);
+                        const exp = v.expiredAt
+                          ? "Sampai " +
+                            new Date(v.expiredAt).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : null;
+                        return (
+                          <>
+                            {terms.length > 0 && (
+                              <p className="mt-0.5 text-[9px] font-semibold text-polks-text">
+                                {terms.join(" · ")}
+                              </p>
+                            )}
+                            {exp && (
+                              <p className="mt-0.5 text-[9px] text-polks-muted">{exp}</p>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="flex shrink-0 items-center px-3">
                       <button
