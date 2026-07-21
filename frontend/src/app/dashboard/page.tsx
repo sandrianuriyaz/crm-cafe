@@ -99,7 +99,7 @@ export default function MemberDashboardPage() {
             >
               <Bell size={14} className="text-white" strokeWidth={1.8} />
               {unread > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border border-white/60 bg-polks-card" />
+                <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border border-white/60 bg-polks-error" />
               )}
             </Link>
           </div>
