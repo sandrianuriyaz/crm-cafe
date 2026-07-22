@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
 import { TierService } from '../tier/tier.service';
+import { normalizePhone } from '../common/phone.util';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
@@ -61,7 +62,10 @@ export class MemberService {
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const m = await this.getMemberOrThrow(userId);
     const name = dto.name?.trim();
-    const phone = dto.phone?.trim();
+    // Sama seperti saat registrasi: simpan dalam bentuk lokal "08xxx" supaya
+    // webhook POS tetap menemukan member ini lewat nomor HP. `undefined` =
+    // field tidak dikirim (jangan diubah), string kosong = minta dikosongkan.
+    const phone = dto.phone === undefined ? undefined : normalizePhone(dto.phone);
     const birthDate = dto.birthDate;
 
     // Tanggal lahir hanya boleh diisi sekali. Bila bebas diubah, member bisa

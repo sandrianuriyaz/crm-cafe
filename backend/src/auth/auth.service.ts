@@ -14,6 +14,7 @@ import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { generateMemberCode } from '../common/member-code.util';
+import { normalizePhone } from '../common/phone.util';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
@@ -41,7 +42,11 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const email = dto.email.toLowerCase().trim();
-    const phone = dto.phone?.trim() || null;
+    // Normalisasi ke bentuk lokal "08xxx" — bentuk yang sama dipakai webhook POS
+    // saat mencocokkan transaksi ke member. Menyimpan apa adanya ("+62 812-…",
+    // "0812 345 …") membuat pencarian by phone meleset, lalu poin transaksi
+    // mendarat di member hantu dan member asli tidak dapat apa-apa.
+    const phone = normalizePhone(dto.phone);
     const birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
 
     const exists = await this.prisma.user.findUnique({ where: { email } });
