@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2, ChevronRight, Gift, MapPin, Smartphone, Star,
 } from "lucide-react";
@@ -10,6 +11,7 @@ import { CustomerBottomNav } from "@/components/layout/customer-bottom-nav";
 import { LoginRequiredModal } from "@/components/customer/login-required-modal";
 import { PromoBanner } from "@/components/customer/promo-banner";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { type Promo, type Reward } from "@/lib/loyalty/types";
 
 type Outlet = {
@@ -31,11 +33,23 @@ const VALUE_PROPS = [
 ];
 
 export default function GuestHomePage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const [promos,  setPromos]  = useState<Promo[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [modalReason, setModalReason] = useState<string | null>(null);
   const gate = (reason: string) => () => setModalReason(reason);
+
+  // Halaman ini khusus tamu. Yang sudah punya sesi harus mendarat di area
+  // member: PWA selalu membuka `start_url` "/" (lihat manifest.ts) dan tab
+  // "Home" tamu juga menunjuk ke sini, jadi tanpa pengalihan ini member yang
+  // membuka app dari ikon home melihat hero "Daftar Gratis / Masuk" seolah
+  // belum login — padahal bottom nav-nya sudah versi member.
+  useEffect(() => {
+    if (loading || !user) return;
+    router.replace("/dashboard");
+  }, [loading, user, router]);
 
   useEffect(() => {
     api<Promo[]>("/promos")
@@ -50,6 +64,14 @@ export default function GuestHomePage() {
   }, []);
 
   const carouselPromos = promos.filter((p) => p.imageUrl);
+
+  // Selama sesi belum dipastikan — atau sudah pasti login dan tinggal menunggu
+  // router pindah — jangan render layar tamu sedetik pun; kedipan itu persis
+  // bug yang dilaporkan. Cukup latar polos: untuk tamu tanpa token, fase ini
+  // selesai dalam satu frame (AuthProvider langsung set loading=false).
+  if (loading || user) {
+    return <div className="polks-phone min-h-screen w-full bg-polks-bg" />;
+  }
 
   return (
     <div className="polks-phone relative w-full overflow-x-hidden bg-polks-bg font-body text-polks-text">
