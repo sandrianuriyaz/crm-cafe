@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
+import { PushService } from './push.service';
 import { BroadcastController } from './broadcast.controller';
 import { NotificationsController } from './notifications.controller';
 import { RealtimeModule } from '../realtime/realtime.module';
@@ -7,7 +8,7 @@ import { RealtimeModule } from '../realtime/realtime.module';
 @Module({
   imports: [RealtimeModule],
   controllers: [BroadcastController, NotificationsController],
-  providers: [NotificationsService],
-  exports: [NotificationsService],
+  providers: [NotificationsService, PushService],
+  exports: [NotificationsService, PushService],
 })
 export class NotificationsModule {}

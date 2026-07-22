@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { usePush } from "@/lib/push";
 
 type Item = { key: string; apiKey: string; label: string; desc: string; on: boolean };
 
@@ -30,9 +31,11 @@ function loadLocalPrefs(): Record<string, boolean> | null {
 export default function NotificationsPage() {
   const router     = useRouter();
   const { user }   = useAuth();
+  const push       = usePush();
   const [items,    setItems]   = useState<Item[]>(DEFAULTS);
   const [loading,  setLoading] = useState(true);
   const [saving,   setSaving]  = useState<string | null>(null);
+  const [pushNote, setPushNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -59,6 +62,43 @@ export default function NotificationsPage() {
       })
       .finally(() => setLoading(false));
   }, [user]);
+
+  // Push punya dua sisi: preferensi di akun (berlaku lintas perangkat) dan izin
+  // + langganan browser (khusus perangkat ini). Yang ditampilkan toggle adalah
+  // sisi perangkat — preferensi akun ikut disetel supaya keduanya tidak
+  // bertentangan (langganan aktif tapi server menolak mengirim).
+  async function togglePush(nextOn: boolean) {
+    setPushNote(null);
+    setSaving("pushEnabled");
+    try {
+      if (nextOn) {
+        const ok = await push.enable();
+        if (!ok) {
+          const blocked =
+            typeof Notification !== "undefined" && Notification.permission === "denied";
+          setPushNote(
+            blocked
+              ? "Izin notifikasi diblokir untuk situs ini. Aktifkan lagi lewat setelan browser."
+              : "Perangkat ini belum bisa menerima push. Di iPhone, pasang dulu aplikasinya ke Layar Utama lewat Safari.",
+          );
+          return;
+        }
+      } else {
+        await push.disable();
+      }
+
+      if (!user) return;
+      await api("/member/notifications/settings", {
+        method: "PATCH",
+        body: { pushEnabled: nextOn },
+      }).catch(() => {
+        // Preferensi gagal tersimpan, tapi langganan perangkat sudah berubah —
+        // biarkan, tidak ada yang rusak dan user bisa mencoba lagi.
+      });
+    } finally {
+      setSaving(null);
+    }
+  }
 
   async function toggle(apiKey: string) {
     const next = items.map((i) => (i.apiKey === apiKey ? { ...i, on: !i.on } : i));
@@ -124,36 +164,55 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-polks-border bg-polks-card">
-            {items.map((it, i) => (
+            {items.map((it, i) => {
+              const isPush = it.apiKey === "pushEnabled";
+              // Sumber kebenaran baris push adalah langganan browser, bukan
+              // preferensi tersimpan: kalau user mencabut izin lewat setelan
+              // browser, toggle harus ikut mati.
+              const on = isPush ? push.state === "on" : it.on;
+              const disabled =
+                saving === it.apiKey || (isPush && (push.busy || push.state === "unsupported"));
+
+              return (
               <div
                 key={it.key}
                 className={"flex items-center justify-between gap-3 px-4 py-3.5 " + (i > 0 ? "border-t border-polks-surface" : "")}
               >
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold text-polks-text">{it.label}</p>
-                  <p className="text-[11px] text-polks-muted">{it.desc}</p>
+                  <p className="text-[11px] text-polks-muted">
+                    {isPush && push.state === "unsupported"
+                      ? "Belum didukung di browser ini"
+                      : it.desc}
+                  </p>
                 </div>
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={it.on}
-                  disabled={saving === it.apiKey}
-                  onClick={() => toggle(it.apiKey)}
+                  aria-checked={on}
+                  disabled={disabled}
+                  onClick={() => (isPush ? togglePush(!on) : toggle(it.apiKey))}
                   className={
                     "relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 " +
-                    (it.on ? "bg-polks-brand" : "bg-polks-border")
+                    (on ? "bg-polks-brand" : "bg-polks-border")
                   }
                 >
                   <span
                     className={
                       "absolute top-0.5 size-5 rounded-full bg-polks-card shadow transition-all " +
-                      (it.on ? "left-[22px]" : "left-0.5")
+                      (on ? "left-[22px]" : "left-0.5")
                     }
                   />
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
+        )}
+        {pushNote && (
+          <p className="mt-3 rounded-xl bg-polks-smile-soft px-3 py-2.5 text-[11px] leading-relaxed text-polks-text">
+            {pushNote}
+          </p>
         )}
         <p className="mt-3 px-1 text-[11px] leading-relaxed text-polks-muted">
           {user

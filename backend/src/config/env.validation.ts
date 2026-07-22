@@ -46,6 +46,18 @@ const envSchema = z.object({
   // Alamat pengirim yang tampil di email (mis. "POLKS <no-reply@polks.id>").
   MAIL_FROM: z.string().default('POLKS <no-reply@polks.id>'),
 
+  // ── Web Push (VAPID) ──────────────────────────────────────────────────
+  // Opsional: bila salah satu kosong, push dinonaktifkan dan notifikasi tetap
+  // masuk inbox + realtime seperti biasa. Generate dengan:
+  //   npx web-push generate-vapid-keys
+  // Kunci ini adalah identitas pengirim — menggantinya membatalkan SELURUH
+  // langganan yang sudah ada (browser harus subscribe ulang).
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  // Kontak yang bisa dihubungi push service kalau ada masalah. Wajib berupa
+  // mailto: atau URL menurut spesifikasi VAPID.
+  VAPID_SUBJECT: z.string().default('mailto:no-reply@polks.id'),
+
   // ── Integrasi POS Fase 1 ──────────────────────────────────────────────
   // Shared secret HMAC-SHA256 dengan POS (header X-Signature). Lihat §6.
   CRM_WEBHOOK_SECRET: z.string().min(16),

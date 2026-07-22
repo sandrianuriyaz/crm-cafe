@@ -7,6 +7,7 @@ import {
   CreateBroadcastDto,
 } from './dto/create-broadcast.dto';
 import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
+import { PushCategory, PushService } from './push.service';
 
 // Ambang tier dari saldo poin (samakan dengan getTier frontend).
 const GOLD_MIN = 1000;
@@ -18,7 +19,30 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly realtime: RealtimeGateway,
+    private readonly push: PushService,
   ) {}
+
+  // Realtime menjangkau app yang sedang terbuka; push menjangkau yang tertutup.
+  // Keduanya best-effort — notifikasi sudah aman tersimpan di inbox.
+  private fanOut(
+    userId: string,
+    payload: { title: string; message: string; imageUrl?: string | null; url?: string },
+    createdAt: string,
+    category: PushCategory = null,
+  ): void {
+    try {
+      this.realtime.emitNotification(userId, {
+        title: payload.title,
+        message: payload.message,
+        createdAt,
+      });
+    } catch {
+      // best-effort per member
+    }
+    // Sengaja tidak di-await: pengiriman push ke banyak perangkat tidak boleh
+    // menahan respons request yang memicunya.
+    void this.push.sendToUser(userId, payload, category);
+  }
 
   // ── Admin: broadcast ke member target ────────────────────────────────────
   async broadcast(dto: CreateBroadcastDto) {
@@ -51,11 +75,9 @@ export class NotificationsService {
     const createdAt = new Date().toISOString();
     for (const m of members) {
       if (!m.userId) continue;
-      try {
-        this.realtime.emitNotification(m.userId, { title, message, createdAt });
-      } catch {
-        // best-effort per member
-      }
+      // Broadcast manual admin isinya bebas (pengumuman, promo, apa saja), jadi
+      // tidak dipetakan ke kategori mana pun — cukup dihormati pushEnabled.
+      this.fanOut(m.userId, { title, message, imageUrl, url: '/inbox' }, createdAt);
     }
 
     return { recipientCount: members.length };
@@ -115,11 +137,12 @@ export class NotificationsService {
     const createdAt = new Date().toISOString();
     for (const m of members) {
       if (!m.userId) continue;
-      try {
-        this.realtime.emitNotification(m.userId, { title, message, createdAt });
-      } catch {
-        // best-effort per member
-      }
+      this.fanOut(
+        m.userId,
+        { title, message, imageUrl, url: '/rewards' },
+        createdAt,
+        'reward',
+      );
     }
 
     return { recipientCount: members.length };
@@ -132,20 +155,18 @@ export class NotificationsService {
     title: string,
     message: string,
     imageUrl: string | null = null,
+    category: PushCategory = null,
   ) {
     await this.prisma.notification.create({
       data: { memberId: member.id, title, message, imageUrl },
     });
     if (!member.userId) return;
-    try {
-      this.realtime.emitNotification(member.userId, {
-        title,
-        message,
-        createdAt: new Date().toISOString(),
-      });
-    } catch {
-      // best-effort — notifikasi sudah tersimpan di inbox
-    }
+    this.fanOut(
+      member.userId,
+      { title, message, imageUrl, url: '/inbox' },
+      new Date().toISOString(),
+      category,
+    );
   }
 
   async listBroadcasts(skip = 0, take = 20) {

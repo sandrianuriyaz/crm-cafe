@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { PushService } from './push.service';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
@@ -44,6 +45,7 @@ describe('NotificationsService', () => {
         NotificationsService,
         { provide: PrismaService, useValue: prisma },
         { provide: RealtimeGateway, useValue: { emitNotification: jest.fn() } },
+        { provide: PushService, useValue: { sendToUser: jest.fn() } },
       ],
     }).compile();
     service = module.get(NotificationsService);

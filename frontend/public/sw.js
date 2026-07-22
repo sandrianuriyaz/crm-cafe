@@ -10,7 +10,7 @@
 //
 // Naikkan CACHE_VERSION setiap kali daftar PRECACHE atau strategi berubah,
 // supaya cache lama dibuang saat aktivasi.
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = `polks-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `polks-asset-${CACHE_VERSION}`;
 const PAGE_CACHE = `polks-page-${CACHE_VERSION}`;
@@ -132,4 +132,52 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith(networkFirstPage(request));
   }
+});
+
+// ── Web Push ────────────────────────────────────────────────────────────────
+
+self.addEventListener("push", (event) => {
+  // Payload dikirim PushService sebagai JSON. Kalau gagal diurai, tetap
+  // tampilkan sesuatu — notifikasi kosong lebih buruk daripada teks generik,
+  // dan di Chrome push yang tidak menampilkan notifikasi apa pun bisa membuat
+  // izin push dicabut otomatis.
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
+
+  const title = payload.title || "POLKS";
+  const options = {
+    body: payload.message || "",
+    icon: "/polks/icon-192.png",
+    badge: "/polks/badge-96.png",
+    image: payload.imageUrl || undefined,
+    // Notifikasi dari kategori sama saling menimpa alih-alih menumpuk.
+    tag: payload.tag || "polks-notification",
+    data: { url: payload.url || "/inbox" },
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/inbox", self.location.origin);
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        // Kalau app sudah terbuka, arahkan tab itu — jangan buka jendela kedua.
+        for (const client of clients) {
+          if (new URL(client.url).origin !== target.origin) continue;
+          return client.focus().then((focused) =>
+            focused.navigate ? focused.navigate(target.href) : focused,
+          );
+        }
+        return self.clients.openWindow(target.href);
+      }),
+  );
 });

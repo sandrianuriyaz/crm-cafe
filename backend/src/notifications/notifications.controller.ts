@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   Param,
   Patch,
@@ -15,13 +16,51 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ListQueryDto } from '../member/dto/list-query.dto';
 import { NotificationsService } from './notifications.service';
 import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
+import { PushService } from './push.service';
+import {
+  CreatePushSubscriptionDto,
+  DeletePushSubscriptionDto,
+} from './dto/push-subscription.dto';
 
 @ApiTags('member')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('member/notifications')
 export class NotificationsController {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly push: PushService,
+  ) {}
+
+  // ── Web Push ──────────────────────────────────────────────────────────────
+  @Get('push/public-key')
+  @ApiOperation({
+    summary: 'Kunci publik VAPID (null bila push tidak dikonfigurasi)',
+  })
+  pushPublicKey() {
+    return { publicKey: this.push.publicKey() };
+  }
+
+  @Post('push/subscribe')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Daftarkan perangkat ini untuk push' })
+  pushSubscribe(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreatePushSubscriptionDto,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    return this.push.subscribe(userId, dto, userAgent);
+  }
+
+  @Post('push/unsubscribe')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Cabut langganan push perangkat ini' })
+  pushUnsubscribe(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeletePushSubscriptionDto,
+  ) {
+    return this.push.unsubscribe(userId, dto.endpoint);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Inbox notifikasi member (paginated)' })

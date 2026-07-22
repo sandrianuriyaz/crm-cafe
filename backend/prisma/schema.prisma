@@ -55,6 +55,7 @@ model User {
   member               Member?
   authTokens           AuthToken[]
   notificationSettings NotificationSettings?
+  pushSubscriptions    PushSubscription[]
 
   @@map("users")
 }
@@ -102,6 +103,34 @@ model NotificationSettings {
   updatedAt DateTime @updatedAt
 
   @@map("notification_settings")
+}
+
+// Langganan Web Push milik satu browser/perangkat. Satu user bisa punya banyak
+// baris: ponsel, tablet, laptop — masing-masing endpoint berbeda.
+//
+// endpoint adalah URL push service (FCM/Mozilla/Apple) dan sudah unik secara
+// global, jadi dipakai sebagai kunci upsert: browser yang me-refresh
+// langganannya menimpa baris lama alih-alih menumpuk duplikat.
+//
+// p256dh & auth adalah kunci enkripsi milik browser, bukan rahasia server:
+// tanpa keduanya payload tidak bisa dienkripsi untuk perangkat itu.
+model PushSubscription {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  // Membantu member mengenali perangkat mana saat mencabut izin.
+  userAgent String?
+
+  createdAt  DateTime  @default(now())
+  // Diperbarui tiap kirim sukses; dipakai untuk memangkas langganan mati.
+  lastUsedAt DateTime?
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 // Tier keanggotaan (opsional, dipakai nanti untuk benefit per level poin).
