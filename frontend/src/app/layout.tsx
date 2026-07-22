@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth";
 import { RealtimeProvider } from "@/lib/realtime";
 import { SplashGate } from "@/components/layout/splash-gate";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 
 export const metadata: Metadata = {
   title: "POLKS Group — Member",
@@ -45,6 +46,9 @@ export default function RootLayout({
         <AuthProvider>
           <RealtimeProvider>
             <SplashGate>{children}</SplashGate>
+            {/* Di dalam AuthProvider: banner hanya muncul untuk member yang
+                sudah login, bukan pengunjung yang baru mendarat. */}
+            <InstallPrompt />
           </RealtimeProvider>
         </AuthProvider>
       </body>
