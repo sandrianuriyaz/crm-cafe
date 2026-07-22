@@ -14,6 +14,10 @@ type Outlet = {
   city: string | null;
   address: string | null;
   hours: string | null;
+  openTime: string | null;
+  closeTime: string | null;
+  closedDays: number[];
+  mapsUrl: string | null;
   phone: string | null;
   status: "ACTIVE" | "INACTIVE";
   storeId: string | null;
@@ -149,7 +153,10 @@ type Draft = {
   name: string;
   city: string;
   address: string;
-  hours: string;
+  openTime: string;
+  closeTime: string;
+  closedDays: number[];
+  mapsUrl: string;
   phone: string;
   status: "ACTIVE" | "INACTIVE";
   storeId: string;
@@ -159,11 +166,60 @@ const emptyDraft: Draft = {
   name: "",
   city: "",
   address: "",
-  hours: "",
+  openTime: "09:00",
+  closeTime: "21:00",
+  closedDays: [],
+  mapsUrl: "",
   phone: "",
   status: "ACTIVE",
   storeId: "",
 };
+
+// Pratinjau teks jadwal yang akan dilihat pelanggan. Backend yang menyimpan
+// label finalnya (buildHoursLabel), ini cuma cermin supaya admin tahu hasilnya
+// sebelum menekan Simpan.
+function previewHours(d: Draft): string | null {
+  if (!d.openTime || !d.closeTime) return null;
+  const open = DAYS.filter((day) => !d.closedDays.includes(day.value));
+  if (open.length === 0) return null;
+  const names = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+  // Kelompokkan hari yang berurutan menurut urutan tampilan (Senin-dulu),
+  // bukan menurut nilai getDay() — Sabtu(6) dan Minggu(0) bersebelahan di layar.
+  const groups: number[][] = [];
+  for (const day of open) {
+    const last = groups[groups.length - 1];
+    const prevIndex = last
+      ? DAYS.findIndex((x) => x.value === last[last.length - 1])
+      : -2;
+    const curIndex = DAYS.findIndex((x) => x.value === day.value);
+    if (last && prevIndex === curIndex - 1) last.push(day.value);
+    else groups.push([day.value]);
+  }
+
+  const days =
+    open.length === 7
+      ? "Setiap hari"
+      : groups
+          .map((g) =>
+            g.length >= 2
+              ? `${names[g[0]]} - ${names[g[g.length - 1]]}`
+              : names[g[0]],
+          )
+          .join(", ");
+  return `${days} ${d.openTime} - ${d.closeTime}`;
+}
+
+// Urutan Senin-dulu; nilainya indeks Date#getDay() (0 = Minggu).
+const DAYS = [
+  { value: 1, label: "Sen" },
+  { value: 2, label: "Sel" },
+  { value: 3, label: "Rab" },
+  { value: 4, label: "Kam" },
+  { value: 5, label: "Jum" },
+  { value: 6, label: "Sab" },
+  { value: 0, label: "Min" },
+];
 
 function OutletForm({
   outlet,
@@ -180,7 +236,10 @@ function OutletForm({
           name: outlet.name,
           city: outlet.city ?? "",
           address: outlet.address ?? "",
-          hours: outlet.hours ?? "",
+          openTime: outlet.openTime ?? "",
+          closeTime: outlet.closeTime ?? "",
+          closedDays: outlet.closedDays ?? [],
+          mapsUrl: outlet.mapsUrl ?? "",
           phone: outlet.phone ?? "",
           status: outlet.status,
           storeId: outlet.storeId ?? "",
@@ -199,13 +258,30 @@ function OutletForm({
       setError("Nama minimal 2 karakter.");
       return;
     }
+    // Setengah terisi bikin jadwal tak bisa dihitung — badge di aplikasi
+    // pelanggan akan jatuh ke label netral tanpa admin sadar kenapa.
+    if (Boolean(d.openTime) !== Boolean(d.closeTime)) {
+      setError("Jam buka dan jam tutup harus diisi keduanya.");
+      return;
+    }
+    if (d.closedDays.length === 7) {
+      setError("Minimal satu hari harus buka. Untuk tutup total, set status Nonaktif.");
+      return;
+    }
+    if (d.mapsUrl.trim() && !/^https?:\/\//i.test(d.mapsUrl.trim())) {
+      setError("Link Maps harus diawali https://");
+      return;
+    }
     setSaving(true);
     setError(null);
     const body = {
       name: d.name,
       city: d.city || undefined,
       address: d.address || undefined,
-      hours: d.hours || undefined,
+      openTime: d.openTime || undefined,
+      closeTime: d.closeTime || undefined,
+      closedDays: d.closedDays,
+      mapsUrl: d.mapsUrl.trim() || undefined,
       phone: d.phone || undefined,
       status: d.status,
       storeId: d.storeId || undefined,
@@ -261,8 +337,74 @@ function OutletForm({
             />
           </div>
           <div>
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Link Google Maps (opsional)</label>
+            <input
+              className={field}
+              value={d.mapsUrl}
+              onChange={(e) => set("mapsUrl", e.target.value)}
+              placeholder="https://maps.app.goo.gl/..."
+            />
+            <p className="mt-1 text-[10px] text-polks-muted">
+              Buka Google Maps → cari outlet → Bagikan → Salin link. Kalau kosong,
+              tombol arah di aplikasi pelanggan memakai pencarian nama + alamat.
+            </p>
+          </div>
+          <div>
             <label className="mb-1 block text-xs font-semibold text-polks-text">Jam Buka</label>
-            <input className={field} value={d.hours} onChange={(e) => set("hours", e.target.value)} placeholder="Senin–Minggu, 08.00–22.00" />
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                className={field}
+                value={d.openTime}
+                onChange={(e) => set("openTime", e.target.value)}
+              />
+              <span className="shrink-0 text-xs text-polks-muted">s/d</span>
+              <input
+                type="time"
+                className={field}
+                value={d.closeTime}
+                onChange={(e) => set("closeTime", e.target.value)}
+              />
+            </div>
+            <p className="mt-1 text-[10px] text-polks-muted">
+              Jam tutup lebih kecil dari jam buka berarti tutup lewat tengah malam.
+            </p>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-polks-text">Hari Operasional</label>
+            <div className="flex flex-wrap gap-1.5">
+              {DAYS.map((day) => {
+                const open = !d.closedDays.includes(day.value);
+                return (
+                  <button
+                    key={day.value}
+                    type="button"
+                    aria-pressed={open}
+                    onClick={() =>
+                      set(
+                        "closedDays",
+                        open
+                          ? [...d.closedDays, day.value]
+                          : d.closedDays.filter((v) => v !== day.value),
+                      )
+                    }
+                    className={
+                      open
+                        ? "h-9 w-11 rounded-lg bg-polks-brand text-[11px] font-bold text-white"
+                        : "h-9 w-11 rounded-lg border-[1.5px] border-polks-border bg-white text-[11px] font-semibold text-polks-muted"
+                    }
+                  >
+                    {day.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[10px] text-polks-muted">
+              Klik untuk menandai hari libur. Tampil ke pelanggan:{" "}
+              <span className="font-semibold text-polks-text">
+                {previewHours(d) ?? "— isi jam buka dulu"}
+              </span>
+            </p>
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-polks-text">Status</label>

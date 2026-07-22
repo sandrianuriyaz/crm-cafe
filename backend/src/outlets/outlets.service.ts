@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOutletDto } from './dto/create-outlet.dto';
 import { ListOutletsQueryDto } from './dto/list-outlets-query.dto';
 import { UpdateOutletDto } from './dto/update-outlet.dto';
+import { buildHoursLabel } from './outlet-schedule';
 
 const PUBLIC_SELECT = {
   id: true,
@@ -11,6 +12,10 @@ const PUBLIC_SELECT = {
   city: true,
   address: true,
   hours: true,
+  openTime: true,
+  closeTime: true,
+  closedDays: true,
+  mapsUrl: true,
   phone: true,
   status: true,
 } as const;
@@ -55,12 +60,28 @@ export class OutletsService {
   }
 
   create(dto: CreateOutletDto) {
-    return this.prisma.outlet.create({ data: dto });
+    return this.prisma.outlet.create({
+      data: {
+        ...dto,
+        hours: buildHoursLabel(dto.openTime, dto.closeTime, dto.closedDays),
+      },
+    });
   }
 
   async update(id: string, dto: UpdateOutletDto) {
-    await this.getOrThrow(id);
-    return this.prisma.outlet.update({ where: { id }, data: dto });
+    const current = await this.getOrThrow(id);
+    // PATCH bisa datang tanpa field jadwal (mis. cuma menonaktifkan outlet),
+    // jadi hitung ulang label dari gabungan nilai lama + baru. Kalau hasilnya
+    // null berarti jadwal memang belum pernah diisi — biarkan `hours` lama.
+    const hours = buildHoursLabel(
+      dto.openTime ?? current.openTime,
+      dto.closeTime ?? current.closeTime,
+      dto.closedDays ?? current.closedDays,
+    );
+    return this.prisma.outlet.update({
+      where: { id },
+      data: { ...dto, ...(hours ? { hours } : {}) },
+    });
   }
 
   async remove(id: string) {

@@ -288,12 +288,26 @@ enum OutletStatus {
 // Lokasi outlet POLKS. storeId memetakan ke POS store_id (untuk statistik &
 // sinkronisasi per-outlet). GET /outlets publik hanya menampilkan ACTIVE.
 model Outlet {
-  id        String       @id @default(cuid())
-  name      String
-  city      String?
-  address   String?
-  hours     String?
-  phone     String?
+  id      String  @id @default(cuid())
+  name    String
+  city    String?
+  address String?
+  phone   String?
+
+  // Jadwal buka. openTime/closeTime "HH:MM" 24 jam; closeTime <= openTime
+  // berarti tutup lewat tengah malam. closedDays pakai indeks JS getDay()
+  // (0=Minggu..6=Sabtu). `hours` adalah teks tampilan yang diturunkan dari
+  // ketiganya saat simpan — dibiarkan sebagai kolom agar outlet lama yang
+  // jadwalnya belum diisi tetap punya sesuatu untuk ditampilkan.
+  openTime   String?
+  closeTime  String?
+  closedDays Int[]   @default([])
+  hours      String?
+
+  // Link Google Maps hasil Share. Alamat teks sering terlalu pendek untuk
+  // ditemukan mesin pencari, jadi pin eksplisit lebih akurat.
+  mapsUrl String?
+
   status    OutletStatus @default(ACTIVE)
   storeId   String?      @unique
   createdAt DateTime     @default(now())

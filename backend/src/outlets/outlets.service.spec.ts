@@ -41,7 +41,33 @@ describe('OutletsService', () => {
   it('creates an outlet', async () => {
     await service.create({ name: 'POLKS Braga' });
     expect(prisma.outlet.create).toHaveBeenCalledWith({
-      data: { name: 'POLKS Braga' },
+      data: { name: 'POLKS Braga', hours: null },
+    });
+  });
+
+  it('menurunkan label jam dari jadwal terstruktur saat create', async () => {
+    await service.create({
+      name: 'POLKS Braga',
+      openTime: '09:00',
+      closeTime: '21:00',
+      closedDays: [0],
+    });
+    expect(prisma.outlet.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ hours: 'Senin - Sabtu 09:00 - 21:00' }),
+    });
+  });
+
+  it('PATCH tanpa field jadwal tidak menghapus label jam', async () => {
+    prisma.outlet.findUnique.mockResolvedValue({
+      id: 'o1',
+      openTime: '09:00',
+      closeTime: '21:00',
+      closedDays: [],
+    });
+    await service.update('o1', { status: 'INACTIVE' as never });
+    expect(prisma.outlet.update).toHaveBeenCalledWith({
+      where: { id: 'o1' },
+      data: { status: 'INACTIVE', hours: 'Setiap hari 09:00 - 21:00' },
     });
   });
 
