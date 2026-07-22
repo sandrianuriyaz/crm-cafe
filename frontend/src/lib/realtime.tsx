@@ -101,6 +101,14 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     const socket = connectRealtime();
     if (!socket) return;
 
+    // Socket.IO tidak pernah mengirim ulang event yang terbit saat klien
+    // sedang putus. Tiap kali sambungan (kembali) terbentuk, tarik profil
+    // sekali — perubahan saldo/tier yang terlewat selama offline langsung
+    // terkoreksi tanpa menunggu event berikutnya.
+    socket.on("connect", () => {
+      void refreshProfile();
+    });
+
     socket.on("points:changed", (p: PointsChanged) => {
       // Tarik ulang profil → saldo & tier sinkron di semua halaman.
       void refreshProfile();
@@ -140,6 +148,29 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       socket.disconnect();
     };
     // user?.id sebagai kunci sesi; refreshProfile & pushToast stabil.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // Sinkron ulang saat app kembali terlihat. Di kasir, member menunjukkan QR
+  // lalu menaruh/mengunci HP — browser mobile membekukan WebSocket, jadi
+  // kenaikan poin yang terbit saat kasir menyelesaikan transaksi jatuh ke room
+  // yang sedang kosong dan hilang permanen. Tanpa penarikan ulang ini, saldo di
+  // home tetap angka lama sampai halaman di-refresh manual.
+  useEffect(() => {
+    if (!user) return;
+
+    const sync = () => {
+      if (document.visibilityState === "visible") void refreshProfile();
+    };
+    document.addEventListener("visibilitychange", sync);
+    // Sebagian browser desktop tidak mengubah visibilityState saat pindah
+    // jendela; "focus" menutup celah itu.
+    window.addEventListener("focus", sync);
+
+    return () => {
+      document.removeEventListener("visibilitychange", sync);
+      window.removeEventListener("focus", sync);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
