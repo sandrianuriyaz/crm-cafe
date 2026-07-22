@@ -243,7 +243,10 @@ export default function HistoryPage() {
                         <Icon name={view.icon} className="size-5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-polks-text">
+                        {/* Nomor order jangan dipotong: itu yang dipegang
+                            pelanggan saat komplain poin, dan yang dicari admin
+                            di Webhook Inbox. Biarkan turun baris. */}
+                        <p className="break-words text-sm font-semibold text-polks-text">
                           {e.note ?? view.label}
                         </p>
                         <p className="text-xs text-polks-muted">
