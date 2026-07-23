@@ -18,8 +18,7 @@ import { api, getToken } from "./api";
 import { useAuth } from "./auth";
 import { TIER_META, type Tier } from "./loyalty/tier";
 import { cn } from "./utils";
-import { PointsEarnedOverlay } from "@/components/customer/points-earned-overlay";
-import { VoucherUsedOverlay } from "@/components/customer/voucher-used-overlay";
+import { CelebrationOverlay } from "@/components/customer/celebration-overlay";
 
 // Socket.IO listen di root server, bukan di bawah prefix REST (/api/v1).
 function socketBaseUrl(): string {
@@ -65,11 +64,19 @@ type Toast = { id: number; title: string; body: string; tone: Tone };
 
 // ── Perayaan full-screen ────────────────────────────────────────────────────
 // Momen yang layak "dirayakan" (poin masuk, voucher terpakai) memakai overlay
-// satu layar penuh, bukan toast. Ditampilkan satu per satu lewat antrean.
-type CelebrationInput =
-  | { kind: "points"; amount: number }
-  | { kind: "voucher"; rewardName: string | null };
-type Celebration = CelebrationInput & { id: number };
+// satu layar penuh, bukan toast. Satu transaksi di kasir bisa memicu keduanya,
+// jadi bentuknya satu wadah yang menampung dua-duanya sekaligus — bukan antrean
+// dua overlay berurutan.
+type Celebration = {
+  id: number;
+  points: number;
+  voucherNames: string[];
+};
+
+// Lama menahan event pertama sambil menunggu pasangannya. Cukup panjang untuk
+// menampung jeda pemrosesan webhook (terukur ~4,8 dtk), masih terasa langsung
+// bagi member yang baru selesai membayar di kasir.
+const CELEBRATION_COLLECT_MS = 6000;
 
 type RealtimeContextValue = {
   // Jumlah notifikasi belum dibaca — untuk badge bell.
@@ -91,7 +98,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const [notificationNonce, setNotificationNonce] = useState(0);
   const [voucherNonce, setVoucherNonce] = useState(0);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [celebrations, setCelebrations] = useState<Celebration[]>([]);
+  const [celebration, setCelebration] = useState<Celebration | null>(null);
   const toastSeq = useRef(0);
   const celebrationSeq = useRef(0);
 
@@ -103,17 +110,72 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     }, 4500);
   }, []);
 
-  // Antre, jangan saling timpa: di kasir, voucher dipakai lalu transaksi
-  // diselesaikan hanya berjarak beberapa detik, jadi dua perayaan bisa terbit
-  // hampir bersamaan. Tanpa antrean, yang datang belakangan menutupi yang
-  // pertama dan salah satunya tak pernah benar-benar terlihat.
-  const celebrate = useCallback((c: CelebrationInput) => {
-    setCelebrations((prev) => [...prev, { ...c, id: ++celebrationSeq.current }]);
+  // Gabung, jangan antre: satu transaksi di kasir menerbitkan voucher:updated
+  // dan points:changed. Kalau masing-masing dapat overlay sendiri, layar
+  // tertutup dua kali berturut-turut — ketukan pertama seolah tak berefek
+  // karena langsung muncul overlay kedua.
+  //
+  // Keduanya TIDAK datang bersamaan: redeem voucher hanya satu update, sedangkan
+  // webhook transaksi menjalankan banyak query sebelum memancarkan poin. Terukur
+  // ~4,8 detik berjarak di lingkungan uji — lebih lama dari umur overlay itu
+  // sendiri. Jadi jangan mengandalkan "kebetulan tampil bersamaan": tahan
+  // sebentar untuk mengumpulkan pasangannya dulu, baru tampilkan sekali.
+  const pendingRef = useRef<{ points: number; voucherNames: string[] } | null>(null);
+  const flushTimerRef = useRef<number | null>(null);
+  const shownRef = useRef(false);
+
+  const flushCelebration = useCallback(() => {
+    if (flushTimerRef.current !== null) {
+      window.clearTimeout(flushTimerRef.current);
+      flushTimerRef.current = null;
+    }
+    const buf = pendingRef.current;
+    pendingRef.current = null;
+    if (!buf) return;
+
+    setCelebration((cur) =>
+      cur
+        ? {
+            ...cur,
+            points: cur.points + buf.points,
+            voucherNames: [...cur.voucherNames, ...buf.voucherNames],
+          }
+        : { id: ++celebrationSeq.current, points: buf.points, voucherNames: buf.voucherNames },
+    );
   }, []);
 
-  const dismissCelebration = useCallback(() => {
-    setCelebrations((prev) => prev.slice(1));
-  }, []);
+  const collectCelebration = useCallback(
+    (part: { points?: number; voucherName?: string }) => {
+      const buf = pendingRef.current ?? { points: 0, voucherNames: [] };
+      if (part.points) buf.points += part.points;
+      if (part.voucherName) buf.voucherNames.push(part.voucherName);
+      pendingRef.current = buf;
+
+      // Tampilkan segera bila tidak ada gunanya menunggu lagi: dua-duanya sudah
+      // terkumpul, atau perayaan memang sudah tampil di layar.
+      if ((buf.points > 0 && buf.voucherNames.length > 0) || shownRef.current) {
+        flushCelebration();
+        return;
+      }
+      if (flushTimerRef.current === null) {
+        flushTimerRef.current = window.setTimeout(flushCelebration, CELEBRATION_COLLECT_MS);
+      }
+    },
+    [flushCelebration],
+  );
+
+  // Jangan tinggalkan timer menggantung saat provider dilepas.
+  useEffect(() => {
+    shownRef.current = celebration !== null;
+  }, [celebration]);
+  useEffect(
+    () => () => {
+      if (flushTimerRef.current !== null) window.clearTimeout(flushTimerRef.current);
+    },
+    [],
+  );
+
+  const dismissCelebration = useCallback(() => setCelebration(null), []);
 
   const markAllNotificationsRead = useCallback(() => setUnreadCount(0), []);
 
@@ -149,7 +211,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       if (p.source === "transaction") {
         // Poin dari transaksi POS → overlay full-screen (gaya coin Gopay),
         // bukan toast kecil, karena ini momen yang mau "dirayakan".
-        celebrate({ kind: "points", amount: p.pointsDelta });
+        collectCelebration({ points: p.pointsDelta });
       } else {
         // Penyesuaian admin → tetap toast biasa, tidak perlu overlay besar.
         pushToast({
@@ -178,7 +240,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       // Status selain ACTIVE = voucher terpakai/hangus. Hanya momen "terpakai"
       // yang layak dirayakan; perubahan lain cukup memicu refetch senyap.
       if (v?.status !== "USED") return;
-      celebrate({ kind: "voucher", rewardName: v.reward?.name ?? null });
+      collectCelebration({ voucherName: v.reward?.name ?? "Reward" });
     });
 
     socket.on("notification:new", (n: NotificationNew) => {
@@ -218,24 +280,20 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const current = celebrations[0] ?? null;
-
   return (
     <RealtimeContext.Provider
       value={{ unreadCount, notificationNonce, voucherNonce, markAllNotificationsRead }}
     >
       {children}
       <ToastStack toasts={toasts} />
-      {/* key={id} memaksa remount tiap giliran: tanpa itu, dua perayaan sejenis
-          berturut-turut memakai instance yang sama dan timer tutup-otomatis
-          milik yang pertama ikut terbawa ke yang kedua. */}
-      {current?.kind === "points" && (
-        <PointsEarnedOverlay key={current.id} amount={current.amount} onClose={dismissCelebration} />
-      )}
-      {current?.kind === "voucher" && (
-        <VoucherUsedOverlay
-          key={current.id}
-          rewardName={current.rewardName}
+      {/* key={id} = identitas perayaan, bukan isinya: peleburan event susulan
+          tidak me-remount overlay (animasinya tidak mengulang dari nol), tapi
+          timer tutup-otomatisnya tetap di-reset lewat dependency isi. */}
+      {celebration && (
+        <CelebrationOverlay
+          key={celebration.id}
+          points={celebration.points}
+          voucherNames={celebration.voucherNames}
           onClose={dismissCelebration}
         />
       )}
