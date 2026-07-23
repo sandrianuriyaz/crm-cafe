@@ -13,12 +13,13 @@ import {
   type ReactNode,
 } from "react";
 import { io, type Socket } from "socket.io-client";
-import { Star, PartyPopper, Bell, Ticket } from "lucide-react";
+import { Star, PartyPopper, Bell } from "lucide-react";
 import { api, getToken } from "./api";
 import { useAuth } from "./auth";
 import { TIER_META, type Tier } from "./loyalty/tier";
 import { cn } from "./utils";
 import { PointsEarnedOverlay } from "@/components/customer/points-earned-overlay";
+import { VoucherUsedOverlay } from "@/components/customer/voucher-used-overlay";
 
 // Socket.IO listen di root server, bukan di bawah prefix REST (/api/v1).
 function socketBaseUrl(): string {
@@ -59,8 +60,16 @@ type VoucherUpdated = {
 };
 
 // ── Toast ringan untuk feedback realtime ────────────────────────────────────
-type Tone = "point" | "tier" | "notif" | "voucher";
+type Tone = "point" | "tier" | "notif";
 type Toast = { id: number; title: string; body: string; tone: Tone };
+
+// ── Perayaan full-screen ────────────────────────────────────────────────────
+// Momen yang layak "dirayakan" (poin masuk, voucher terpakai) memakai overlay
+// satu layar penuh, bukan toast. Ditampilkan satu per satu lewat antrean.
+type CelebrationInput =
+  | { kind: "points"; amount: number }
+  | { kind: "voucher"; rewardName: string | null };
+type Celebration = CelebrationInput & { id: number };
 
 type RealtimeContextValue = {
   // Jumlah notifikasi belum dibaca — untuk badge bell.
@@ -82,8 +91,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const [notificationNonce, setNotificationNonce] = useState(0);
   const [voucherNonce, setVoucherNonce] = useState(0);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [pointsEarned, setPointsEarned] = useState<number | null>(null);
+  const [celebrations, setCelebrations] = useState<Celebration[]>([]);
   const toastSeq = useRef(0);
+  const celebrationSeq = useRef(0);
 
   const pushToast = useCallback((t: Omit<Toast, "id">) => {
     const id = ++toastSeq.current;
@@ -91,6 +101,18 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((x) => x.id !== id));
     }, 4500);
+  }, []);
+
+  // Antre, jangan saling timpa: di kasir, voucher dipakai lalu transaksi
+  // diselesaikan hanya berjarak beberapa detik, jadi dua perayaan bisa terbit
+  // hampir bersamaan. Tanpa antrean, yang datang belakangan menutupi yang
+  // pertama dan salah satunya tak pernah benar-benar terlihat.
+  const celebrate = useCallback((c: CelebrationInput) => {
+    setCelebrations((prev) => [...prev, { ...c, id: ++celebrationSeq.current }]);
+  }, []);
+
+  const dismissCelebration = useCallback(() => {
+    setCelebrations((prev) => prev.slice(1));
   }, []);
 
   const markAllNotificationsRead = useCallback(() => setUnreadCount(0), []);
@@ -127,7 +149,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       if (p.source === "transaction") {
         // Poin dari transaksi POS → overlay full-screen (gaya coin Gopay),
         // bukan toast kecil, karena ini momen yang mau "dirayakan".
-        setPointsEarned(p.pointsDelta);
+        celebrate({ kind: "points", amount: p.pointsDelta });
       } else {
         // Penyesuaian admin → tetap toast biasa, tidak perlu overlay besar.
         pushToast({
@@ -155,14 +177,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       setVoucherNonce((n) => n + 1);
       // Status selain ACTIVE = voucher terpakai/hangus. Hanya momen "terpakai"
       // yang layak dirayakan; perubahan lain cukup memicu refetch senyap.
-      if (!v?.status || v.status === "ACTIVE") return;
-      pushToast({
-        tone: "voucher",
-        title: "Voucher berhasil dipakai",
-        body: v.reward?.name
-          ? `${v.reward.name} sudah ditukarkan di kasir.`
-          : "Voucher sudah ditukarkan di kasir.",
-      });
+      if (v?.status !== "USED") return;
+      celebrate({ kind: "voucher", rewardName: v.reward?.name ?? null });
     });
 
     socket.on("notification:new", (n: NotificationNew) => {
@@ -202,14 +218,26 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  const current = celebrations[0] ?? null;
+
   return (
     <RealtimeContext.Provider
       value={{ unreadCount, notificationNonce, voucherNonce, markAllNotificationsRead }}
     >
       {children}
       <ToastStack toasts={toasts} />
-      {pointsEarned !== null && (
-        <PointsEarnedOverlay amount={pointsEarned} onClose={() => setPointsEarned(null)} />
+      {/* key={id} memaksa remount tiap giliran: tanpa itu, dua perayaan sejenis
+          berturut-turut memakai instance yang sama dan timer tutup-otomatis
+          milik yang pertama ikut terbawa ke yang kedua. */}
+      {current?.kind === "points" && (
+        <PointsEarnedOverlay key={current.id} amount={current.amount} onClose={dismissCelebration} />
+      )}
+      {current?.kind === "voucher" && (
+        <VoucherUsedOverlay
+          key={current.id}
+          rewardName={current.rewardName}
+          onClose={dismissCelebration}
+        />
       )}
     </RealtimeContext.Provider>
   );
@@ -237,11 +265,6 @@ const TONE_STYLE = {
   },
   notif: {
     icon: <Bell size={18} color="#25343F" />,
-    card: "border-polks-border bg-polks-card",
-    iconBg: "size-9 bg-polks-surface",
-  },
-  voucher: {
-    icon: <Ticket size={18} color="#38A169" />,
     card: "border-polks-border bg-polks-card",
     iconBg: "size-9 bg-polks-surface",
   },
