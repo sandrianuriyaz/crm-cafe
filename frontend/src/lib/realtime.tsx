@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { io, type Socket } from "socket.io-client";
-import { Star, PartyPopper, Bell } from "lucide-react";
+import { Star, PartyPopper, Bell, Ticket } from "lucide-react";
 import { api, getToken } from "./api";
 import { useAuth } from "./auth";
 import { TIER_META, type Tier } from "./loyalty/tier";
@@ -51,9 +51,15 @@ type PointsChanged = {
 };
 type TierUp = { from: Tier; to: Tier };
 type NotificationNew = { title: string; message: string; createdAt: string };
+// Status voucher berubah — dipush saat kasir POS men-scan & memakainya.
+type VoucherUpdated = {
+  id?: string;
+  status?: string;
+  reward?: { name?: string | null } | null;
+};
 
 // ── Toast ringan untuk feedback realtime ────────────────────────────────────
-type Tone = "point" | "tier" | "notif";
+type Tone = "point" | "tier" | "notif" | "voucher";
 type Toast = { id: number; title: string; body: string; tone: Tone };
 
 type RealtimeContextValue = {
@@ -61,6 +67,9 @@ type RealtimeContextValue = {
   unreadCount: number;
   // Naik tiap ada notifikasi baru; halaman inbox memakainya untuk refetch.
   notificationNonce: number;
+  // Naik tiap status voucher berubah; halaman yang menampilkan daftar voucher
+  // memakainya untuk refetch (dashboard, riwayat penukaran).
+  voucherNonce: number;
   // Dipanggil saat inbox dibuka (semua ditandai dibaca) → reset badge.
   markAllNotificationsRead: () => void;
 };
@@ -71,6 +80,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const { user, refreshProfile } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationNonce, setNotificationNonce] = useState(0);
+  const [voucherNonce, setVoucherNonce] = useState(0);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const toastSeq = useRef(0);
@@ -137,6 +147,24 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       });
     });
 
+    // Kasir men-scan voucher di kasir. Ditangani di provider (bukan per
+    // halaman) supaya konfirmasinya sampai di mana pun member sedang berada —
+    // sebelumnya hanya /redeem-history yang mendengarkan, jadi voucher yang
+    // sudah dipakai tetap tampil aktif di dashboard sampai halaman di-refresh.
+    socket.on("voucher:updated", (v: VoucherUpdated) => {
+      setVoucherNonce((n) => n + 1);
+      // Status selain ACTIVE = voucher terpakai/hangus. Hanya momen "terpakai"
+      // yang layak dirayakan; perubahan lain cukup memicu refetch senyap.
+      if (!v?.status || v.status === "ACTIVE") return;
+      pushToast({
+        tone: "voucher",
+        title: "Voucher berhasil dipakai",
+        body: v.reward?.name
+          ? `${v.reward.name} sudah ditukarkan di kasir.`
+          : "Voucher sudah ditukarkan di kasir.",
+      });
+    });
+
     socket.on("notification:new", (n: NotificationNew) => {
       setUnreadCount((c) => c + 1);
       setNotificationNonce((v) => v + 1);
@@ -176,7 +204,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
   return (
     <RealtimeContext.Provider
-      value={{ unreadCount, notificationNonce, markAllNotificationsRead }}
+      value={{ unreadCount, notificationNonce, voucherNonce, markAllNotificationsRead }}
     >
       {children}
       <ToastStack toasts={toasts} />
@@ -209,6 +237,11 @@ const TONE_STYLE = {
   },
   notif: {
     icon: <Bell size={18} color="#25343F" />,
+    card: "border-polks-border bg-polks-card",
+    iconBg: "size-9 bg-polks-surface",
+  },
+  voucher: {
+    icon: <Ticket size={18} color="#38A169" />,
     card: "border-polks-border bg-polks-card",
     iconBg: "size-9 bg-polks-surface",
   },

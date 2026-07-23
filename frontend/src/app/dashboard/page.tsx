@@ -12,6 +12,7 @@ import { TierInfoSheet } from "@/components/customer/tier-info-sheet";
 import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useRealtime } from "@/lib/realtime";
 import { useCountUp } from "@/lib/hooks";
 import { TIER_META, TIER_ICON, formatRupiah } from "@/lib/loyalty/tier";
 import { type Promo, type Reward, type Voucher } from "@/lib/loyalty/types";
@@ -51,6 +52,7 @@ function benefitLabel(reward: Voucher["reward"]): string | null {
 
 export default function MemberDashboardPage() {
   const { user } = useAuth();
+  const { voucherNonce } = useRealtime();
   const [promos,      setPromos]      = useState<Promo[]>([]);
   const [vouchers,    setVouchers]    = useState<Voucher[]>([]);
   const [rewards,     setRewards]     = useState<Reward[]>([]);
@@ -91,6 +93,21 @@ export default function MemberDashboardPage() {
       .catch(() => setUnread(0));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Kasir memakai voucher → tarik ulang daftarnya supaya yang sudah terpakai
+  // langsung lenyap dari "Voucher Aktif" tanpa perlu refresh halaman.
+  useEffect(() => {
+    if (voucherNonce === 0) return; // pemuatan awal sudah ditangani efek di atas
+    api<Voucher[]>("/vouchers")
+      .then((d) => setVouchers(d.filter((v) => v.status === "ACTIVE").slice(0, 4)))
+      .catch(() => {});
+  }, [voucherNonce]);
+
+  // Bila QR yang sedang ditunjukkan ke kasir ternyata baru saja dipakai, tutup
+  // modalnya — tidak ada gunanya lagi dipindai.
+  useEffect(() => {
+    setQrVoucher((cur) => (cur && !vouchers.some((v) => v.id === cur.id) ? null : cur));
+  }, [vouchers]);
 
   const carouselPromos = promos.filter((p) => p.imageUrl);
 

@@ -6,7 +6,7 @@ import { ArrowLeft, Gift, Copy, Check, QrCode } from "lucide-react";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { VoucherQrModal } from "@/components/customer/voucher-qr-modal";
 import { api, ApiError } from "@/lib/api";
-import { connectRealtime } from "@/lib/realtime";
+import { useRealtime } from "@/lib/realtime";
 import { type Voucher } from "@/lib/loyalty/types";
 
 const STATUS_META: Record<Voucher["status"], { label: string; dot: string; bg: string; text: string }> = {
@@ -112,6 +112,7 @@ function VoucherCard({ v, onShowQr }: { v: Voucher; onShowQr?: () => void }) {
 
 export default function RedeemHistoryPage() {
   const router = useRouter();
+  const { voucherNonce } = useRealtime();
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,37 +138,25 @@ export default function RedeemHistoryPage() {
     };
   }, [router]);
 
-  // Realtime: begitu kasir POS scan & redeem voucher, backend push
-  // "voucher:updated" → langsung perbarui kartu jadi "Digunakan" tanpa refresh.
+  // Realtime: begitu kasir POS scan & redeem voucher, provider menaikkan
+  // voucherNonce → tarik ulang daftar supaya kartunya berubah jadi "Digunakan"
+  // tanpa refresh. Memakai socket milik provider, bukan membuka koneksi kedua
+  // sendiri; sebelumnya halaman ini satu-satunya yang mendengarkan, sehingga
+  // dashboard tetap basi.
   useEffect(() => {
-    const socket = connectRealtime();
-    if (!socket) return;
+    if (voucherNonce === 0) return; // pemuatan awal ditangani efek di atas
+    api<Voucher[]>("/vouchers")
+      .then((d) => setVouchers(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, [voucherNonce]);
 
-    // Payload bisa saja parsial / kehilangan field saat transport. Merge dengan
-    // aman: hanya timpa field yang ada, dan jangan pernah hapus `reward` yang
-    // sudah kita punya (VoucherCard mengakses reward.name → kalau hilang, blank).
-    socket.on("voucher:updated", (updated: Partial<Voucher> & { id?: string }) => {
-      if (!updated?.id) return;
-      setVouchers((prev) =>
-        prev.map((v) =>
-          v.id === updated.id
-            ? { ...v, ...updated, reward: updated.reward ?? v.reward }
-            : v,
-        ),
-      );
-      // Bila QR voucher yang sedang dibuka ternyata baru saja dipakai,
-      // tutup modal-nya — sudah tidak relevan ditunjukkan ke kasir.
-      setQrVoucher((cur) =>
-        cur && cur.id === updated.id && updated.status && updated.status !== "ACTIVE"
-          ? null
-          : cur,
-      );
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  // Bila QR voucher yang sedang dibuka ternyata baru saja dipakai, tutup
+  // modal-nya — sudah tidak relevan ditunjukkan ke kasir.
+  useEffect(() => {
+    setQrVoucher((cur) =>
+      cur && vouchers.some((v) => v.id === cur.id && v.status !== "ACTIVE") ? null : cur,
+    );
+  }, [vouchers]);
 
   const activeList = useMemo(() => vouchers.filter((v) => v.status === "ACTIVE"), [vouchers]);
   const pastList = useMemo(() => vouchers.filter((v) => v.status !== "ACTIVE"), [vouchers]);
