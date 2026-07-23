@@ -498,8 +498,10 @@ model Reward {
   status       RewardStatus @default(ACTIVE)
   type         RewardType   @default(MANUAL)
   value        Int?
-  // Minimal total belanja (Rp) agar diskon berlaku — informasi saja, dibaca
-  // kasir/POS secara manual. Belum ada enforcement otomatis di server.
+  // Minimal total belanja (Rp) agar diskon berlaku. Dikirim ke POS lewat
+  // GET /pos/vouchers/:code, dan ditegakkan saat redeem BILA POS menyertakan
+  // `subtotal` — tanpa itu CRM tidak pernah tahu isi keranjang, jadi tidak
+  // bisa menilai.
   minPurchase  Int?
   freeItemName String?
   // Periode tayang di katalog customer (null = tak dibatasi di sisi itu),

@@ -28,7 +28,11 @@ export type RedeemResult =
       };
     }
   | { kind: 'not_found' }
-  | { kind: 'conflict' };
+  | { kind: 'conflict' }
+  // Belanja belum mencapai syarat minimum reward. Dibedakan dari 'conflict'
+  // supaya kasir dapat pesan yang benar ("belanja kurang"), bukan "voucher
+  // sudah dipakai".
+  | { kind: 'below_minimum'; minPurchase: number; subtotal: number };
 
 @Injectable()
 export class PosService {
@@ -39,12 +43,20 @@ export class PosService {
 
   // Validasi voucher by code untuk kasir POS. Tidak mengubah apa pun.
   // Null = tidak ditemukan (controller → 404).
-  async validateVoucher(code: string) {
+  //
+  // `subtotal` (opsional) = total belanja sebelum diskon & pajak, sesuai arti
+  // `subtotal` di kontrak webhook §5. Bila dikirim, respons ikut memberi tahu
+  // apakah voucher boleh dipakai untuk keranjang sebesar itu.
+  async validateVoucher(code: string, subtotal?: number) {
     const voucher = await this.prisma.voucher.findUnique({
       where: { code },
       include: { reward: true, member: true },
     });
     if (!voucher) return null;
+
+    const minPurchase = voucher.reward.minPurchase;
+    const belowMinimum =
+      subtotal !== undefined && minPurchase != null && subtotal < minPurchase;
 
     return {
       code: voucher.code,
@@ -54,6 +66,10 @@ export class PosService {
         description: voucher.reward.description,
         type: voucher.reward.type,
         value: voucher.reward.value,
+        // Tanpa field ini POS tidak punya cara tahu ada syarat minimum sama
+        // sekali, sehingga voucher diskon tetap bisa dipasang di keranjang
+        // yang belum memenuhi syarat.
+        minPurchase,
         freeItemName: voucher.reward.freeItemName,
       },
       member: {
@@ -62,6 +78,9 @@ export class PosService {
         externalCustomerId: voucher.member.externalCustomerId,
         pointBalance: voucher.member.pointBalance,
       },
+      // Kesimpulan siap pakai untuk kasir. `null` = POS tidak mengirim subtotal,
+      // jadi CRM tidak bisa menilai (bukan berarti lolos).
+      eligible: subtotal === undefined ? null : voucher.status === 'ACTIVE' && !belowMinimum,
       used_at: voucher.usedAt,
       created_at: voucher.createdAt,
     };
@@ -92,7 +111,22 @@ export class PosService {
   // Tandai voucher USED — atomic & sekali pakai. updateMany dengan filter
   // status:ACTIVE mencegah double-redeem (race condition) tanpa transaksi
   // findUnique-lalu-update.
-  async redeemVoucher(code: string): Promise<RedeemResult> {
+  //
+  // `subtotal` opsional: bila POS mengirimnya, syarat minimum belanja
+  // ditegakkan di sini. Dicek SEBELUM updateMany supaya voucher yang ditolak
+  // tidak terlanjur tertandai USED.
+  async redeemVoucher(code: string, subtotal?: number): Promise<RedeemResult> {
+    if (subtotal !== undefined) {
+      const target = await this.prisma.voucher.findUnique({
+        where: { code },
+        select: { reward: { select: { minPurchase: true } } },
+      });
+      const min = target?.reward.minPurchase;
+      if (min != null && subtotal < min) {
+        return { kind: 'below_minimum', minPurchase: min, subtotal };
+      }
+    }
+
     const usedAt = new Date();
     const result = await this.prisma.voucher.updateMany({
       where: { code, status: VoucherStatus.ACTIVE },
