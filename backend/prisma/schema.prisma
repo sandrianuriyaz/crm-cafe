@@ -499,9 +499,11 @@ model Reward {
   type         RewardType   @default(MANUAL)
   value        Int?
   // Minimal total belanja (Rp) agar diskon berlaku. Dikirim ke POS lewat
-  // GET /pos/vouchers/:code, dan ditegakkan saat redeem BILA POS menyertakan
-  // `subtotal` — tanpa itu CRM tidak pernah tahu isi keranjang, jadi tidak
-  // bisa menilai.
+  // GET /pos/vouchers/:code sebagai `reward.minSpend` (nama field di API
+  // sengaja beda dari nama kolom ini — lihat docs/BRIEF-CRM-MINSPEND.md §5).
+  //
+  // Yang MENEGAKKAN syarat ini adalah POS, bukan CRM: keranjang masih bisa
+  // berubah setelah voucher discan, dan hanya POS yang melihatnya.
   minPurchase  Int?
   freeItemName String?
   // Periode tayang di katalog customer (null = tak dibatasi di sisi itu),
